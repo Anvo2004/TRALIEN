@@ -1,0 +1,10 @@
+node_modules/
+.env
+.env.local
+*.log
+www/
+dist/
+.zmp/
+
+Backend/media/
+Backend/public/images/

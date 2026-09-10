@@ -1,0 +1,26 @@
+{
+  "name": "zmp-tra-lien",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "vite dev",
+    "build": "vite build",
+    "serve": "vite preview --host 0.0.0.0 --strictPort --port ${PORT:-3011}",
+    "deploy:dev": "zmp-cli deploy --existing",
+    "deploy:testing": "zmp-cli deploy --existing --testing"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.23.0",
+    "zmp-sdk": "^2.51.7",
+    "zmp-ui": "^1.11.14"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.2.1",
+    "sass": "^1.75.0",
+    "sharp": "^0.35.3",
+    "vite": "^5.2.0",
+    "zmp-vite-plugin": "^1.1.6"
+  }
+}

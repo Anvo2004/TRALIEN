@@ -1,0 +1,16 @@
+{
+  "app": {
+    "title": "Công dân số xã Trà Liên",
+    "headerTitle": "Công dân số xã Trà Liên",
+    "headerColor": "#1a73e8",
+    "textColor": "white",
+    "leftButton": "none",
+    "statusBar": "normal",
+    "actionBarHidden": false,
+    "hideAndroidBottomNavigationBar": true,
+    "hideIOSSafeAreaBottom": true
+  },
+  "listCSS": [],
+  "listSyncJS": [],
+  "listAsyncJS": []
+}

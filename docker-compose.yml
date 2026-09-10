@@ -1,0 +1,50 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: ./Backend
+      dockerfile: Dockerfile
+    container_name: tralien-backend
+    restart: unless-stopped
+    env_file:
+      - ./Backend/.env
+    ports:
+      - "4000:4000"
+    networks:
+      - tralien-network
+
+  admin-web:
+    build:
+      context: ./Frontend/AdminWeb
+      dockerfile: Dockerfile
+      args:
+        # Pass backend URL at build time (e.g., https://api.tralien.com)
+        - VITE_API_URL=${VITE_API_URL_ADMIN}
+    container_name: tralien-admin-web
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    networks:
+      - tralien-network
+    depends_on:
+      - backend
+
+  miniapp:
+    build:
+      context: ./MiniApp
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=${VITE_API_URL_MINIAPP}
+    container_name: tralien-miniapp
+    restart: unless-stopped
+    ports:
+      - "3001:80"
+    networks:
+      - tralien-network
+    depends_on:
+      - backend
+
+networks:
+  tralien-network:
+    driver: bridge

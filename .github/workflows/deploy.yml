@@ -1,0 +1,34 @@
+name: Deploy Tra Lien Mini App
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: deploy
+          key: ${{ secrets.VPS_DEPLOY_SSH_KEY }}
+          script: |
+            set -e
+            cd /var/www/tralien
+            git pull origin main
+
+            cd MiniApp
+            npm ci
+            npm run build
+            pm2 restart tralien
+
+            cd ../Backend
+            npm ci --omit=dev
+            pm2 restart tralien-backend
+
+            cd ../Frontend/AdminWeb
+            npm ci
+            npm run build

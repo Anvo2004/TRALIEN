@@ -1,0 +1,81 @@
+name: Sync lich cat dien (EVN CPC) — DU PHONG THU CONG
+
+# LƯU Ý: Cron tự động đã TẮT. Lịch cắt điện giờ được VPS cào THẲNG từ xenvn.com
+# mỗi 30 phút (Backend/src/services/catDienService.js → startAutoSync). xenvn
+# đăng lại đúng lịch EVN nhưng nằm sau Cloudflare (hạ tầng khác EVN) nên VPS gọi
+# được, không dính EVN chặn IP như cskh-api.cpc.vn — hết cảnh sync chập chờn.
+#
+# Workflow này (fetch EVN CPC từ runner GitHub rồi POST /ingest) được GIỮ LẠI làm
+# NÚT CHẠY TAY khẩn cấp: nếu có ngày VPS không tới được xenvn thì mở tab Actions
+# → chạy workflow này để lấy lại dữ liệu từ EVN CPC. KHÔNG bật lại cron nếu VPS
+# vẫn cào xenvn được — sẽ đẩy trùng lịch (mã trạm EVN ≠ mã slug của xenvn).
+on:
+  workflow_dispatch:
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fetch EVN CPC outages and relay to Backend
+        env:
+          INGEST_SECRET: ${{ secrets.LICH_CUP_DIEN_INGEST_SECRET }}
+        run: |
+          set -e
+          # TODO: mã điện lực của Thăng Điền (Điện lực Thăng Bình) — KHÔNG áp
+          # dụng cho Trà Liên. Điền mã đúng khu vực Trà Liên trước khi chạy tay
+          # workflow này (xem docs/SETUP_CHECKLIST.md và Backend/.env EVNCPC_*).
+          ORG_CODE="TODO_EVNCPC_ORG_CODE"
+          SUBORG_CODE="TODO_EVNCPC_SUBORG_CODE"
+          FROM=$(date -u +"%Y-%m-%d 00:00:00")
+          TO=$(date -u -d "+14 days" +"%Y-%m-%d 23:59:00")
+
+          # EVN CPC's API occasionally stalls/hangs from GitHub's runner IPs (or
+          # any external caller). curl has no default timeout, so a single slow
+          # request would otherwise hang for the entire job — cap it, and retry
+          # a couple of times before giving up on that page.
+          curl_retry() {
+            local attempt
+            for attempt in 1 2 3; do
+              if curl -sf --connect-timeout 10 --max-time 25 "$@"; then
+                return 0
+              fi
+              echo "curl attempt $attempt failed, retrying in 5s..." >&2
+              sleep 5
+            done
+            return 1
+          }
+
+          ITEMS="[]"
+          for page in $(seq 1 10); do
+            if ! RESP=$(curl_retry -H "version: 1.0" -H "Accept: application/json" \
+              --get "https://cskh-api.cpc.vn/api/remote/outages/area" \
+              --data-urlencode "orgCode=$ORG_CODE" \
+              --data-urlencode "subOrgCode=$SUBORG_CODE" \
+              --data-urlencode "fromDate=$FROM" \
+              --data-urlencode "toDate=$TO" \
+              --data-urlencode "page=$page" \
+              --data-urlencode "limit=100"); then
+              if [ "$page" -eq 1 ]; then
+                echo "EVN CPC khong phan hoi sau 3 lan thu o trang dau tien — that bai that su, dung job." >&2
+                exit 1
+              fi
+              echo "Bo qua trang $page sau 3 lan thu that bai, dung lai voi du lieu da co."
+              break
+            fi
+            BATCH=$(echo "$RESP" | jq -c '.items // []')
+            COUNT=$(echo "$BATCH" | jq 'length')
+            ITEMS=$(jq -c -n --argjson a "$ITEMS" --argjson b "$BATCH" '$a + $b')
+            echo "page $page: $COUNT items"
+            if [ "$COUNT" -lt 100 ]; then break; fi
+          done
+
+          TOTAL=$(echo "$ITEMS" | jq 'length')
+          echo "Fetched $TOTAL outage records total, relaying to Backend..."
+
+          PAYLOAD=$(jq -c -n --argjson items "$ITEMS" --arg subOrgCode "$SUBORG_CODE" '{items:$items, subOrgCode:$subOrgCode}')
+
+          RESULT=$(curl_retry -X POST "https://tralienapi.dxvtech.vn/api/public/lich-cup-dien/ingest" \
+            -H "Content-Type: application/json" \
+            -H "x-ingest-secret: $INGEST_SECRET" \
+            -d "$PAYLOAD")
+          echo "Backend response: $RESULT"
