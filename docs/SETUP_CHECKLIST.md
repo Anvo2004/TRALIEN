@@ -8,13 +8,14 @@ Backend chạy đầy đủ tính năng và lên production. Đánh dấu `[x]` 
 
 - [ ] Tỉnh/thành, quận/huyện thực tế của xã Trà Liên (đang tạm để
       `"Thành phố Đà Nẵng"` trong `MiniApp/src/data/site.js` — xác nhận lại).
-- [ ] Domain production: Backend (`https://tralienapi.dxvtech.vn` — placeholder
-      trong `Backend/src/config/index.js`, `MiniApp/src/data/api-config.js`,
-      `.github/workflows/sync-lich-cup-dien.yml`) và MiniApp/AdminWeb
-      (`https://tralien.dxvtech.vn` — placeholder trong `MiniApp/vite.config.js`).
-- [ ] VPS đích: dùng chung VPS với dự án khác (như Thăng Điền dùng chung với
-      Đại Lộc) hay VPS riêng? Ảnh hưởng `/var/www/tralien` trong
-      `.github/workflows/deploy.yml` và `pm2` process name `tralien`/`tralien-backend`.
+- [x] Domain production: `tralien.dxvtech.vn` (MiniApp web mirror),
+      `tralienapi.dxvtech.vn` (Backend), `tralienadmin.dxvtech.vn` (AdminWeb) —
+      DNS đã trỏ về VPS, SSL Let's Encrypt đã cấp cho cả 3 (2026-09-11, hết hạn
+      2026-12-10, tự gia hạn).
+- [x] VPS đích: dùng chung VPS với 12 dự án xã khác (như Thăng Điền dùng chung
+      với Đại Lộc) — `123.30.48.104`. Đã tạo `/var/www/tralien` (owner
+      `deploy`), PM2 `tralien` (cổng 3013) + `tralien-backend` (cổng 4000),
+      Nginx 3 site đã cấu hình (2026-09-11).
 - [ ] Logo, banner xã Trà Liên thật — hiện đang là ảnh placeholder 1×1 tại:
       `MiniApp/src/static/logo-tralien.png`, `banner-cong-so.jpg`, `banner-danang.jpg`,
       `Frontend/AdminWeb/src/images/logotralien.jpg`.
@@ -89,8 +90,15 @@ Backend chạy đầy đủ tính năng và lên production. Đánh dấu `[x]` 
 
 ## 6. Seed dữ liệu ban đầu
 
-- [ ] Sau khi có `MONGO_URI` thật: chạy `node Backend/scripts/seed.js` để tạo
-      tài khoản superadmin đầu tiên (`admin` / `Admin@123` — **đổi mật khẩu
-      ngay sau khi đăng nhập lần đầu**) + danh mục phản ánh mặc định.
+- [x] `node Backend/scripts/seed.js` đã chạy (2026-09-11) — tài khoản
+      superadmin `admin` / `Admin@123` (**đổi mật khẩu ngay** — đăng nhập tại
+      https://tralienadmin.dxvtech.vn) + 6 danh mục phản ánh mặc định.
 - [ ] `node Backend/scripts/seed-site-content.js` nếu cần seed nội dung site
       (thông tin liên hệ, giới thiệu...).
+
+## 7. CI/CD
+
+- [x] `.github/workflows/deploy.yml` đã cấu hình đủ secret (`VPS_HOST`,
+      `VPS_DEPLOY_SSH_KEY` — SSH key riêng cho user `deploy`, không dùng mật
+      khẩu root) — mỗi lần `git push` lên `main` tự động `git pull` + build +
+      `pm2 restart` trên VPS (2026-09-11).
