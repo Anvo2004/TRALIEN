@@ -65,13 +65,20 @@ Backend chạy đầy đủ tính năng và lên production. Đánh dấu `[x]` 
 
 ## 4. Tích hợp thành phố (quyết định dùng chung hay tài khoản riêng)
 
-- [ ] **Cổng góp ý 1022** (`gopy.danang.gov.vn`) — đồng bộ phản ánh sang hệ
-      thống thành phố. Thăng Điền dùng chung tài khoản với Đại Lộc; Trà Liên
-      dùng tài khoản riêng hay dùng chung với xã khác? Điền
-      `CGY1022_BASE_URL/USERNAME/PASSWORD` trong `Backend/.env`. Để trống thì
-      tính năng tự tắt (không đồng bộ, không mã theo dõi phản ánh).
-      Sau khi có tài khoản, chạy `node scripts/cgy1022-map-categories.js` để
-      map `CGY1022_LINHVUC_MAP`.
+- [x] **Cổng góp ý 1022** (`gopy.danang.gov.vn`): đã điền
+      `CGY1022_BASE_URL/USERNAME/PASSWORD` (local + VPS), test kết nối thật
+      OK từ cả 2 nơi — `node scripts/probe-cgy1022.js` đọc được dữ liệu thật
+      (2026-09-15). Tài khoản `appdnsmartcity` — **có vẻ là tài khoản dùng
+      chung toàn thành phố** (probe thấy cả dữ liệu phường Hội An), không
+      phải tài khoản riêng của Trà Liên — nên xác nhận lại với đơn vị cấp có
+      đúng ý định dùng chung không. Đã chạy `cgy1022-map-categories.js` và
+      điền `CGY1022_LINHVUC_MAP` (6 danh mục — 2 mục "Y tế - Sức khỏe",
+      "Giáo dục" tạm map về 22 "Lĩnh vực khác" vì script đoán theo từ khoá
+      không khớp, nên rà lại thủ công qua `GET /public/gopy/chude` nếu cần
+      chính xác hơn). **Chưa test đẩy 1 phản ánh thật lên 1022** (cố tình —
+      đây là hệ thống chính quyền thật, không tự ý POST dữ liệu test, xem
+      cảnh báo trong `probe-cgy1022.js`) — sẽ xác nhận qua phản ánh thật đầu
+      tiên của dân, hoặc xã chủ động gửi 1 phản ánh thật để kiểm tra.
 - [ ] **IOCTC** (`tctthc.1022.vn`, tra cứu hồ sơ TTHC) — tương tự, quyết định
       tài khoản riêng/chung, điền `IOCTC_USERNAME/PASSWORD`.
 - [ ] **EVN CPC** (lịch cắt điện) — tra mã đơn vị điện lực phụ trách khu vực
