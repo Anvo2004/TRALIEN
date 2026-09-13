@@ -63,3 +63,14 @@ chạm này.
   `localhost` của chính máy họ, không phải server). Đổi `.env` xong phải
   `npm run build` lại thì mới có hiệu lực (Nginx serve tĩnh, không có gì để
   restart).
+- **Không bao giờ SFTP/ghi trực tiếp 1 file CODE lên `/var/www/tralien` trên
+  VPS trước khi commit nó vào git** (chỉ `.env` — vốn gitignore, không git
+  quản lý — mới an toàn để ghi thẳng). Nếu file đó sau này được commit + push,
+  `git pull` trên VPS sẽ báo lỗi *"untracked working tree files would be
+  overwritten by merge"* và **toàn bộ job deploy CI/CD fail** (đã gặp thật
+  2026-09-15, `.github/workflows/deploy.yml` dùng `set -e` nên 1 bước fail là
+  dừng hết, MiniApp/Backend/AdminWeb đều không được build/restart dù GitHub
+  Actions báo "failure" rõ ràng — cần đọc đúng `conclusion`, không chỉ
+  `status: completed`, khi kiểm tra kết quả run). Cách sửa khi đã lỡ dính:
+  SSH vào, xoá các file untracked trùng tên trên VPS, `git pull` lại, rồi tự
+  chạy lại đúng trình tự trong `deploy.yml`.
