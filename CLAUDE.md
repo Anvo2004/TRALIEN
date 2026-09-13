@@ -55,3 +55,11 @@ chạm này.
   giá trị. Xem [.claude/rules/secrets.md](.claude/rules/secrets.md).
 - MiniApp dùng `memoryRouter` (không phải browser URL router) — lý do giải
   thích trong comment ở `MiniApp/src/app.jsx`.
+- **`Frontend/AdminWeb/.env` (`VITE_API_URL`) được Vite build vào bundle tĩnh
+  lúc `npm run build`, không đọc lại lúc chạy.** Trên VPS, file này PHẢI là
+  domain API thật (`https://tralienapi.dxvtech.vn`), KHÔNG phải
+  `http://localhost:4000` (giá trị đúng cho dev local nhưng sai khi build
+  production — gây lỗi "Đăng nhập thất bại" vì trình duyệt người dùng gọi
+  `localhost` của chính máy họ, không phải server). Đổi `.env` xong phải
+  `npm run build` lại thì mới có hiệu lực (Nginx serve tĩnh, không có gì để
+  restart).
