@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Page, Header, Box } from "zmp-ui";
+import { Page, Header } from "zmp-ui";
+import Icon from "../components/icon.jsx";
 import SERVICES, {
   SERVICE_CATEGORIES,
   SERVICE_PORTAL_LINKS,
@@ -27,123 +28,119 @@ const ServicesPage = () => {
       <Header title="Dịch vụ công" />
 
       <div className="services-hero">
-        <span className="services-hero__icon">🏛️</span>
-        <div className="services-hero__title">Dịch vụ công</div>
-        <div className="services-hero__desc">
-          Thủ tục hành chính &amp; dịch vụ công trực tuyến xã Trà Liên
-        </div>
+        <h1 className="services-hero__title">
+          Dịch vụ công
+          <br />
+          trực tuyến
+        </h1>
+        <p className="services-hero__desc">
+          Thủ tục hành chính xã Trà Liên · nộp hồ sơ 24/7
+        </p>
         <div className="services-hero__badges">
           <div className="services-hero__badge">
-            <div className="services-hero__badge-value">100%</div>
-            <div className="services-hero__badge-label">Mức độ 4</div>
+            <b className="services-hero__badge-value services-hero__badge-value--mint">
+              100%
+            </b>
+            <span className="services-hero__badge-label">Mức độ 4</span>
           </div>
           <div className="services-hero__badge">
-            <div className="services-hero__badge-value">24/7</div>
-            <div className="services-hero__badge-label">Trực tuyến</div>
+            <b className="services-hero__badge-value services-hero__badge-value--amber">
+              24/7
+            </b>
+            <span className="services-hero__badge-label">Trực tuyến</span>
+          </div>
+          <div className="services-hero__badge">
+            <b className="services-hero__badge-value">{SERVICES.length}</b>
+            <span className="services-hero__badge-label">Nhóm dịch vụ</span>
           </div>
         </div>
       </div>
 
-      <Box className="section">
-        <div className="instruction-box">
-          <div className="instruction-box__title">
-            💡 Hướng dẫn sử dụng dịch vụ công trực tuyến
+      <div className="services-steps">
+        <div className="services-steps__head">
+          <Icon name="tips_and_updates" className="i18 amber" />
+          {STEPS.length} bước nộp hồ sơ trực tuyến
+        </div>
+        {STEPS.map((step, index) => (
+          <div className="services-steps__step" key={step}>
+            <span className="services-steps__step-n">{index + 1}</span>
+            <span className="services-steps__step-t">{step}</span>
           </div>
-          <ol className="instruction-box__list">
-            {STEPS.map((step, index) => (
-              <li key={step}>
-                <span className="instruction-box__index">{index + 1}</span>
-                {step}
-              </li>
-            ))}
-          </ol>
-        </div>
+        ))}
+      </div>
 
-        <div className="category-tabs">
-          {SERVICE_CATEGORIES.map((category) => (
-            <button
-              key={category.key}
-              type="button"
-              className={`category-tabs__item ${
-                activeCategory === category.key ? "is-active" : ""
-              }`}
-              onClick={() => setActiveCategory(category.key)}
+      <div className="category-tabs">
+        {SERVICE_CATEGORIES.map((category) => (
+          <button
+            key={category.key}
+            type="button"
+            className={activeCategory === category.key ? "is-active" : ""}
+            onClick={() => setActiveCategory(category.key)}
+          >
+            {category.label}
+          </button>
+        ))}
+      </div>
+
+      <div className="service-list">
+        {filteredServices.map((service) => {
+          const Tag = service.path ? "button" : "div";
+          return (
+            <Tag
+              key={service.title}
+              type={service.path ? "button" : undefined}
+              className="service-list__item"
+              onClick={service.path ? () => navigate(service.path) : undefined}
             >
-              {category.icon ? `${category.icon} ` : ""}
-              {category.label}
-            </button>
-          ))}
-        </div>
+              <span className={`tile tile-${service.color || "b"}`}>
+                <Icon name={service.icon} className="i22" />
+              </span>
+              <h3 className="service-list__title">{service.title}</h3>
+              <span
+                className={`service-list__badge service-list__badge--${service.type}`}
+              >
+                <Icon
+                  name={service.type === "online" ? "cloud_done" : "storefront"}
+                  className="i12"
+                />
+                {service.type === "online" ? "Trực tuyến" : "Trực tiếp"}
+              </span>
+            </Tag>
+          );
+        })}
+      </div>
 
-        <div className="service-list">
-          {filteredServices.map((service) => {
-            const Tag = service.path ? "button" : "div";
-            return (
-              <Tag
-                key={service.title}
-                type={service.path ? "button" : undefined}
-                className="service-list__item"
-                onClick={service.path ? () => navigate(service.path) : undefined}
-              >
-                <span className="service-list__icon">{service.icon}</span>
-                <div className="service-list__title">{service.title}</div>
-                <span
-                  className={`service-list__badge service-list__badge--${service.type}`}
-                >
-                  {service.type === "online" ? "🌐 Trực tuyến" : "🏛️ Trực tiếp"}
-                </span>
-              </Tag>
-            );
-          })}
-        </div>
-      </Box>
-
-      <Box className="section">
-        <div className="section__title">🔗 Cổng dịch vụ công</div>
-        <div className="portal-list">
-          {SERVICE_PORTAL_LINKS.map((link) =>
-            link.path ? (
-              <button
-                key={link.title}
-                type="button"
-                className="portal-list__item"
-                onClick={() => navigate(link.path)}
-              >
-                <span className="portal-list__icon">{link.icon}</span>
-                <div>
-                  <div className="portal-list__title">
-                    {link.title}
-                    {link.badge && (
-                      <span className="portal-list__badge">{link.badge}</span>
-                    )}
-                  </div>
-                  <div className="portal-list__desc">{link.description}</div>
-                </div>
-                <span className="portal-list__arrow">›</span>
-              </button>
-            ) : (
-              <button
-                key={link.title}
-                type="button"
-                className="portal-list__item"
-                onClick={() => openExternal(link.href)}
-              >
-                <span className="portal-list__icon">{link.icon}</span>
-                <div>
-                  <div className="portal-list__title">
-                    {link.title}
-                    {link.badge && (
-                      <span className="portal-list__badge">{link.badge}</span>
-                    )}
-                  </div>
-                  <div className="portal-list__desc">{link.description}</div>
-                </div>
-                <span className="portal-list__arrow">›</span>
-              </button>
-            )
-          )}
-        </div>
-      </Box>
+      <div className="sec-head">
+        <span className="sec-title">
+          <Icon name="hub" className="i19 blue" />Cổng dịch vụ công
+        </span>
+      </div>
+      <div className="listcard">
+        {SERVICE_PORTAL_LINKS.map((link) => (
+          <button
+            key={link.title}
+            type="button"
+            className="prow"
+            onClick={() =>
+              link.path ? navigate(link.path) : openExternal(link.href)
+            }
+          >
+            <span className={`tile sm tile-${link.color || "b"}`}>
+              <Icon name={link.icon} className="i20" />
+            </span>
+            <span className="prow__body">
+              <span className="prow__title">
+                {link.title}
+                {link.badge && (
+                  <em className="prow__badge">{link.badge}</em>
+                )}
+              </span>
+              <span className="prow__desc">{link.description}</span>
+            </span>
+            <Icon name="chevron_right" className="i18 grey" />
+          </button>
+        ))}
+      </div>
     </Page>
   );
 };

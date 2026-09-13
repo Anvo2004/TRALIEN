@@ -1,4 +1,5 @@
 import React from "react";
+import Icon from "./icon.jsx";
 
 const ZaloOACard = ({ oa }) => {
   const name = oa?.name || "Zalo OA xã Trà Liên";
@@ -6,7 +7,10 @@ const ZaloOACard = ({ oa }) => {
 
   return (
     <div className="oa-card">
-      <div className="oa-card__icon">💬</div>
+      <span className="oa-card__blob" />
+      <div className="oa-card__icon">
+        <Icon name="forum" className="i22 mint" />
+      </div>
       <div className="oa-card__body">
         <div className="oa-card__title">Theo dõi {name}</div>
         <div className="oa-card__desc">{description}</div>

@@ -16,9 +16,14 @@ Backend chạy đầy đủ tính năng và lên production. Đánh dấu `[x]` 
       với Đại Lộc) — `123.30.48.104`. Đã tạo `/var/www/tralien` (owner
       `deploy`), PM2 `tralien` (cổng 3013) + `tralien-backend` (cổng 4000),
       Nginx 3 site đã cấu hình (2026-09-11).
-- [ ] Logo, banner xã Trà Liên thật — hiện đang là ảnh placeholder 1×1 tại:
-      `MiniApp/src/static/logo-tralien.png`, `banner-cong-so.jpg`, `banner-danang.jpg`,
-      `Frontend/AdminWeb/src/images/logotralien.jpg`.
+- [x] Logo MiniApp thật — đã cắt tròn từ banner chính thức của xã
+      (`MiniApp/src/images/tralien2.png`, ảnh gốc `TRANG THÔNG TIN ĐIỆN TỬ XÃ
+      TRÀ LIÊN`), thay placeholder 1×1 tại `MiniApp/src/static/logo-tralien.png`
+      (2026-09-13). Đã thêm `MiniApp/src/static/banner-tralien-portal.jpg`
+      (đoạn banner bên phải logo, cùng nguồn) hiển thị trong hero Trang chủ.
+- [ ] `banner-cong-so.jpg`, `banner-danang.jpg` (component `Banner`, hiện
+      không hiển thị ở Trang chủ sau redesign) và
+      `Frontend/AdminWeb/src/images/logotralien.jpg` vẫn là ảnh placeholder.
 
 ## 2. Hạ tầng dữ liệu
 
@@ -40,8 +45,10 @@ Backend chạy đầy đủ tính năng và lên production. Đánh dấu `[x]` 
 
 ## 3. Zalo
 
-- [ ] **Mini App**: đã tạo — App ID `311948135429512948` ("Mini App Xã Trà
-      Liên", trạng thái Dev). Lấy thêm gì cần thiết từ Mini App Console (vd.
+- [x] **Mini App**: đã tạo — App ID `3119481354295122948` ("Mini App Xã Trà
+      Liên", trạng thái Dev), đã điền đúng vào `MiniApp/zmp-cli.json` (giá trị
+      cũ bị thiếu 1 chữ số nên extension VSCode báo lỗi "Liên kết Mini App ID"
+      — đã sửa 2026-09-12). Lấy thêm gì cần thiết từ Mini App Console (vd.
       domain xác minh) khi build production.
 - [ ] **Zalo OA (Official Account)** — KHÁC Mini App, cần đăng ký/liên kết
       riêng: `ZALO_APP_ID`, `ZALO_APP_SECRET`, `ZALO_OA_TOKEN`,
@@ -70,21 +77,52 @@ Backend chạy đầy đủ tính năng và lên production. Đánh dấu `[x]` 
       `Backend/.env.example`). Cũng cần sửa 2 dòng `ORG_CODE`/`SUBORG_CODE`
       placeholder trong `.github/workflows/sync-lich-cup-dien.yml` nếu dùng nút
       chạy tay khẩn cấp.
-- [ ] **Trang TTĐT xã Trà Liên** (tin tức + văn bản-chính sách) — chưa xác
-      nhận URL. Điền `NEWS_SOURCE_URL` và `VAN_BAN_SOURCE_URL` trong
-      `Backend/.env`; nếu Trà Liên dùng cùng CMS với thangdien.danang.gov.vn
-      thì regex parse có sẵn (`newsScrapeService.js`,
-      `vanBanTraLienService.js`, `MiniApp/scripts/scrape-tralien.js`) nhiều
-      khả năng chạy được ngay, khác CMS thì cần sửa lại `blockRe`/`itemRe`.
+- [x] **Trang TTĐT xã Trà Liên — Tin tức**: đã xác nhận URL
+      `https://tralien.danang.gov.vn` (2026-09-14). Trang này dùng portal
+      VNPT (theme "qnm-ubnd", hạ tầng cũ Quảng Nam) — **KHÁC HẲN** CMS
+      "CMS14" của Thăng Điền, nên đã **viết lại toàn bộ** `newsScrapeService.js`
+      (Cheerio, khớp đúng cấu trúc `div.ArticleCat`/`ul.ArticleOfCat` của
+      trang thật) thay vì dùng regex cũ. Đã điền `NEWS_SOURCE_URL=
+      https://tralien.danang.gov.vn/tin-tuc` và chạy sync thật — 304 tin thật
+      đã vào DB, ảnh nhúng thẳng từ nguồn (không cần re-host Cloudinary, ảnh
+      nguồn khai đúng Content-Type).
+- [ ] **Trang TTĐT xã Trà Liên — Văn bản**: `vanBanTraLienService.js` vẫn viết
+      cho pattern DotNetNuke/Telerik RadGrid (`tr.rgRow`) của CMS Thăng Điền —
+      **chưa kiểm chứng/viết lại** cho portal VNPT của Trà Liên (ngoài phạm vi
+      lần sửa 2026-09-14, chỉ mới làm Tin tức/Văn hóa/Du lịch). Menu "Văn Bản"
+      thật có các mục `/van-ban-dang-uy`, `/van-ban-hdnd`, `/van-ban-ubnd` —
+      cần đọc cấu trúc HTML thật trước khi viết lại, như đã làm với Tin tức.
+- [x] **Văn hóa & Du lịch**: nội dung mẫu Thăng Điền (chợ/đình làng/lễ hội
+      miền biển) đã bị xoá (không áp dụng cho Trà Liên — xã miền núi, đồng
+      bào Cor >49% dân số). Đã thay bằng nội dung thật đọc từ chuyên mục
+      "Y Tế - Văn Hóa - Xã Hội - KHCN" của trang TTĐT (2026-09-14): cồng
+      chiêng, nghề đan lát Tăk Kót, lễ hội Sắc Xuân Làng Co, di tích/di sản
+      "Không gian văn hóa đồng bào Co", điểm du lịch Dội Bà Bình — xem
+      `Backend/scripts/seed-site-content.js` (`DU_LICH`/`VAN_HOA`, có kèm
+      `link` bài gốc để đối chiếu).
+- [ ] **Thôn xóm**: `Village` collection đang để **trống** — 12 thôn mẫu của
+      Thăng Điền đã xoá vì sai xã, nhưng chưa có danh sách thôn thật của Trà
+      Liên kèm tên bí thư/thôn trưởng/mặt trận để seed lại (mới biết tên 1 số
+      thôn qua tin tức: Tăk Kót, Tăk Ngưi, Tăk Nú, Làng Gạch, Phương Đông,
+      Định Yên, Ba Hương — chưa đủ dữ liệu lãnh đạo thôn).
+- [x] **Địa chỉ trụ sở UBND**: phát hiện lệch giữa thẻ thông tin Google
+      ("Thôn Định Yên... Trụ sở Xã Trà Đông cũ") và trang "Giới thiệu chung"
+      chính thức ("Thôn Phương Đông") — đã ưu tiên dùng nguồn chính thức
+      (2026-09-14). Đã thêm email thật `ubndxatralien@danang.gov.vn` (thay
+      `TODO`) và thông tin Chủ tịch UBND (Nguyễn Hồng Vương) vào
+      `SiteInfo.contact` — **chưa có UI hiển thị** tên chủ tịch ở MiniApp,
+      chỉ mới lưu dữ liệu.
 
 ## 5. AI & tiện ích khác
 
 - [ ] Anthropic API key cho Trợ lý số (`ANTHROPIC_API_KEY` trong
       `Backend/.env`, lấy tại console.anthropic.com). Để trống thì mục "Trợ lý
       số"/chatbot tự tắt (503).
-- [ ] 4 link "Nhóm liên kết dịch vụ" còn thiếu URL thật trong
-      `MiniApp/src/data/quick-links.js` (đánh dấu `TODO_LINK_...`): hẹn giờ
-      Cổng Dịch vụ công, đăng ký hộ kinh doanh, đăng ký hộ khẩu, bảng giá đất.
+- [x] Đã điền link thật cho các mục "Tiện ích nhanh" trong
+      `MiniApp/src/data/quick-links.js` (2026-09-14): Khảo sát hài lòng, Cổng
+      dữ liệu (`congdulieu.vn`), thêm mới "DaNang AI". Bỏ hẳn 4 icon "Hẹn giờ
+      DVC"/"Đăng ký hộ KD"/"Đăng ký hộ khẩu"/"Bảng giá đất" theo yêu cầu xã
+      (không dùng nữa, không phải thiếu link).
       Link "UBND xã" trong `MiniApp/src/data/services.js`
       (`TODO_LINK_TRANG_TTDT_XA`) dùng chung URL với mục 4.
 

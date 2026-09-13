@@ -12,143 +12,152 @@ const DuLich = require("../src/models/DuLich");
 const VanHoa = require("../src/models/VanHoa");
 const SiteInfo = require("../src/models/SiteInfo");
 
-const VILLAGES = [
-  { ten: "Thôn Bình Trung", biThu: "Xa Hữu Hoàng", thonTruong: "Nguyễn Trung Phương", matTran: "Bùi Thị Tường" },
-  { ten: "Thôn Kế Xuyên", biThu: "Võ Đăng Triều", thonTruong: "Ngô Thanh Tài", matTran: "Trần Hữu Lộc" },
-  { ten: "Thôn Xuân Phú", biThu: "Ngô Thị Nguyện", thonTruong: "Nguyễn Thành Thu", matTran: "Ngô Thị Mỹ Lan" },
-  { ten: "Thôn Trà Long", biThu: "Lý Ngọc Tuyến", thonTruong: "", matTran: "Ngô Thị Thùy Ngân" },
-  { ten: "Thôn Bình An", biThu: "Nguyễn Thị Hợi", thonTruong: "Trần Ngọc Nhi", matTran: "Hồ Thị Tùng Thao" },
-  { ten: "Thôn An Thành", biThu: "Phạm Văn Liên", thonTruong: "Ngô Ngọc Luyến", matTran: "Huỳnh Thị Ngọc Linh" },
-  { ten: "Thôn An Thành 1", biThu: "Trần Văn Nhân", thonTruong: "Đỗ Thanh Trinh", matTran: "Trần Thị Hương" },
-  { ten: "Thôn Phước Mỹ", biThu: "Đinh Hương", thonTruong: "Bùi Vương Quốc", matTran: "Nguyễn Tấn Lân" },
-  { ten: "Thôn Phước An", biThu: "Trịnh Xuân A", thonTruong: "Kiều Thị Hoàng Ánh", matTran: "Phan Thị Kim Nguyệt" },
-  { ten: "Thôn Tú Ngọc", biThu: "Võ Quốc Dũng", thonTruong: "Phan Tấn Mỹ", matTran: "Ngô Thị Hồng Tuyết" },
-  { ten: "Thôn Bình Tú", biThu: "Nguyễn Văn Anh", thonTruong: "Nguyễn Minh Thắng", matTran: "Lê Thị Hồng Nhung" },
-  { ten: "Thôn Nghĩa Phương", biThu: "Nguyễn Văn Phát", thonTruong: "Võ Đức Quý", matTran: "Trần Thị Diệu" },
-];
+// TODO: danh sách thôn thật của Trà Liên (sau sáp nhập Trà Đông + Trà Nú +
+// Trà Kót) chưa có đủ tên bí thư/thôn trưởng/mặt trận để seed — 12 thôn cũ
+// bên dưới là của Thăng Điền, đã xoá vì sai xã (xem git blame nếu cần đối
+// chiếu). Để trống tới khi có danh sách thật, không suy đoán.
+const VILLAGES = [];
 
+// Nguồn: thông tin hành chính xã Trà Liên (Google, 2026-09) — xã sáp nhập từ
+// Trà Đông + Trà Nú + Trà Kót (thuộc huyện Bắc Trà My cũ).
 const DAN_SO = {
-  tongDanSo: 42280,
-  dienTichKm2: 61.59,
-  soThon: 12,
+  tongDanSo: 7052,
+  dienTichKm2: 178.15,
+  soThon: null, // TODO: chưa xác nhận số thôn thực tế sau sáp nhập
   hoDan: null,
   gioiTinh: null,
   doTuoi: null,
 };
 
+// Nguồn: bài viết thật trên tralien.danang.gov.vn (chuyên mục "Y Tế - Văn
+// Hóa - Xã Hội - KHCN"), đọc + tóm tắt lại 2026-09-14 — xem `link` mỗi mục để
+// đối chiếu bài gốc. Trà Liên là xã miền núi, đồng bào dân tộc Cor chiếm hơn
+// 49% dân số (tập trung tại Tăk Kót, Tăk Ngưi, Tăk Nú, Làng Gạch) — nội dung
+// Du lịch/Văn hóa xoay quanh bản sắc Cor, KHÔNG áp dụng nội dung Thăng Điền
+// (chợ/đình làng/lễ hội miền biển) đã xoá trước đó.
 const DU_LICH = {
   title: "Du lịch - Danh thắng",
-  subtitle: "Khám phá nét đẹp làng quê & tiềm năng du lịch sinh thái xã Trà Liên",
+  subtitle: "Khám phá thiên nhiên & bản sắc văn hóa Cor vùng cao Trà Liên",
   diemNoiBat: [
-    { id: 1, icon: "🏪", title: "Chợ Kế Xuyên", subtitle: "Trung tâm thương mại truyền thống" },
-    { id: 2, icon: "🛣️", title: "Đường Võ Chí Công", subtitle: "Trục kết nối giao thông du lịch" },
-    { id: 3, icon: "🌾", title: "Du lịch sinh thái", subtitle: "Trải nghiệm nông thôn Trà Liên" },
+    { id: 1, icon: "🏞️", title: "Dội Bà Bình", subtitle: "Cảnh đẹp sinh thái, tiềm năng du lịch" },
+    { id: 2, icon: "🏘️", title: "Bản làng đồng bào Cor", subtitle: "Tăk Kót - Tăk Ngưi - Tăk Nú - Làng Gạch" },
+    { id: 3, icon: "🧺", title: "Làng nghề đan lát", subtitle: "Nghề thủ công truyền thống dân tộc Cor" },
   ],
   diemThamQuan: [
     {
       id: 1,
-      title: "Chợ Kế Xuyên & Khu trung tâm thương mại Trà Liên",
-      desc: "Khu chợ truyền thống sầm uất gắn liền với lịch sử phát triển kinh tế - văn hóa của xã Trà Liên, tập trung nhiều nông sản OCOP và ẩm thực đặc trưng địa phương.",
-      address: "Thôn Kế Xuyên, xã Trà Liên, TP. Đà Nẵng",
+      title: "Dội Bà Bình",
+      desc: "Cảnh đẹp sở hữu tiềm năng phát triển du lịch sinh thái lý tưởng của xã. Hạ tầng giao thông kết nối còn hạn chế — chính quyền xã đang vận động người dân hiến đất, mở đường để sớm đưa vào khai thác.",
+      address: "Xã Trà Liên, TP. Đà Nẵng (đang hoàn thiện đường vào)",
       image: null,
+      link: "https://tralien.danang.gov.vn/y-te-van-hoa-xa-hoi-khcn/xa-tra-lien-kiem-tra-phat-trien-du-lich-va-van-dong-hien-dat-mo-duong-tai-doi-ba-binh-339263",
     },
     {
       id: 2,
-      title: "Đình làng & Chùa Kế Xuyên",
-      desc: "Quần thể di tích văn hóa tâm linh lâu đời, không gian yên bình mộc mạc lưu giữ nét đẹp kiến trúc cổ truyền thống.",
-      address: "Thôn Kế Xuyên 1, xã Trà Liên, TP. Đà Nẵng",
+      title: "Bản làng đồng bào Cor Tăk Kót - Tăk Ngưi",
+      desc: "Nơi cư trú tập trung của đồng bào dân tộc Cor (hơn 49% dân số xã), còn lưu giữ nghề đan lát thủ công, nghệ thuật cồng chiêng và các nghi lễ dân gian truyền thống như lễ cầu mưa, dựng cây nêu.",
+      address: "Thôn Tăk Kót, Tăk Ngưi, xã Trà Liên, TP. Đà Nẵng",
       image: null,
-    },
-    {
-      id: 3,
-      title: "Khu di tích lịch sử Lăng Bà Phô Thị",
-      desc: "Di tích lịch sử - văn hóa ghi dấu truyền thống tri ân tiền hiền, không gian thanh tịnh thu hút du khách tìm hiểu văn hóa dân gian.",
-      address: "xã Trà Liên, TP. Đà Nẵng",
-      image: null,
-    },
-    {
-      id: 4,
-      title: "Tuyến du lịch sinh thái - Nông nghiệp trải nghiệm",
-      desc: "Không gian làng quê yên bình, vùng sản xuất nông nghiệp chất lượng cao kết hợp trải nghiệm cảnh quan cánh đồng và đời sống nông thôn Trà Liên.",
-      address: "Các thôn trên địa bàn xã Trà Liên",
-      image: null,
+      link: "https://tralien.danang.gov.vn/y-te-van-hoa-xa-hoi-khcn/trung-bay-chuyen-de-khong-gian-van-hoa-dong-bao-co-di-san-song-giua-dai-ngan-dien-ra-tu-ngay-29--340664",
     },
   ],
 };
 
 const VAN_HOA = {
   title: "Văn hóa - Nghệ thuật",
-  subtitle: "Bảo tồn & phát huy bản sắc văn hóa truyền thống xã Trà Liên",
+  subtitle: "Bản sắc văn hóa đồng bào Cor giữa đại ngàn Trà Liên",
   hoatDong: [
     {
       id: 1,
-      icon: "🚣",
-      title: "Lễ hội Đua thuyền truyền thống",
-      desc: "Lễ hội văn hóa tín ngưỡng dân gian quy mô cấp xã, nét đẹp truyền thống cầu cho quốc thái dân an, mưa thuận gió hòa.",
+      icon: "🥁",
+      title: "Cồng chiêng & đấu chiêng đôi",
+      desc: "Nghệ thuật cồng chiêng, đàn, sáo, điệu múa k'đtấu và đấu chiêng đôi — di sản văn hóa đặc trưng gắn với lễ hội, nghi lễ dân gian của đồng bào Cor.",
     },
     {
       id: 2,
-      icon: "🏛️",
-      title: "Lễ cúng Kỳ Yên Đình làng Kế Xuyên",
-      desc: 'Sự kiện văn hóa tâm linh sâu sắc, tôn vinh đạo lý "Uống nước nhớ nguồn" và tri ân các bậc tiền nhân khai hoang lập thôn.',
+      icon: "🧺",
+      title: "Nghề đan lát truyền thống",
+      desc: "Người Cor đan gùi, rổ, rá từ tre, giang, nứa, lùng, mây khai thác từ rừng địa phương — nghề thủ công gắn bó qua nhiều thế hệ tại thôn Tăk Kót.",
     },
     {
       id: 3,
-      icon: "🎨",
-      title: "Ngày hội Văn hóa - Thể thao Nông thôn mới",
-      desc: "Sân chơi văn hóa thể thao quy tụ nghệ nhân, vận động viên các thôn thi tài, giao lưu văn nghệ dân gian.",
+      icon: "🎉",
+      title: "Ngày hội Sắc Xuân Làng Co",
+      desc: "Tái hiện nét đẹp văn hóa Tết cổ truyền của đồng bào Cor qua trò chơi dân gian và văn nghệ, giáo dục thế hệ trẻ tình yêu bản sắc dân tộc.",
     },
     {
       id: 4,
-      icon: "🌾",
-      title: "Bảo tồn Làng nghề & Sản phẩm OCOP",
-      desc: "Hoạt động duy trì, quảng bá các làng nghề thủ công và sản phẩm nông nghiệp OCOP đặc trưng xã Trà Liên.",
+      icon: "🙏",
+      title: "Nghi lễ dân gian truyền thống",
+      desc: "Lễ cầu mưa, phục dựng cây nêu — các nghi lễ độc đáo phản ánh sự hài hòa giữa con người Cor với thiên nhiên núi rừng.",
     },
   ],
   diSan: [
-    { id: 1, icon: "🏅", title: "Đình làng Kế Xuyên", subtitle: "Di tích lịch sử - văn hóa cấp tỉnh • Kiến trúc nghệ thuật truyền thống" },
-    { id: 2, icon: "🏅", title: "Khu di tích Lăng Bà Phô Thị", subtitle: "Di tích lịch sử công nhận • Văn hóa tâm linh lâu đời" },
-    { id: 3, icon: "🏅", title: "Địa đạo & Căn cứ cách mạng Bình An", subtitle: "Di tích lịch sử kháng chiến • Ghi dấu truyền thống cách mạng" },
-    { id: 4, icon: "🏅", title: "Lễ hội Đua thuyền & Cầu ngư truyền thống", subtitle: "Di sản văn hóa phi vật thể địa phương • Nét đẹp văn hóa sông nước" },
-    { id: 5, icon: "🏅", title: "Nghệ thuật Bài chòi & Dân ca miền Trung", subtitle: "Di sản văn hóa phi vật thể • Sinh hoạt văn hóa cộng đồng" },
+    { id: 1, icon: "🏅", title: "Không gian văn hóa đồng bào Co", subtitle: "Di sản sống giữa đại ngàn • Tập trung tại thôn Tăk Kót, Tăk Ngưi, Tăk Nú, Làng Gạch" },
+    { id: 2, icon: "🏅", title: "Nghệ thuật cồng chiêng, múa k'đtấu", subtitle: "Di sản văn hóa phi vật thể • Nghệ nhân Ưu tú Dương Lai (thôn Tăk Kót) gìn giữ, truyền dạy" },
+    { id: 3, icon: "🏅", title: "Nghề đan lát thủ công dân tộc Cor", subtitle: "Nghề truyền thống • Tiêu biểu: ông Phạm Lâm, bà Võ Thị Thủy (thôn Tăk Kót)" },
   ],
   diemNoiBat: [
-    { id: 1, icon: "🏛️", name: "Đình làng Kế Xuyên" },
-    { id: 2, icon: "🏪", name: "Chợ Kế Xuyên" },
-    { id: 3, icon: "🏯", name: "Lăng Bà Phô Thị" },
-    { id: 4, icon: "🚩", name: "Căn cứ Bình An" },
-    { id: 5, icon: "⛩️", name: "Chùa Kế Xuyên" },
-    { id: 6, icon: "🎭", name: "Trung tâm VH-TT Trà Liên" },
+    { id: 1, icon: "🥁", name: "Cồng chiêng Cor" },
+    { id: 2, icon: "🧺", name: "Đan lát Tăk Kót" },
+    { id: 3, icon: "🎊", name: "Sắc Xuân Làng Co" },
+    { id: 4, icon: "⛰️", name: "Bản làng Tăk Ngưi" },
   ],
   tinTuc: [
     {
-      id: 101,
+      id: 1,
       tag: "Văn hóa",
-      date: "15/12/2026",
-      title: "Xã Trà Liên tập huấn công tác chuyển đổi số, kỹ năng số cho cán bộ và tổ công nghệ số cộng đồng",
-      summary: "Phòng Văn hóa - Xã hội, UBND xã Trà Liên tổ chức tập huấn nâng cao kỹ năng số, bảo tồn di sản và đẩy mạnh chính quyền số...",
+      date: "29/05/2026",
+      title: "Trưng bày chuyên đề \"Không gian văn hóa đồng bào Co – Di sản sống giữa đại ngàn\"",
+      summary: "Trưng bày diễn ra từ 29/5–1/6/2026 tại xã Trà Liên, giới thiệu không gian văn hóa của đồng bào Cor — dân tộc chiếm hơn 49% dân số xã.",
       source: "UBND xã Trà Liên",
+      link: "https://tralien.danang.gov.vn/y-te-van-hoa-xa-hoi-khcn/trung-bay-chuyen-de-khong-gian-van-hoa-dong-bao-co-di-san-song-giua-dai-ngan-dien-ra-tu-ngay-29--340664",
     },
     {
-      id: 102,
+      id: 2,
       tag: "Văn hóa",
-      date: "08/04/2026",
-      title: "Hội LHPN xã Trà Liên tổ chức chương trình Mẹ đỡ đầu - Trao yêu thương",
-      summary: "Hội LHPN xã Trà Liên tổ chức trao quà và nhận đỡ đầu các em nhỏ có hoàn cảnh khó khăn trên địa bàn xã...",
+      date: "",
+      title: "Tôn vinh đóng góp của nghệ nhân dân gian Dương Lai ở xã Trà Liên",
+      summary: "Nghệ nhân Ưu tú Dương Lai (62 tuổi, thôn Tăk Kót) — người gìn giữ nghệ thuật cồng chiêng, cây nêu và các làn điệu dân ca của đồng bào Cor.",
       source: "UBND xã Trà Liên",
+      link: "https://tralien.danang.gov.vn/y-te-van-hoa-xa-hoi-khcn/ton-vinh-dong-gop-cua-nghe-nhan-dan-gian-duong-lai-o-xa-tra-lien-324478",
+    },
+    {
+      id: 3,
+      tag: "Văn hóa",
+      date: "",
+      title: "Người phụ nữ dân tộc Cor giữ lửa nghề đan lát ở xã vùng cao Trà Liên",
+      summary: "Bà Võ Thị Thủy (thôn 1, xã Trà Liên) gắn bó với nghề đan lát thủ công từ thuở nhỏ, gìn giữ nghề truyền thống của đồng bào Cor.",
+      source: "UBND xã Trà Liên",
+      link: "https://tralien.danang.gov.vn/y-te-van-hoa-xa-hoi-khcn/nguoi-phu-nu-dan-toc-cor-giu-lua-nghe-dan-lat-o-xa-vung-cao-tra-lien-324356",
     },
   ],
 };
 
+// Địa chỉ trụ sở lấy theo trang "Giới thiệu chung" tại tralien.danang.gov.vn
+// (nguồn chính thức của xã) — "Thôn Phương Đông", KHÁC với "Thôn Định Yên"
+// trên thẻ thông tin Google trước đó. Ưu tiên trang chính thức, giữ lại
+// Định Yên trong ngoặc để đối chiếu nếu cần xác minh thêm.
 const SITE_INFO = {
   contact: {
-    officeName: "Trụ sở UBND xã Trà Liên",
-    address: "Thôn Kế Xuyên 2, xã Trà Liên, thành phố Đà Nẵng",
-    phone: "0905129866",
-    hotline: "0905129866",
-    email: "TODO",
+    officeName: "UBND xã Trà Liên",
+    address: "Thôn Phương Đông, xã Trà Liên, TP Đà Nẵng",
+    phone: "0987368258",
+    hotline: "0987368258",
+    hotline2: "0368259119", // số thứ 2 của Trụ sở UBND và TT PV HCC
+    email: "ubndxatralien@danang.gov.vn",
     website: "tralien.danang.gov.vn",
     workHours: "Thứ 2 - Thứ 6: 7h30 - 17h00\nSáng: 7h30-11h30 | Chiều: 13h30-17h00",
+    chairman: {
+      name: "Nguyễn Hồng Vương",
+      title: "Chủ tịch UBND xã Trà Liên",
+      phone: "0968078959",
+    },
+    policeStation: {
+      name: "Công an xã Trà Liên",
+      address: "Thôn 2 (Trà Nú), xã Trà Liên",
+      phone: "02353893338",
+    },
   },
   zaloOA: {
     name: "Zalo OA xã Trà Liên",

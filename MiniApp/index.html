@@ -4,6 +4,21 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <title>Công dân số xã Trà Liên</title>
+    <!--
+      Material Symbols Rounded ĐÃ BỎ khỏi link này — icon giờ tự host bằng
+      SVG (components/icon.jsx, data/icon-paths.js) vì WebView thật của Zalo
+      Mini App chặn font tải từ Google Fonts (icon hiện ra thành chữ, xem
+      panel "Deploy (development)" trong extension). Be Vietnam Pro giữ lại
+      cho preview trình duyệt; trên máy thật nhiều khả năng cũng bị chặn
+      tương tự và tự rơi về font hệ thống trong `body` (app.scss) — không vỡ
+      giao diện như icon, chỉ khác font chữ đôi chút.
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
     <div id="app"></div>

@@ -2,19 +2,181 @@
   box-sizing: border-box;
 }
 
-body {
-  margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial,
-    sans-serif;
-  background: #f4f5f7;
-}
-
 $blue: #1a73e8;
 $blue-dark: #0d47a1;
 $blue-light: #4f9bff;
+// Theme mới (2026) — theo đúng mẫu thiết kế do user cung cấp (export HTML/CSS
+// "Mobile app UI redesign project"): xanh dương hoàng gia → tím làm màu
+// thương hiệu, xanh mint làm màu nhấn cho CTA nổi bật.
+$accent: #2b5cff;
+$accent-2: #5b2bff;
+$mint: #00d3a7;
+$gradient-brand: linear-gradient(135deg, $accent 0%, $accent-2 100%);
+// Gradient riêng theo từng hero — lấy đúng từ mẫu (home/services/contact mỗi
+// trang 1 tông khác nhau, không dùng chung 1 gradient).
+$gradient-hero-home: linear-gradient(135deg, $accent 0%, $accent-2 55%, #6a2bd9 100%);
+$gradient-hero-services: linear-gradient(135deg, #0c1330 0%, #22307a 55%, $accent 120%);
+$gradient-hero-contact: linear-gradient(135deg, #00a88b 0%, #0c7f9e 55%, $accent 130%);
+$gradient-oa-card: linear-gradient(120deg, #0c1330 0%, #1b2a6b 60%, $accent 130%);
 // zaui-header is position:fixed and reserves no layout space (44px + safe-area),
 // so the first section on any page using <Header> must pad itself down to clear it.
 $header-clearance: calc(var(--zaui-safe-area-inset-top, 0px) + 44px);
+
+body {
+  margin: 0;
+  font-family: "Be Vietnam Pro", -apple-system, BlinkMacSystemFont, "Segoe UI",
+    Roboto, Arial, sans-serif;
+  background: #f4f5f7;
+}
+
+/* Icon Material Symbols Rounded — render bằng SVG tự host qua component
+   Icon (xem components/icon.jsx), KHÔNG dùng font ngoài (WebView thật của
+   Zalo Mini App chặn font tải từ Google Fonts). Các lớp .iNN đặt font-size
+   trên chính SVG để width/height="1em" ăn theo, lớp màu ăn theo currentColor. */
+.ms {
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+.ms.i12 {
+  font-size: 12px;
+}
+.ms.i13 {
+  font-size: 13px;
+}
+.ms.i16 {
+  font-size: 16px;
+}
+.ms.i17 {
+  font-size: 17px;
+}
+.ms.i18 {
+  font-size: 18px;
+}
+.ms.i19 {
+  font-size: 19px;
+}
+.ms.i20 {
+  font-size: 20px;
+}
+.ms.i21 {
+  font-size: 21px;
+}
+.ms.i22 {
+  font-size: 22px;
+}
+.ms.i23 {
+  font-size: 23px;
+}
+.ms.i24 {
+  font-size: 24px;
+}
+.ms.i26 {
+  font-size: 26px;
+}
+.ms.i28 {
+  font-size: 28px;
+}
+.ms.mint {
+  color: $mint;
+}
+.ms.amber {
+  color: #d08a00;
+}
+.ms.blue {
+  color: $accent;
+}
+.ms.pink {
+  color: #ff5d8f;
+}
+.ms.green {
+  color: #00a88b;
+}
+.ms.grey {
+  color: #c3c9db;
+}
+
+/* Ô icon màu — component icon dùng chung cho quick-links, service-list,
+   portal-list, office-card, connect-grid, notice-card, oa-card (đúng theo
+   mẫu thiết kế, tránh lặp code icon vuông bo góc ở từng nơi) */
+.tile {
+  width: 46px;
+  height: 46px;
+  border-radius: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+
+  &.sm {
+    width: 36px;
+    height: 36px;
+    border-radius: 13px;
+  }
+
+  &.xs {
+    width: 32px;
+    height: 32px;
+    border-radius: 11px;
+  }
+}
+.tile-b {
+  background: #eef2ff;
+  color: $accent;
+}
+.tile-g {
+  background: #e7fbf5;
+  color: #00a88b;
+}
+.tile-c {
+  background: #e8f4ff;
+  color: #0c7f9e;
+}
+.tile-v {
+  background: #f0ebff;
+  color: #6a2bd9;
+}
+.tile-p {
+  background: #ffecf2;
+  color: #ff5d8f;
+}
+.tile-a {
+  background: #fff6e0;
+  color: #d08a00;
+}
+.tile-o {
+  background: #fff1e8;
+  color: #ff7a33;
+}
+.tile-n {
+  background: #f2f4fa;
+  color: #404863;
+}
+
+/* Tiêu đề khối (Tiện ích nhanh/Tin tức/Thông báo...) — dùng riêng cho 3 trang
+   redesign, tách khỏi .section__header dùng chung ở các trang khác để không
+   ảnh hưởng phần chưa đổi giao diện */
+.sec-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 18px 10px;
+}
+.sec-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+  margin: 0;
+  color: #0c1330;
+}
+.sec-link {
+  font-size: 11.5px;
+  font-weight: 600;
+  color: $accent;
+}
 
 .layout {
   display: flex;
@@ -25,9 +187,66 @@ $header-clearance: calc(var(--zaui-safe-area-inset-top, 0px) + 44px);
     flex: 1;
     padding-bottom: 64px;
   }
+}
 
-  &__tab-icon {
-    font-size: 20px;
+/* Bottom nav tự viết (thay zmp-ui BottomNavigation mặc định) — thanh nổi bo
+   tròn, kính mờ, tab active hiện icon trong khung gradient (đúng mẫu) */
+.bottom-nav {
+  position: fixed;
+  left: 12px;
+  right: 12px;
+  bottom: calc(12px + var(--zaui-safe-area-inset-bottom, 0px));
+  z-index: 10;
+  height: 68px;
+  padding: 0 6px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  align-items: center;
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.82);
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 18px 36px -14px rgba(12, 19, 48, 0.35);
+
+  &__item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 8px 0;
+    border: none;
+    background: none;
+    font-family: inherit;
+    color: #9aa1b8;
+  }
+
+  &__icon {
+    width: 44px;
+    height: 30px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.25s ease;
+  }
+
+  &__label {
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: -0.1px;
+  }
+
+  &__item.is-active {
+    color: #1b2038;
+  }
+
+  &__item.is-active &__icon {
+    color: #fff;
+    background: $gradient-brand;
+  }
+
+  &__item.is-active &__label {
+    font-weight: 700;
   }
 }
 
@@ -106,6 +325,146 @@ $header-clearance: calc(var(--zaui-safe-area-inset-top, 0px) + 44px);
   }
 }
 
+/* Home hero — logo + tên xã + ô tìm kiếm, theo đúng mẫu thiết kế (blob trang
+   trí + kính mờ cho ô tìm kiếm). StatsRow nằm NGOÀI khối này, đè lên mép dưới
+   bằng margin âm — xem .stats-row. */
+.home-hero {
+  position: relative;
+  overflow: hidden;
+  padding: 12px 16px 58px;
+  background: $gradient-hero-home;
+  color: #fff;
+
+  &__blob {
+    position: absolute;
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    filter: blur(6px);
+    pointer-events: none;
+
+    &--mint {
+      top: -40px;
+      right: -30px;
+      background: radial-gradient(circle, rgba(0, 211, 167, 0.55), transparent 70%);
+    }
+
+    &--amber {
+      bottom: 20px;
+      left: -50px;
+      width: 160px;
+      height: 160px;
+      background: radial-gradient(circle, rgba(255, 180, 58, 0.35), transparent 70%);
+    }
+  }
+
+  &__top {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  &__logo {
+    position: relative;
+    width: 52px;
+    height: 52px;
+    border-radius: 18px;
+    background: rgba(255, 255, 255, 0.18);
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+
+    img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+  }
+
+  &__title {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 800;
+    letter-spacing: -0.4px;
+  }
+
+  &__subtitle {
+    margin: 5px 0 0;
+    font-size: 11.5px;
+    font-weight: 500;
+    opacity: 0.75;
+  }
+
+  &__search {
+    position: relative;
+    display: flex;
+    gap: 8px;
+    margin-top: 16px;
+  }
+
+  &__search-input {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 10px 12px;
+    border-radius: 14px;
+    font-size: 12px;
+    font-weight: 500;
+    color: rgba(255, 255, 255, 0.85);
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    backdrop-filter: blur(10px);
+
+    input {
+      flex: 1;
+      min-width: 0;
+      border: none;
+      outline: none;
+      background: none;
+      font-size: 12px;
+      font-weight: 500;
+      color: #fff;
+      font-family: inherit;
+
+      &::placeholder {
+        color: rgba(255, 255, 255, 0.75);
+      }
+    }
+  }
+
+  &__qr {
+    flex-shrink: 0;
+    width: 42px;
+    border-radius: 14px;
+    border: none;
+    background: $mint;
+    color: #04352c;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 8px 18px -6px rgba(0, 211, 167, 0.8);
+  }
+
+  &__banner {
+    position: relative;
+    margin-top: 14px;
+    border-radius: 14px;
+    overflow: hidden;
+    line-height: 0;
+
+    img {
+      width: 100%;
+      height: auto;
+      display: block;
+    }
+  }
+}
+
 /* Banner */
 .banner {
   position: relative;
@@ -176,13 +535,17 @@ $header-clearance: calc(var(--zaui-safe-area-inset-top, 0px) + 44px);
   }
 }
 
-/* Stats row */
+/* Stats row — thẻ trắng nổi đè lên mép dưới .home-hero bằng margin âm (đúng
+   hiệu ứng "statcard" trong mẫu thiết kế), KHÔNG nằm trong khối gradient */
 .stats-row {
+  position: relative;
+  margin: -42px 12px 0;
+  padding: 14px 8px;
+  background: #fff;
+  border-radius: 22px;
+  box-shadow: 0 14px 34px -14px rgba(12, 19, 48, 0.28);
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-  padding: 16px;
-  background: linear-gradient(135deg, $blue, $blue-dark);
 
   &--three {
     grid-template-columns: repeat(3, 1fr);
@@ -191,15 +554,25 @@ $header-clearance: calc(var(--zaui-safe-area-inset-top, 0px) + 44px);
   }
 
   &__item {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 10px;
-    padding: 10px 4px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 3px;
+    padding: 0 2px;
     text-align: center;
-    color: #fff;
+    color: #0c1330;
+    border-right: 1px solid #eef1f8;
+
+    &:last-child {
+      border-right: none;
+    }
 
     .stats-row--three & {
       background: #eef3fc;
       color: #1a1a1a;
+      border-radius: 10px;
+      padding: 10px 4px;
+      border-right: none;
     }
 
     &--success {
@@ -216,56 +589,58 @@ $header-clearance: calc(var(--zaui-safe-area-inset-top, 0px) + 44px);
   }
 
   &__value {
-    font-size: 18px;
-    font-weight: 700;
+    font-size: 16px;
+    font-weight: 800;
+    letter-spacing: -0.4px;
   }
 
   &__label {
-    font-size: 11px;
-    opacity: 0.9;
-    margin-top: 2px;
+    font-size: 9.5px;
+    font-weight: 600;
+    color: #8a90a8;
 
     .stats-row--three & {
       opacity: 0.7;
+      color: inherit;
     }
   }
 }
 
-/* Quick links grid */
+/* Quick links grid — cả lưới nằm trong 1 thẻ trắng (đúng mẫu thiết kế) */
 .quick-links {
+  margin: 0 12px;
+  padding: 16px 10px 6px;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 10px 26px -16px rgba(12, 19, 48, 0.25);
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 12px;
+  row-gap: 16px;
 
   &__item {
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 100%;
-    gap: 6px;
-    background: #fff;
+    gap: 7px;
+    background: none;
     border: none;
-    border-radius: 12px;
-    padding: 12px 4px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
-  }
+    padding: 0;
+    transition: transform 0.15s ease;
 
-  &__icon {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    font-size: 24px;
-    line-height: 1;
+    &:active {
+      transform: scale(0.93);
+    }
   }
 
   &__label {
     width: 100%;
-    font-size: 11px;
+    font-size: 10px;
+    font-weight: 600;
     text-align: center;
-    color: #333;
-    line-height: 1.3;
+    color: #404863;
+    line-height: 1.25;
+    height: 24px;
   }
 }
 
@@ -275,7 +650,7 @@ $header-clearance: calc(var(--zaui-safe-area-inset-top, 0px) + 44px);
   display: flex;
   align-items: center;
   gap: 12px;
-  background: linear-gradient(135deg, $blue-dark, $blue);
+  background: $gradient-brand;
   color: #fff;
   border-radius: 12px;
   padding: 14px;
@@ -312,6 +687,15 @@ $header-clearance: calc(var(--zaui-safe-area-inset-top, 0px) + 44px);
   gap: 10px;
 }
 
+/* Carousel tin tức trang chủ — cuộn ngang, đúng mẫu thiết kế (thay lưới 2 cột) */
+.news-carousel {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 2px 16px 4px;
+  scroll-snap-type: x mandatory;
+}
+
 .news-card {
   display: flex;
   background: #fff;
@@ -329,6 +713,85 @@ $header-clearance: calc(var(--zaui-safe-area-inset-top, 0px) + 44px);
     align-items: center;
     padding: 8px;
     gap: 10px;
+  }
+
+  &--carousel {
+    flex: none;
+    width: 216px;
+    scroll-snap-align: start;
+    flex-direction: column;
+    box-shadow: 0 10px 24px -14px rgba(12, 19, 48, 0.25);
+
+    .news-card__image {
+      position: relative;
+      width: 100%;
+      height: 104px;
+      border-radius: 0;
+      display: flex;
+      align-items: flex-end;
+      padding: 8px;
+      background-image: repeating-linear-gradient(
+        45deg,
+        #e7ecfa 0 8px,
+        #dce3f7 8px 16px
+      );
+      font-size: 0;
+    }
+
+    .news-card__image-photo {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .news-card__body {
+      padding: 10px 12px 13px;
+    }
+
+    .news-card__title--small {
+      margin-bottom: 0;
+    }
+  }
+
+  &__placeholder-tag {
+    font: 500 9px ui-monospace, Menlo, monospace;
+    color: #6b7392;
+    background: rgba(255, 255, 255, 0.78);
+    border-radius: 6px;
+    padding: 3px 6px;
+  }
+
+  &__badge {
+    position: absolute;
+    right: 8px;
+    bottom: 8px;
+    font-size: 9.5px;
+    font-weight: 700;
+    color: #fff;
+    border-radius: 7px;
+    padding: 3px 7px;
+
+    &--b {
+      background: $accent;
+    }
+    &--g {
+      background: #00a88b;
+    }
+    &--p {
+      background: #ff5d8f;
+    }
+  }
+
+  &__time {
+    margin: 6px 0 0;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 10px;
+    font-weight: 500;
+    color: #8a90a8;
   }
 
   &__image {
@@ -405,41 +868,70 @@ $header-clearance: calc(var(--zaui-safe-area-inset-top, 0px) + 44px);
 
 /* Zalo OA card */
 .oa-card {
+  position: relative;
+  overflow: hidden;
   display: flex;
   align-items: center;
   gap: 12px;
-  background: linear-gradient(135deg, $blue-dark, $blue);
+  margin: 20px 12px 0;
+  background: $gradient-oa-card;
   color: #fff;
-  border-radius: 12px;
-  padding: 14px;
+  border-radius: 22px;
+  padding: 16px;
+
+  &__blob {
+    position: absolute;
+    top: -24px;
+    right: -24px;
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: radial-gradient(circle, rgba(0, 211, 167, 0.55), transparent 70%);
+    filter: blur(6px);
+    pointer-events: none;
+  }
 
   &__icon {
-    font-size: 24px;
+    position: relative;
+    flex-shrink: 0;
+    width: 40px;
+    height: 40px;
+    border-radius: 14px;
+    background: rgba(255, 255, 255, 0.14);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
   }
 
   &__body {
+    position: relative;
     flex: 1;
     min-width: 0;
   }
 
   &__title {
     font-weight: 700;
-    font-size: 14px;
+    font-size: 13px;
   }
 
   &__desc {
-    font-size: 12px;
-    opacity: 0.85;
+    font-size: 10.5px;
+    font-weight: 500;
+    opacity: 0.7;
+    margin-top: 2px;
+    line-height: 1.35;
   }
 
   &__button {
-    background: #fff;
-    color: $blue;
+    position: relative;
+    background: $mint;
+    color: #04352c;
     border: none;
     border-radius: 999px;
-    padding: 8px 16px;
-    font-weight: 600;
-    font-size: 13px;
+    padding: 7px 13px;
+    font-weight: 700;
+    font-size: 11.5px;
     flex-shrink: 0;
   }
 }
@@ -449,33 +941,45 @@ $header-clearance: calc(var(--zaui-safe-area-inset-top, 0px) + 44px);
   display: flex;
   flex-direction: column;
   gap: 10px;
-  margin-bottom: 16px;
+  margin: 0 12px 16px;
 }
 
 .notice-card {
   display: flex;
-  gap: 10px;
-  border-radius: 12px;
-  padding: 12px 14px;
-  font-size: 13px;
+  align-items: flex-start;
+  gap: 11px;
+  border-radius: 18px;
+  padding: 13px 14px;
+  background: #fff;
+  box-shadow: 0 10px 26px -16px rgba(12, 19, 48, 0.25);
 
-  &--info {
-    background: #e8f0fe;
-    color: #0d47a1;
-  }
-
-  &--success {
-    background: #e6f4ea;
-    color: #1e8e3e;
-  }
-
-  &__icon {
-    font-size: 18px;
+  &__body {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
   }
 
   &__title {
+    font-size: 12.5px;
     font-weight: 700;
-    margin-bottom: 2px;
+    line-height: 1.3;
+    color: #0c1330;
+  }
+
+  &__content {
+    font-size: 10.5px;
+    font-weight: 500;
+    color: #8a90a8;
+    margin-top: 3px;
+    line-height: 1.4;
+  }
+
+  &__chevron {
+    flex-shrink: 0;
+    margin-top: 2px;
+    color: #c3c9db;
+    font-size: 18px;
   }
 }
 
@@ -518,214 +1022,252 @@ $header-clearance: calc(var(--zaui-safe-area-inset-top, 0px) + 44px);
   }
 }
 
-/* Services page */
+/* Services page — hero full-bleed (không bo góc, giống lookup-hero), thẻ các
+   bước nộp hồ sơ đè lên mép dưới bằng margin âm (đúng mẫu thiết kế) */
 .services-hero {
-  background: linear-gradient(135deg, $blue, $blue-dark);
+  position: relative;
+  overflow: hidden;
+  padding: calc(#{$header-clearance} + 6px) 16px 52px;
+  background: $gradient-hero-services;
   color: #fff;
-  padding: calc(#{$header-clearance} + 20px) 16px 20px;
   text-align: left;
 
-  &__icon {
-    font-size: 28px;
-  }
-
   &__title {
-    font-size: 20px;
-    font-weight: 700;
-    margin: 8px 0 4px;
+    margin: 14px 0 0;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.6px;
+    line-height: 1.15;
   }
 
   &__desc {
-    font-size: 13px;
-    opacity: 0.9;
-    margin-bottom: 14px;
+    margin: 5px 0 0;
+    font-size: 11.5px;
+    font-weight: 500;
+    opacity: 0.75;
   }
 
   &__badges {
     display: flex;
-    gap: 10px;
+    gap: 8px;
+    margin-top: 14px;
   }
 
   &__badge {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 10px;
-    padding: 8px 14px;
+    flex: 1;
+    padding: 10px 12px;
+    border-radius: 16px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(8px);
   }
 
   &__badge-value {
-    font-size: 16px;
-    font-weight: 700;
-  }
+    display: block;
+    font-size: 17px;
+    font-weight: 800;
+    letter-spacing: -0.4px;
 
-  &__badge-label {
-    font-size: 11px;
-    opacity: 0.85;
-  }
-}
+    &--mint {
+      color: $mint;
+    }
 
-.instruction-box {
-  background: #e8f0fe;
-  border-radius: 12px;
-  padding: 14px;
-  margin-bottom: 14px;
-
-  &__title {
-    font-weight: 700;
-    color: $blue-dark;
-    margin-bottom: 8px;
-    font-size: 13px;
-  }
-
-  &__list {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-
-    li {
-      display: flex;
-      align-items: flex-start;
-      gap: 8px;
-      font-size: 13px;
-      color: #333;
+    &--amber {
+      color: #ffd08a;
     }
   }
 
-  &__index {
-    background: $blue;
-    color: #fff;
-    width: 18px;
-    height: 18px;
-    border-radius: 50%;
+  &__badge-label {
+    font-size: 9.5px;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.7);
+  }
+}
+
+.services-steps {
+  position: relative;
+  margin: -36px 12px 0;
+  padding: 14px;
+  background: #fff;
+  border-radius: 22px;
+  box-shadow: 0 14px 34px -14px rgba(12, 19, 48, 0.28);
+
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12.5px;
+    font-weight: 700;
+    color: #0c1330;
+    margin-bottom: 11px;
+  }
+
+  &__step {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 9px;
+
+    &:first-child {
+      margin-top: 0;
+    }
+  }
+
+  &__step-n {
+    flex-shrink: 0;
+    width: 22px;
+    height: 22px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
     font-size: 11px;
-    flex-shrink: 0;
+    font-weight: 800;
+    color: #fff;
+    background: $gradient-brand;
+  }
+
+  &__step-t {
+    font-size: 11.5px;
+    font-weight: 500;
+    color: #404863;
+    line-height: 1.35;
   }
 }
 
 .category-tabs {
   display: flex;
   gap: 8px;
-  margin-bottom: 14px;
+  padding: 18px 12px 12px;
   overflow-x: auto;
 
   button {
-    border: 1px solid #dde3ee;
+    flex: 1;
+    border: none;
     background: #fff;
     border-radius: 999px;
-    padding: 8px 14px;
-    font-size: 13px;
+    padding: 9px 6px;
+    font-size: 11.5px;
+    font-weight: 700;
     white-space: nowrap;
-    color: #333;
+    color: #6b7392;
+    box-shadow: 0 6px 16px -12px rgba(12, 19, 48, 0.3);
+    transition: all 0.22s ease;
 
     &.is-active {
-      background: $blue;
-      border-color: $blue;
+      background: $gradient-brand;
       color: #fff;
+      box-shadow: 0 10px 20px -10px rgba(43, 92, 255, 0.75);
     }
   }
 }
 
 .service-list {
+  margin: 0 12px;
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 12px;
+  gap: 11px;
 
   &__item {
     background: #fff;
     border: none;
-    border-radius: 12px;
-    padding: 14px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+    border-radius: 20px;
+    padding: 13px;
+    box-shadow: 0 10px 26px -16px rgba(12, 19, 48, 0.25);
     text-align: left;
     width: 100%;
     font-family: inherit;
-  }
-
-  &__icon {
-    font-size: 26px;
-    display: block;
-    margin-bottom: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
   }
 
   &__title {
-    font-weight: 600;
-    font-size: 13px;
-    margin-bottom: 8px;
+    margin: 0;
+    font-weight: 700;
+    font-size: 12.5px;
+    line-height: 1.3;
   }
 
   &__badge {
-    font-size: 11px;
-    padding: 3px 8px;
+    align-self: flex-start;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 9.5px;
+    font-weight: 700;
     border-radius: 999px;
-    display: inline-block;
+    padding: 3px 8px;
 
     &--online {
-      background: #e8f0fe;
-      color: $blue;
+      color: #1c7a63;
+      background: #e7fbf5;
     }
 
     &--offline {
-      background: #f3e8fd;
-      color: #8430ce;
+      color: #8a6a00;
+      background: #fff6e0;
     }
   }
 }
 
-.portal-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+.listcard {
+  margin: 0 12px;
+  padding: 6px 14px;
+  border-radius: 22px;
+  background: #fff;
+  box-shadow: 0 10px 26px -16px rgba(12, 19, 48, 0.25);
+}
 
-  &__item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    background: #fff;
-    border: none;
-    border-radius: 12px;
-    padding: 12px 14px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
-    text-align: left;
-    text-decoration: none;
-    color: inherit;
-    width: 100%;
+.prow {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 13px 0;
+  border-bottom: 1px solid #f1f3fa;
+  text-align: left;
+  text-decoration: none;
+  color: inherit;
+  width: 100%;
+  background: none;
+  border-left: none;
+  border-right: none;
+  border-top: none;
+  font-family: inherit;
+
+  &:last-child {
+    border-bottom: none;
   }
 
-  &__icon {
-    font-size: 22px;
+  &__body {
+    flex: 1;
+    min-width: 0;
   }
 
   &__title {
-    font-weight: 600;
-    font-size: 13px;
-  }
-
-  &__badge {
-    display: inline-block;
-    margin-left: 6px;
-    font-size: 10.5px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
     font-weight: 700;
-    padding: 2px 8px;
-    border-radius: 999px;
-    background: #fff7ed;
-    color: #c2410c;
-    vertical-align: middle;
   }
 
   &__desc {
-    font-size: 12px;
-    color: #888;
+    font-size: 10.5px;
+    font-weight: 500;
+    color: #8a90a8;
+    margin-top: 3px;
+    line-height: 1.4;
   }
 
-  &__arrow {
-    margin-left: auto;
-    color: #ccc;
-    font-size: 18px;
+  &__badge {
+    font-style: normal;
+    font-size: 9px;
+    font-weight: 700;
+    color: #b26a00;
+    background: #fff3db;
+    border-radius: 6px;
+    padding: 2px 6px;
   }
 }
 
@@ -845,7 +1387,7 @@ $header-clearance: calc(var(--zaui-safe-area-inset-top, 0px) + 44px);
 
 /* Ideas page */
 .ideas-hero {
-  background: linear-gradient(135deg, $blue, $blue-dark);
+  background: $gradient-brand;
   color: #fff;
   padding: calc(#{$header-clearance} + 20px) 16px 20px;
 
@@ -998,80 +1540,172 @@ $header-clearance: calc(var(--zaui-safe-area-inset-top, 0px) + 44px);
   }
 }
 
-/* Contact page */
+/* Contact page — hero full-bleed teal→xanh dương, thẻ thông tin liên hệ đè
+   lên mép dưới bằng margin âm (đúng mẫu thiết kế) */
 .contact-hero {
-  background: linear-gradient(135deg, $blue, $blue-dark);
+  position: relative;
+  overflow: hidden;
+  padding: calc(#{$header-clearance} + 6px) 16px 60px;
+  background: $gradient-hero-contact;
   color: #fff;
-  padding: calc(#{$header-clearance} + 20px) 16px 20px;
 
   &__title {
-    font-size: 20px;
-    font-weight: 700;
-    margin-bottom: 4px;
+    margin: 14px 0 0;
+    font-size: 22px;
+    font-weight: 800;
+    letter-spacing: -0.6px;
   }
 
   &__desc {
-    font-size: 13px;
-    opacity: 0.9;
+    margin: 5px 0 0;
+    font-size: 11.5px;
+    font-weight: 500;
+    opacity: 0.75;
   }
 }
 
-.office-card {
-  background: #fff;
-  border-radius: 12px;
+.contact-card {
+  position: relative;
+  margin: -44px 12px 0;
   padding: 16px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  background: #fff;
+  border-radius: 24px;
+  box-shadow: 0 14px 34px -14px rgba(12, 19, 48, 0.28);
 
-  &__title {
+  &__head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #f1f3fa;
+  }
+
+  &__crest {
+    width: 48px;
+    height: 48px;
+    border-radius: 17px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, #eef2ff, #e1e8ff);
+    color: $accent;
+  }
+
+  &__name {
+    font-size: 14px;
+    font-weight: 800;
+    letter-spacing: -0.3px;
+  }
+
+  &__open {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    margin-top: 4px;
+    font-size: 10.5px;
     font-weight: 700;
-    margin-bottom: 12px;
+    color: #00916f;
+
+    i {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: $mint;
+    }
+
+    &--closed {
+      color: #8a90a8;
+
+      i {
+        background: #c3c9db;
+      }
+    }
   }
 
   &__row {
     display: flex;
-    gap: 10px;
-    padding: 8px 0;
-    border-bottom: 1px solid #f0f0f0;
+    align-items: flex-start;
+    gap: 11px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f6f7fc;
+
+    &:last-of-type {
+      border-bottom: none;
+    }
   }
 
-  &__label {
-    font-size: 11px;
-    color: #888;
+  &__body {
+    flex: 1;
+    min-width: 0;
+  }
+
+  &__key {
+    font-size: 9.5px;
+    font-weight: 700;
+    color: #a0a6bc;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
   &__value {
+    font-size: 12px;
     font-weight: 600;
-    font-size: 13px;
-    color: #1a1a1a;
+    color: #1b2038;
+    margin-top: 3px;
+    line-height: 1.4;
 
     &--pre {
       white-space: pre-line;
     }
 
     &--link {
-      color: $blue;
-      text-decoration: none;
       display: block;
+      width: 100%;
       border: none;
       background: none;
       padding: 0;
       font: inherit;
       font-weight: 600;
+      color: #1b2038;
       text-align: left;
       cursor: pointer;
     }
   }
 
+  &__action {
+    flex-shrink: 0;
+    margin-top: 8px;
+    color: #c3c9db;
+  }
+
   &__call {
-    display: block;
-    text-align: center;
-    background: $blue;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    margin-top: 14px;
+    padding: 14px;
+    border-radius: 16px;
+    background: $gradient-brand;
     color: #fff;
     text-decoration: none;
-    border-radius: 10px;
-    padding: 12px;
+    font-size: 13.5px;
     font-weight: 700;
-    margin-top: 14px;
+    letter-spacing: -0.2px;
+    box-shadow: 0 14px 26px -12px rgba(43, 92, 255, 0.75);
+  }
+
+  &__call2 {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-top: 10px;
+    color: $accent;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 600;
   }
 }
 
@@ -1150,27 +1784,69 @@ $header-clearance: calc(var(--zaui-safe-area-inset-top, 0px) + 44px);
   color: #888;
 }
 
-.connect-grid {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  margin-bottom: 14px;
+/* "Kênh hỗ trợ nhanh" (Liên hệ) dùng lại đúng .service-list/__item ở trên,
+   chỉ thêm biến thể mô tả thay cho badge */
+.service-list__desc {
+  margin: 0;
+  font-size: 10.5px;
+  font-weight: 500;
+  color: #8a90a8;
+  line-height: 1.4;
 }
 
-.connect-grid__item {
-  display: flex;
-  align-items: center;
-  gap: 8px;
+/* Bản đồ trang trí (chưa nhúng bản đồ thật) + nút Chỉ đường */
+.mapcard {
+  margin: 18px 12px 0;
+  border-radius: 22px;
+  overflow: hidden;
   background: #fff;
-  border-radius: 12px;
-  padding: 14px;
-  font-weight: 600;
-  font-size: 13px;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 10px 26px -16px rgba(12, 19, 48, 0.25);
+
+  &__img {
+    height: 130px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-image: repeating-linear-gradient(
+      135deg,
+      #e4edf7 0 10px,
+      #d8e4f2 10px 20px
+    );
+  }
+
+  &__ph {
+    font: 500 10px ui-monospace, Menlo, monospace;
+    color: #6b7392;
+    background: rgba(255, 255, 255, 0.78);
+    border-radius: 8px;
+    padding: 5px 9px;
+  }
+
+  &__row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 13px 14px;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: #404863;
+  }
+
+  &__address {
+    flex: 1;
+    min-width: 0;
+  }
 }
 
-.connect-grid__icon {
-  font-size: 20px;
+.pill-soft {
+  flex-shrink: 0;
+  border: none;
+  background: #eef2ff;
+  color: $accent;
+  font-size: 11px;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 6px 11px;
 }
 
 .feedback-card {
@@ -1820,7 +2496,7 @@ $header-clearance: calc(var(--zaui-safe-area-inset-top, 0px) + 44px);
 }
 
 .lookup-hero {
-  background: linear-gradient(135deg, $blue, $blue-dark);
+  background: $gradient-brand;
   color: #fff;
   padding: calc(#{$header-clearance} + 20px) 16px 20px;
 }
