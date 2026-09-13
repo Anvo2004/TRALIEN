@@ -27,7 +27,18 @@ const BATCH_SIZE = 20; // mỗi lượt tối đa 20 bản, tuần tự (tránh 
 // Chỉ "DA_XU_LY" mới coi là có kết quả cuối để báo dân — các trạng thái khác
 // (đang chuyển tiếp/đang xử lý) không đụng tới status nội bộ, tránh giẫm chân
 // luồng duyệt thủ công của cán bộ (draft/approve) đang chạy song song.
+//
+// LƯU Ý (xác nhận qua test thật 2026-09 với gopyId=112368): response thật của
+// GET /public/gopy/{id} khi CÒN đang xử lý KHÔNG có field maTinhTrangXuLy (chỉ
+// có tinhTrangXuLy dạng chữ "Đang xử lý") — khác ví dụ trong tài liệu API.
+// Chưa có bằng chứng thật lúc ĐÃ xử lý xong nên kiểm tra CẢ 2 field cho chắc,
+// không chỉ tin maTinhTrangXuLy (có thể cũng vắng mặt lúc DA_XU_LY thật).
 const RESOLVED_STATUS = "DA_XU_LY";
+const RESOLVED_LABEL = "Đã xử lý";
+
+function isResolved(detail) {
+  return detail?.maTinhTrangXuLy === RESOLVED_STATUS || detail?.tinhTrangXuLy === RESOLVED_LABEL;
+}
 
 function extractNoiDungXuLy(detail) {
   const list = Array.isArray(detail?.thongTinXuLy) ? detail.thongTinXuLy : [];
@@ -51,11 +62,11 @@ async function checkFeedbackStatus(feedbackId) {
     return false;
   }
 
-  if (detail?.maTinhTrangXuLy !== RESOLVED_STATUS) return false;
+  if (!isResolved(detail)) return false;
 
   const noiDungXuLy = extractNoiDungXuLy(detail);
   if (!noiDungXuLy) {
-    console.warn(`[CGY1022Status] ${fb.cgy1022.gopyId} đã DA_XU_LY nhưng không có noiDungXuLy`);
+    console.warn(`[CGY1022Status] ${fb.cgy1022.gopyId} đã xử lý xong nhưng không có noiDungXuLy`);
     return false;
   }
 

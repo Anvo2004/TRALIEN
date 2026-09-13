@@ -75,10 +75,19 @@ Backend chạy đầy đủ tính năng và lên production. Đánh dấu `[x]` 
       điền `CGY1022_LINHVUC_MAP` (6 danh mục — 2 mục "Y tế - Sức khỏe",
       "Giáo dục" tạm map về 22 "Lĩnh vực khác" vì script đoán theo từ khoá
       không khớp, nên rà lại thủ công qua `GET /public/gopy/chude` nếu cần
-      chính xác hơn). **Chưa test đẩy 1 phản ánh thật lên 1022** (cố tình —
-      đây là hệ thống chính quyền thật, không tự ý POST dữ liệu test, xem
-      cảnh báo trong `probe-cgy1022.js`) — sẽ xác nhận qua phản ánh thật đầu
-      tiên của dân, hoặc xã chủ động gửi 1 phản ánh thật để kiểm tra.
+      chính xác hơn).
+      **Đã test đẩy 1 phản ánh thật lên 1022** theo yêu cầu/uỷ quyền của anh
+      (2026-09-15) — tiêu đề "TEST [Vui lòng bỏ qua]", nội dung "Test chức
+      năng", đánh dấu rõ để cán bộ thành phố bỏ qua. Kết quả: **thành công**,
+      `gopyId=112368` (xem https://gopy.danang.gov.vn/gop-y?pageid=view&ykien=112368).
+      Trong lúc test phát hiện `CGY1022_NGUON="Góp ý Zalo"` bị 1022 từ chối
+      (`404 NguonGopY ... does not exist` — đúng cảnh báo đã ghi trong
+      `config/index.js`) — **đã đổi lại thành `"Zalo"`** (giống Thăng
+      Điền/Đại Lộc), test lại thành công. Cũng phát hiện response thật của
+      `GET /public/gopy/{id}` lúc "Đang xử lý" **không có field
+      `maTinhTrangXuLy`** (khác ví dụ trong tài liệu) — đã sửa
+      `cgy1022StatusService.js` để không phụ thuộc riêng field này (kiểm tra
+      thêm `tinhTrangXuLy === "Đã xử lý"`).
 - [ ] **IOCTC** (`tctthc.1022.vn`, tra cứu hồ sơ TTHC) — tương tự, quyết định
       tài khoản riêng/chung, điền `IOCTC_USERNAME/PASSWORD`.
 - [ ] **EVN CPC** (lịch cắt điện) — tra mã đơn vị điện lực phụ trách khu vực
