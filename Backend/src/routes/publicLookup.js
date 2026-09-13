@@ -153,4 +153,52 @@ router.get("/site-info", async (req, res) => {
   res.json(doc);
 });
 
+// ============================================================
+// Dịch toạ độ GPS (nút "Lấy vị trí tự động" ở Phản ánh - Kiến nghị) thành địa
+// chỉ đọc được, qua Nominatim (OpenStreetMap) — GỌI TỪ BACKEND, không phải từ
+// MiniApp, vì WebView Zalo Mini App thật chỉ cho fetch tới domain đã khai báo
+// (cùng lý do MiniApp không tự cào tin/gọi Nominatim trực tiếp được — xem
+// comment đầu newsScrapeService.js). MiniApp chỉ cần gọi domain Backend đã
+// khai báo sẵn.
+//
+// Chỉ lấy phần chi tiết nhỏ (thôn/đường) từ Nominatim rồi tự ghép "xã Trà
+// Liên, TP. Đà Nẵng" — KHÔNG dùng thẳng field hành chính cấp huyện/tỉnh của
+// Nominatim vì dữ liệu OSM cho khu vực mới sáp nhập (2025) nhiều khả năng
+// chưa cập nhật, có thể vẫn ghi tên xã cũ (Trà Đông/Trà Nú/Trà Kót) gây
+// nhầm lẫn cho người dân.
+function pickLocalDetail(address = {}) {
+  const candidates = [
+    address.hamlet,
+    address.village,
+    address.suburb,
+    address.quarter,
+    address.hamlet_ward,
+    address.road,
+  ].filter(Boolean);
+  return candidates[0] || "";
+}
+
+router.get("/reverse-geocode", async (req, res) => {
+  const lat = parseFloat(req.query.lat);
+  const lng = parseFloat(req.query.lng);
+  if (!Number.isFinite(lat) || !Number.isFinite(lng)) {
+    return res.status(400).json({ error: "Thiếu hoặc sai toạ độ lat/lng" });
+  }
+
+  const FALLBACK = `xã Trà Liên, TP. Đà Nẵng`;
+  try {
+    const url = `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=jsonv2&accept-language=vi&zoom=16`;
+    const r = await fetch(url, {
+      headers: { "User-Agent": "UBND-TraLien-GopY/1.0 (contact: ubndxatralien@danang.gov.vn)" },
+    });
+    const data = await r.json();
+    const detail = pickLocalDetail(data.address);
+    const address = detail ? `${detail}, ${FALLBACK}` : data.display_name || FALLBACK;
+    res.json({ address });
+  } catch (err) {
+    console.warn("[ReverseGeocode] Lỗi:", err.message);
+    res.json({ address: FALLBACK });
+  }
+});
+
 module.exports = router;

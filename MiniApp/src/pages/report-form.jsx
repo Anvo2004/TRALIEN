@@ -26,15 +26,16 @@ function detectLocation() {
   });
 }
 
-// Nominatim (OpenStreetMap) — dịch vụ reverse geocoding công khai, miễn phí.
+// Dịch toạ độ → địa chỉ đọc được qua Backend (KHÔNG gọi Nominatim thẳng từ
+// đây — WebView Zalo Mini App thật chỉ cho fetch tới domain đã khai báo,
+// xem comment ở route /api/public/reverse-geocode phía Backend).
 async function reverseGeocode(lat, lng) {
   try {
     const res = await fetch(
-      `https://nominatim.openstreetmap.org/reverse?lat=${lat}&lon=${lng}&format=json&accept-language=vi`,
-      { headers: { "User-Agent": "UBND-TraLien-GopY/1.0" } }
+      `${API_BASE_URL}/api/public/reverse-geocode?lat=${lat}&lng=${lng}`
     );
     const data = await res.json();
-    return data.display_name || `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
+    return data.address || `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
   } catch {
     return `${lat.toFixed(6)}, ${lng.toFixed(6)}`;
   }

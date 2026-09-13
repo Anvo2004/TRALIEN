@@ -5,6 +5,7 @@ const Category = require("../models/Category");
 const { requireRole } = require("../middleware/auth");
 const { sendZaloText } = require("../utils/zaloApi");
 const { feedbackCode } = require("../services/feedbackNotifyService");
+const cgy1022StatusService = require("../services/cgy1022StatusService");
 
 const router = express.Router();
 
@@ -167,6 +168,14 @@ router.post("/:id/reject", requireRole(...LEADER_ROLES), async (req, res) => {
   if (!feedback) return res.status(404).json({ error: "Not found" });
 
   res.json({ feedback });
+});
+
+// Đồng bộ đọc kết quả xử lý từ 1022 đã chạy tự động qua cron (server.js) —
+// route này chỉ để cán bộ kích hoạt lại thủ công khi cần (vd. vừa có tài
+// khoản 1022, muốn kiểm tra ngay không đợi tới lượt quét kế tiếp).
+router.post("/sync-cgy1022-status", requireRole("superadmin"), async (req, res) => {
+  await cgy1022StatusService.runStatusSweep();
+  res.json({ ok: true });
 });
 
 module.exports = router;

@@ -6,6 +6,7 @@ const vanBanService = require("./src/services/vanBanTraLienService");
 const newsScrapeService = require("./src/services/newsScrapeService");
 const zaloNewsService = require("./src/services/zaloNewsService");
 const { startCgy1022Retry } = require("./src/services/cgy1022RetryService");
+const { startCgy1022StatusPolling } = require("./src/services/cgy1022StatusService");
 
 async function main() {
   await mongoose.connect(config.mongoUri);
@@ -20,6 +21,7 @@ async function main() {
   newsScrapeService.startAutoSync();
   zaloNewsService.startAutoPost();
   startCgy1022Retry();
+  startCgy1022StatusPolling();
 }
 
 main().catch((err) => {

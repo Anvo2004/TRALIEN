@@ -153,4 +153,31 @@ async function listFeedbacks({ page = 1, size = 5, keyword = "" } = {}) {
   return res.json();
 }
 
-module.exports = { isConfigured, pushFeedback, buildPayload, getLinhVucId, listFeedbacks };
+// GET chi tiết 1 góp ý theo gopyId — dùng để đọc lại tình trạng xử lý
+// (maTinhTrangXuLy, thongTinXuLy[]) sau khi đã đẩy lên 1022. Xem
+// "Tài liệu mô tả API" (docs/Nâng Cấp CGY-Tài liệu mô tả API.docx),
+// mục "API lấy chi tiết góp ý" — GET /public/gopy/{id}. Tài liệu mô tả
+// domain/JWT khác thực tế đã probe (xem comment đầu file), nhưng CẤU TRÚC
+// response mục này chưa có gì mâu thuẫn với phần đã probe (cùng base
+// path /public/gopy như POST đẩy góp ý), nên dùng chung basicAuthHeader().
+async function getFeedbackDetail(gopyId) {
+  const url = `${config.cgy1022.baseUrl}${config.cgy1022.gopyPath}/${gopyId}`;
+  const res = await fetch(url, {
+    headers: baseHeaders(),
+    signal: AbortSignal.timeout(TIMEOUT_MS),
+  });
+  if (!res.ok) {
+    const text = await res.text();
+    throw new Error(`HTTP ${res.status}: ${text.slice(0, 200)}`);
+  }
+  return res.json();
+}
+
+module.exports = {
+  isConfigured,
+  pushFeedback,
+  buildPayload,
+  getLinhVucId,
+  listFeedbacks,
+  getFeedbackDetail,
+};
