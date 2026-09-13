@@ -50,10 +50,15 @@ Backend chạy đầy đủ tính năng và lên production. Đánh dấu `[x]` 
       cũ bị thiếu 1 chữ số nên extension VSCode báo lỗi "Liên kết Mini App ID"
       — đã sửa 2026-09-12). Lấy thêm gì cần thiết từ Mini App Console (vd.
       domain xác minh) khi build production.
-- [ ] **Zalo OA (Official Account)** — KHÁC Mini App, cần đăng ký/liên kết
-      riêng: `ZALO_APP_ID`, `ZALO_APP_SECRET`, `ZALO_OA_TOKEN`,
-      `ZALO_REFRESH_TOKEN`, `ZALO_OA_SECRET_KEY` (khoá xác thực chữ ký webhook,
-      lấy tại oa.zalo.me → Cài đặt → Bảo mật) trong `Backend/.env`.
+- [x] **Zalo OA (Official Account)**: đã điền `ZALO_APP_ID/APP_SECRET/OA_TOKEN/
+      REFRESH_TOKEN` vào `Backend/.env` (local + VPS) và test kết nối thật
+      OK — `POST /api/broadcast/followers/sync` đồng bộ được danh sách
+      follower thật của OA Trà Liên (2026-09-13). `requireZaloUser` (chặn
+      "Phản ánh của tôi") cũng đã chuyển từ tự tắt (503) sang xác thực thật
+      (401 khi token sai) — xác nhận hoạt động đúng.
+      **Chưa có**: `ZALO_OA_SECRET_KEY` (khoá xác thực chữ ký webhook, lấy tại
+      oa.zalo.me → Cài đặt → Bảo mật — không bắt buộc, thiếu thì webhook vẫn
+      nhận bình thường, chỉ bỏ qua bước xác thực chữ ký).
 - [ ] Thẻ xác minh site `zalo-platform-site-verification` trong
       `Backend/src/app.js` — hiện đã bị xoá theo domain cũ, cần thẻ mới của
       domain Trà Liên khi đăng ký miền cho OA/Mini App.
