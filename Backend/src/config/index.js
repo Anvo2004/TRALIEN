@@ -90,8 +90,14 @@ module.exports = {
     gopyPath: process.env.CGY1022_GOPY_PATH || "/api/gopy",
     userId: process.env.CGY1022_USER_ID || "0",
     defaultEmail: process.env.CGY1022_DEFAULT_EMAIL || "gopy@tralien.dxvtech.vn",
-    // "Zalo" là kênh duy nhất 1022 đăng ký sẵn (nguonGopY khác → 404 "does not exist")
-    nguon: process.env.CGY1022_NGUON || "Zalo",
+    // QUAN TRỌNG: nguonGopY phải khớp CHÍNH XÁC giá trị đã đăng ký sẵn phía 1022
+    // cho tài khoản đang dùng — gửi giá trị lạ → 404 "does not exist" (đã gặp
+    // thật ở Thăng Điền/Đại Lộc, nơi chỉ "Zalo" được đăng ký sẵn). Xã Trà Liên
+    // yêu cầu hiển thị nguồn là "Góp ý Zalo" (không kèm tên đơn vị, khác An Hải
+    // dùng "ZaloAnHai") — CẦN xác nhận lại giá trị này thật sự được 1022 chấp
+    // nhận cho tài khoản Trà Liên (chạy scripts/probe-cgy1022.js) trước khi bật
+    // thật, có thể phải đổi lại thành "Zalo" nếu 1022 chỉ đăng ký đúng chuỗi đó.
+    nguon: process.env.CGY1022_NGUON || "Góp ý Zalo",
     // JSON map tên danh mục → linhVucId của 1022, VD: {"Môi trường": 4}
     linhVucMap: process.env.CGY1022_LINHVUC_MAP || "{}",
     linhVucDefault: process.env.CGY1022_LINHVUC_DEFAULT || "",
