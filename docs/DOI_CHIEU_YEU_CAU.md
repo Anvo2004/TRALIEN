@@ -52,7 +52,7 @@ code. ✅ = chạy thật, có bằng chứng · 🟡 = có nhưng chưa đầy 
 | **Lịch y tế** (module mới xây riêng cho Trà Liên) | ✅ | Đầy đủ 5 lớp (model → API admin/public → trang AdminWeb → trang MiniApp), đã test tạo/đọc/xoá qua API thật |
 | Lịch cắt điện | ⬜ Vẫn thiếu mã điện lực | Chưa có `EVNCPC_SUBORG_CODE` đúng khu vực Trà Liên (mã Thăng Bình cũ không dùng được) |
 | Tra cứu hồ sơ TTHC (IOCTC) | ⬜ Vẫn thiếu tài khoản | Tương tự CGY1022 — cần quyết định tài khoản riêng/chung |
-| Văn bản - Chính sách | ⬜ Chưa viết lại cho đúng site thật | `vanBanTraLienService.js` vẫn theo cấu trúc CMS Thăng Điền, portal VNPT thật của Trà Liên có menu khác hẳn (`/van-ban-dang-uy`, `/van-ban-hdnd`, `/van-ban-ubnd`) — cùng dạng việc đã làm được cho "Tin tức", chỉ là chưa tới lượt |
+| Văn bản - Chính sách | ✅ Đã viết lại đúng site thật, chạy thật trên production | `vanBanTraLienService.js` cào đúng cấu trúc `ul.ArticleList > li.row` của `tralien.danang.gov.vn/van-ban-chi-dao-dieu-hanh` (ngày ban hành lấy từ `.Ngaydang`, không đoán từ tiêu đề nữa). Test `GET /api/public/van-ban` trên production trả về văn bản thật (VD: "Thông báo Lịch tiếp công dân năm 2026 của Thường trực HĐND..."). |
 
 ---
 
@@ -64,11 +64,10 @@ code. ✅ = chạy thật, có bằng chứng · 🟡 = có nhưng chưa đầy 
 | 2 | Phản ánh - góp ý | **~95%** — đã chạy thật đầu-cuối trên hệ thống 1022 thật |
 | 3 | Nhóm liên kết dịch vụ | **100%** theo đúng phạm vi đã chốt với xã |
 | 4 | Chatbot | 90% code, 0% vận hành (thiếu 1 API key) |
-| 5 | Tra cứu an sinh xã hội | Lịch y tế 100%, lịch cắt điện/văn bản còn thiếu cấu hình |
+| 5 | Tra cứu an sinh xã hội | Lịch y tế 100%, Văn bản - Chính sách 100%, lịch cắt điện còn thiếu cấu hình |
 
-**3 việc còn lại có giá trị cao nhất để hoàn thiện tiếp** (theo thứ tự nên làm):
+**2 việc còn lại có giá trị cao nhất để hoàn thiện tiếp** (theo thứ tự nên làm):
 1. Xin `ANTHROPIC_API_KEY` — bật chatbot ngay lập tức, không cần code thêm.
-2. Viết lại `vanBanTraLienService.js` cho đúng site thật (đã có sẵn cách làm từ vụ Tin tức).
-3. Xin mã điện lực EVN CPC khu vực Trà Liên — bật lịch cắt điện.
+2. Xin mã điện lực EVN CPC khu vực Trà Liên — bật lịch cắt điện.
 
 Việc "tự động broadcast tin/cảnh báo" (mục 1) và "IOCTC" (mục 5) cần xã quyết định trước (có muốn tự động hoàn toàn không kiểm duyệt? dùng tài khoản IOCTC nào?) nên xếp sau.

@@ -126,12 +126,22 @@ Backend chạy đầy đủ tính năng và lên production. Đánh dấu `[x]` 
       https://tralien.danang.gov.vn/tin-tuc` và chạy sync thật — 304 tin thật
       đã vào DB, ảnh nhúng thẳng từ nguồn (không cần re-host Cloudinary, ảnh
       nguồn khai đúng Content-Type).
-- [ ] **Trang TTĐT xã Trà Liên — Văn bản**: `vanBanTraLienService.js` vẫn viết
-      cho pattern DotNetNuke/Telerik RadGrid (`tr.rgRow`) của CMS Thăng Điền —
-      **chưa kiểm chứng/viết lại** cho portal VNPT của Trà Liên (ngoài phạm vi
-      lần sửa 2026-09-14, chỉ mới làm Tin tức/Văn hóa/Du lịch). Menu "Văn Bản"
-      thật có các mục `/van-ban-dang-uy`, `/van-ban-hdnd`, `/van-ban-ubnd` —
-      cần đọc cấu trúc HTML thật trước khi viết lại, như đã làm với Tin tức.
+- [x] **Trang TTĐT xã Trà Liên — Văn bản**: đã viết lại `vanBanTraLienService.js`
+      đúng cấu trúc HTML thật của `tralien.danang.gov.vn/van-ban-chi-dao-dieu-hanh`
+      (`ul.ArticleList > li.row`, ngày ban hành lấy trực tiếp từ `.Ngaydang`
+      thay vì đoán từ tiêu đề như bản cũ theo pattern DotNetNuke/RadGrid của
+      Thăng Điền — không khớp gì với site thật nên trước đó luôn trả về rỗng).
+      Đã điền `VAN_BAN_SOURCE_URL` + chạy sync thật trên production
+      (2026-09-14): văn bản thật đã vào DB, `GET /api/public/van-ban` trả kết
+      quả đúng.
+- [x] **Kỹ năng PCTT — video không hiển thị**: nguyên nhân là `Backend/media/`
+      bị loại khỏi lần copy fork ban đầu từ Thăng Điền (đúng chủ đích, tránh
+      copy nội dung đặc thù xã cũ) nhưng 14 video PCTT (id 01/02/05/06/13,
+      166MB) lại là video kỹ năng phổ quát (không đặc thù theo xã) nên đáng
+      lẽ phải giữ lại — đã copy từ `MINIAPP_THANGDIEN/Backend/media/pctt-videos`
+      sang, SFTP thẳng lên VPS (`Backend/media/` nằm trong `.gitignore`, không
+      qua git — giống ngoại lệ `.env`) và xác nhận phát được qua
+      `GET /media/pctt-videos/...` trên production (2026-09-14).
 - [x] **Văn hóa & Du lịch**: nội dung mẫu Thăng Điền (chợ/đình làng/lễ hội
       miền biển) đã bị xoá (không áp dụng cho Trà Liên — xã miền núi, đồng
       bào Cor >49% dân số). Đã thay bằng nội dung thật đọc từ chuyên mục
