@@ -2,9 +2,14 @@ const { getAccessToken, refreshAccessToken } = require("./zaloToken");
 
 // ============================================================
 // Zalo OA Open API — "Nội dung dạng Bài viết" (article).
-//   Tạo:    POST https://openapi.zalo.me/v2.0/article/create   → trả "token" (xử lý bất đồng bộ)
-//   Verify: POST https://openapi.zalo.me/v2.0/article/verify    → lấy id thật (poll vài lần)
-// (Broadcast qua /oa/message — KHÔNG dùng: yêu cầu chỉ tạo bài, không đẩy thông báo.)
+//   Tạo:      POST https://openapi.zalo.me/v2.0/article/create  → trả "token" (xử lý bất đồng bộ)
+//   Verify:   POST https://openapi.zalo.me/v2.0/article/verify   → lấy id thật (poll vài lần)
+//   Broadcast:POST https://openapi.zalo.me/v2.0/oa/message       → gửi tới TOÀN BỘ người quan
+//             tâm OA (recipient.target rỗng = không lọc), tối đa 5 bài/lần gọi. Zalo cần ~30
+//             phút kiểm duyệt nội dung trước khi thực sự gửi tới người dùng.
+//
+// Cơ chế broadcast đối chiếu trực tiếp với dự án tham khảo TIENICHOAZALO_THUONGDUC
+// (frontend/DangTin/src/zalo/articleClient.js) — đã chạy thật, xác nhận đúng API.
 //
 // QUAN TRỌNG: dùng CHUNG token OA của zaloToken.js (getAccessToken) — tuyệt đối
 // không tạo bộ quản token riêng, tránh 2 nơi refresh cùng refresh-token → hỏng token.
@@ -13,7 +18,9 @@ const { getAccessToken, refreshAccessToken } = require("./zaloToken");
 
 const CREATE_URL = "https://openapi.zalo.me/v2.0/article/create";
 const VERIFY_URL = "https://openapi.zalo.me/v2.0/article/verify";
+const BROADCAST_URL = "https://openapi.zalo.me/v2.0/oa/message";
 const TIMEOUT_MS = 15000;
+const BROADCAST_MAX_ARTICLES = 5;
 
 function truncate(str, max) {
   const s = (str || "").replace(/\s+/g, " ").trim();
@@ -74,4 +81,32 @@ async function verifyArticle(token, { retries = 8, delayMs = 3000 } = {}) {
   throw new Error("Không lấy được id bài viết sau nhiều lần verify (Zalo xử lý chậm hơn bình thường)");
 }
 
-module.exports = { createArticle, verifyArticle };
+// Gửi (broadcast) tối đa 5 bài đã tạo tới TOÀN BỘ người quan tâm OA.
+// recipient.target rỗng = không lọc theo tiêu chí gì, gửi cho tất cả.
+async function broadcastArticle(articleIds) {
+  if (!articleIds.length) return null;
+  if (articleIds.length > BROADCAST_MAX_ARTICLES) {
+    throw new Error(`Broadcast chỉ hỗ trợ tối đa ${BROADCAST_MAX_ARTICLES} bài viết mỗi lần gửi`);
+  }
+
+  const payload = {
+    recipient: { target: {} },
+    message: {
+      attachment: {
+        type: "template",
+        payload: {
+          template_type: "media",
+          elements: articleIds.map((id) => ({ media_type: "article", attachment_id: id })),
+        },
+      },
+    },
+  };
+
+  const data = await articlePost(BROADCAST_URL, payload);
+  if (data.error !== 0 || !data.data || !data.data.message_id) {
+    throw new Error(`Broadcast bài viết Zalo thất bại: ${JSON.stringify(data)}`);
+  }
+  return data.data.message_id;
+}
+
+module.exports = { createArticle, verifyArticle, broadcastArticle };

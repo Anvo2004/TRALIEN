@@ -62,6 +62,25 @@ Backend chạy đầy đủ tính năng và lên production. Đánh dấu `[x]` 
 - [ ] Thẻ xác minh site `zalo-platform-site-verification` trong
       `Backend/src/app.js` — hiện đã bị xoá theo domain cũ, cần thẻ mới của
       domain Trà Liên khi đăng ký miền cho OA/Mini App.
+- [x] **Tự động đăng tin lên Zalo OA (Article API)**: đã bật
+      `ZALO_ARTICLE_ENABLED=true` (2026-09-15, sau khi chạy backfill đánh dấu
+      skip 304 tin cũ) — tin cào mới sẽ tự tạo thành "Bài viết" trên OA (ẩn,
+      chưa gửi cho ai), đúng mẫu tự động của TIENICHOAZALO_THUONGDUC. Đã test
+      thật 1 bài, tạo thành công (`articleId: cace2c2c1268fb36a279`).
+- [ ] **Broadcast bài viết tới người quan tâm (gửi tự động) — CHƯA làm, để
+      sau theo yêu cầu xã**: test thật báo lỗi `-201`. Nguyên nhân: (1) app
+      hiện chỉ có quyền **Article API** (ảnh chụp Zalo Developers Console
+      2026-09-15 xác nhận: Tạo/Sửa/Xoá/Lấy bài đều "Đã được duyệt", không có
+      dòng Broadcast) — quyền gửi nằm ở nhóm khác: **Official Account API →
+      Gửi tin và thông báo qua OA → Broadcast bài viết**, cần xin duyệt riêng
+      trên Zalo Developers Console; (2) dù có quyền, Zalo giới hạn rất thấp
+      theo gói OA (gói Cơ bản/miễn phí ~1 lượt/tháng, OA đã xác thực ~4
+      lượt/tháng, chính sách gói mới áp dụng từ 1/6/2026) — không đủ cho
+      "gửi mỗi lần có tin mới". Khi làm lại: hàm `broadcastArticle()` đã có
+      sẵn ở `Backend/src/utils/zaloArticle.js` (đối chiếu đúng theo
+      TIENICHOAZALO_THUONGDUC, chỉ chưa được gọi) — nên chỉ dùng cho cảnh báo
+      thật sự khẩn cấp, có đếm số lần/tháng để không vượt quota, không dùng
+      cho tin tức thường ngày.
 
 ## 4. Tích hợp thành phố (quyết định dùng chung hay tài khoản riêng)
 

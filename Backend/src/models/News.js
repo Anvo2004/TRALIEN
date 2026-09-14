@@ -17,11 +17,15 @@ const newsSchema = new mongoose.Schema(
 
     // Trạng thái đăng lên Zalo OA (Nội dung dạng Bài viết) — xem services/zaloNewsService.js
     zalo: {
-      articleId: { type: String, default: "" }, // id bài trên OA (đã đăng)
+      articleId: { type: String, default: "" }, // id bài trên OA (đã tạo)
       postedAt: { type: Date, default: null },
       attempts: { type: Number, default: 0 },
       lastError: { type: String, default: "" },
       skip: { type: Boolean, default: false }, // backfill đánh dấu bỏ qua tin cũ
+      // Đã tạo bài (articleId) KHÁC đã gửi (broadcastedAt) — tạo bài thành công không
+      // đảm bảo broadcast cũng thành công (2 lệnh gọi API tách biệt).
+      broadcastedAt: { type: Date, default: null },
+      broadcastError: { type: String, default: "" },
     },
   },
   { timestamps: true }

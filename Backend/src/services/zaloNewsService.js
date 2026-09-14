@@ -5,7 +5,17 @@ const { createArticle, verifyArticle } = require("../utils/zaloArticle");
 // ============================================================
 // Tự động đăng tin đã cào (model News) lên Zalo OA dạng "Bài viết".
 // - CHỈ tạo bài (create + verify), KHÔNG broadcast — bài xuất hiện trong
-//   "Quản lý bài viết" của OA, không bắn thông báo tới người theo dõi.
+//   "Quản lý bài viết" của OA (ẩn), không tự bắn thông báo tới người theo dõi.
+//   Đúng mẫu TIENICHOAZALO_THUONGDUC (luồng cron tự động của họ cũng chỉ tạo
+//   bài, không broadcast — xem articleSync.js/createArticles() bên đó).
+// - Việc gửi (broadcast) để SAU: app hiện mới có quyền "Article API" (tạo/
+//   sửa/xoá/lấy bài), CHƯA có quyền riêng "Broadcast bài viết" (nằm trong
+//   nhóm "Official Account API" → "Gửi tin và thông báo qua OA", cần xin
+//   duyệt riêng trên Zalo Developers). Zalo cũng giới hạn số lượt broadcast
+//   rất thấp theo gói OA (gói Cơ bản ~1 lượt/tháng) nên khi làm lại, chỉ nên
+//   tự động broadcast cho cảnh báo khẩn cấp, không phải mọi tin thường ngày.
+//   Hàm broadcastArticle() đã có sẵn ở utils/zaloArticle.js, chỉ chưa được
+//   gọi ở đây — xem lịch sử trao đổi 2026-09-14/15 nếu cần bật lại.
 // - Bỏ qua tin cũ: backfill đặt zalo.skip=true (xem scripts/backfill-news-zalo-skip.js),
 //   nên chỉ tin cào được SAU khi bật mới được đăng.
 // - Dùng chung token OA (utils/zaloArticle → zaloToken). Tự tắt nếu ZALO_ARTICLE_ENABLED!=true.
@@ -44,7 +54,7 @@ async function postOne(news) {
       { $set: { "zalo.articleId": articleId, "zalo.postedAt": new Date(), "zalo.lastError": "" } }
     );
     console.log(`[ZaloArticle] Đã tạo bài OA cho tin nid=${news.nid} (id=${articleId}): ${item.title.slice(0, 50)}`);
-    return { ok: true, articleId };
+    return { ok: true, newsId: news._id, articleId };
   } catch (err) {
     await News.updateOne(
       { _id: news._id },
@@ -89,4 +99,4 @@ function startAutoPost() {
   console.log("[ZaloArticle] Đã bật tự động đăng tin lên OA (chỉ tạo bài, quét mỗi 20 phút)");
 }
 
-module.exports = { postPendingArticles, startAutoPost };
+module.exports = { postPendingArticles, startAutoPost, postOne };
