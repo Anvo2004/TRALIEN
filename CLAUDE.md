@@ -1,6 +1,6 @@
 # MINIAPP_TRALIEN
 
-Mini App Zalo "Công dân số xã Trà Liên" — xem [docs/README.md](docs/README.md)
+Mini App Zalo "Trà Liên Số" — xem [docs/README.md](docs/README.md)
 cho mô tả tính năng và [docs/SETUP_CHECKLIST.md](docs/SETUP_CHECKLIST.md) cho
 danh sách credentials/quyết định còn thiếu trước khi chạy production.
 

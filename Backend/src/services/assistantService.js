@@ -27,7 +27,7 @@ function isConfigured() {
   return Boolean(config.anthropic.apiKey);
 }
 
-const SYSTEM_PROMPT = `Bạn là Trợ lý số của Mini App "Công dân số xã Trà Liên" (Đà Nẵng), giúp người dân hỏi đáp về thủ tục hành chính và thông tin của xã.
+const SYSTEM_PROMPT = `Bạn là Trợ lý số của Mini App "Trà Liên Số" (Đà Nẵng), giúp người dân hỏi đáp về thủ tục hành chính và thông tin của xã.
 
 Mini App có các mục sau — khi câu hỏi liên quan, hãy chỉ người dân vào đúng mục thay vì tự đoán quy trình:
 - "Tra cứu hồ sơ TTHC": tra cứu tiến độ hồ sơ đã nộp bằng mã hồ sơ.

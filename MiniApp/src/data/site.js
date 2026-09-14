@@ -3,7 +3,7 @@
 // MongoDB (xem components/stats-row.jsx, pages/home.jsx, pages/contact.jsx —
 // gọi /api/public/dan-so, /thong-bao, /site-info).
 const SITE = {
-  appName: "Công dân số xã Trà Liên",
+  appName: "Trà Liên Số",
   shortName: "Trà Liên kết nối số",
   province: "Thành phố Đà Nẵng", // xác nhận từ tralien.danang.gov.vn
   badge: "Chính quyền số",

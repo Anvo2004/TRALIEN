@@ -1,6 +1,6 @@
-# Tài liệu dự án — Công dân số xã Trà Liên
+# Tài liệu dự án — Trà Liên Số
 
-Mini App Zalo "Công dân số xã Trà Liên": đăng tin/cảnh báo qua OA Zalo, tiếp
+Mini App Zalo "Trà Liên Số": đăng tin/cảnh báo qua OA Zalo, tiếp
 nhận & đồng bộ phản ánh-góp ý lên Cổng góp ý thành phố, chatbot hướng dẫn thủ
 tục hành chính/FAQ, tra cứu tiện ích an sinh xã hội (lịch cắt điện, lịch y tế,
 văn bản - chính sách, hồ sơ TTHC...), cùng AdminWeb cho cán bộ xã xử lý phản
