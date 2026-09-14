@@ -109,14 +109,30 @@ Backend chạy đầy đủ tính năng và lên production. Đánh dấu `[x]` 
       thêm `tinhTrangXuLy === "Đã xử lý"`).
 - [ ] **IOCTC** (`tctthc.1022.vn`, tra cứu hồ sơ TTHC) — tương tự, quyết định
       tài khoản riêng/chung, điền `IOCTC_USERNAME/PASSWORD`.
-- [ ] **EVN CPC** (lịch cắt điện) — tra mã đơn vị điện lực phụ trách khu vực
-      Trà Liên (Thăng Điền dùng `orgCode=PP`, `subOrgCode=PC05FF` — Điện lực
-      Thăng Bình, KHÔNG áp dụng cho Trà Liên). Điền `EVNCPC_ORG_CODE`,
-      `EVNCPC_SUBORG_CODE` trong `Backend/.env`, và `XENVN_URL` (nguồn thay thế
-      cào từ xenvn.com — URL mẫu Thăng Điền trong comment của
-      `Backend/.env.example`). Cũng cần sửa 2 dòng `ORG_CODE`/`SUBORG_CODE`
-      placeholder trong `.github/workflows/sync-lich-cup-dien.yml` nếu dùng nút
-      chạy tay khẩn cấp.
+- [x] **EVN CPC** (lịch cắt điện) — đã xác nhận (2026-09-14): Trà Liên do
+      **Điện lực Trà My (PC05NN)** phụ trách. Đã điền
+      `XENVN_URL=https://xenvn.com/lich-cup-dien/dien-luc-tra-my-pc05nn/` và
+      `EVNCPC_SUBORG_CODE=PC05NN` trong `Backend/.env`. **Lưu ý quan trọng**:
+      nguồn xenvn này gộp chung NHIỀU xã (Trà Liên, Trà Giáp, Trà My, Trà
+      Đốc...) trong cùng 1 feed — khác Thăng Điền (Điện lực Thăng Bình chỉ có
+      1 xã dùng chung nên không cần lọc). Đã thêm bước lọc theo tên khu vực
+      trong `catDienService.js` (`TRA_LIEN_STATION_KEYWORDS`/
+      `isTraLienStation`), chỉ giữ lại các "Khu Vực" đã XÁC NHẬN thuộc Trà
+      Liên: 3 tên xã cũ trước sáp nhập ("Trà Đông", "Trà Nú", "Trà Kót" —
+      Nghị quyết 1659/NQ-UBTVQH15) + thôn "Tak Kót"/"Tak Ngưi" (tên mới của
+      Thôn 1/2 xã Trà Kót cũ, theo đúng Nghị quyết đổi tên thôn của xã Trà
+      Liên) + các thôn đã biết qua tin tức chính thức ("Tăk Nú", "Làng Gạch",
+      "Phương Đông", "Định Yên", "Ba Hương"). Đã test cào thật: 10 dòng lịch
+      hiện có trên xenvn, chỉ 1 dòng ("Trà Đông 2-1") khớp allowlist, 9 dòng
+      còn lại (2 dòng "Trà Giáp..." thuộc xã Trà Giáp — xác nhận KHÔNG phải
+      Trà Liên; 7 dòng dạng "TBA Tak.../Nóc..." không xác nhận được thuộc xã
+      nào) bị loại đúng như phân tích. **Còn TODO**: nếu UBND xã xác nhận
+      thêm các thôn dạng "Tak.../Nóc..." (LăngPok, TakRâu, Tak Lủ, Nóc Ông
+      Xích, Nóc Ông Thu — quan sát 2026-09-14, có thể còn tên khác xuất hiện
+      sau) thuộc Trà Liên, bổ sung vào `TRA_LIEN_STATION_KEYWORDS` trong
+      `catDienService.js`. Không còn cần EVN CPC API trực tiếp
+      (`EVNCPC_ORG_CODE`) hay workflow ingest GitHub Actions nữa — xenvn.com
+      cào thẳng được từ VPS.
 - [x] **Trang TTĐT xã Trà Liên — Tin tức**: đã xác nhận URL
       `https://tralien.danang.gov.vn` (2026-09-14). Trang này dùng portal
       VNPT (theme "qnm-ubnd", hạ tầng cũ Quảng Nam) — **KHÁC HẲN** CMS

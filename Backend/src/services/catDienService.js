@@ -117,6 +117,51 @@ function isConfigured() {
   return Boolean(config.evncpc.xenvnUrl);
 }
 
+// Nguồn xenvn.com của "Điện lực Trà My" gộp chung TOÀN BỘ khu vực điện lực phụ
+// trách (nhiều xã sau sáp nhập: Trà Liên, Trà Giáp, Trà My, Trà Đốc...), không
+// tách riêng theo xã — khác Thăng Điền (điện lực Thăng Bình chỉ có 1 xã dùng
+// chung feed nên không cần lọc). Trà Liên = ghép xã Trà Đông + Trà Nú + Trà Kót
+// (Nghị quyết 1659/NQ-UBTVQH15, xác nhận qua tìm kiếm 2026-09-14) nên phải lọc
+// theo tên khu vực trước khi lưu, tránh trộn lẫn lịch cắt điện của xã khác.
+//
+// Danh sách khoá dưới đây CHỈ gồm tên đã xác nhận chắc chắn (không đoán theo
+// tiền tố "Tak"/"Nóc" vì các tiền tố này dùng chung cho nhiều xã miền núi lân
+// cận, không riêng Trà Liên):
+// - "Trà Đông"/"Trà Nú"/"Trà Kót": tên 3 xã cũ trước sáp nhập.
+// - "Tak Kót"/"Tak Ngưi": tên mới của Thôn 1/Thôn 2 xã Trà Kót cũ (theo đúng
+//   Nghị quyết đổi tên thôn của xã Trà Liên, xác nhận qua trang Facebook
+//   chính thức UBND huyện Bắc Trà My cũ).
+// - "Tăk Nú"/"Làng Gạch"/"Phương Đông"/"Định Yên"/"Ba Hương": tên thôn đã xuất
+//   hiện trong tin tức chính thức tralien.danang.gov.vn (xem
+//   Backend/scripts/seed-site-content.js, docs/SETUP_CHECKLIST.md mục Thôn xóm).
+//
+// Có những khu vực trong feed KHÔNG khớp allowlist này (VD: "TBA LăngPok",
+// "TBA TakRâu", "TBA Tak Lủ", "Nóc Ông Xích", "TBA Nóc Ông Thu" — quan sát
+// 2026-09-14) mà KHÔNG xác nhận được thuộc Trà Liên hay xã lân cận nên bị bỏ
+// qua (an toàn hơn là đoán sai và trộn nhầm lịch của xã khác). Nếu UBND xã xác
+// nhận thêm thôn thuộc diện này, thêm tên vào mảng bên dưới.
+const TRA_LIEN_STATION_KEYWORDS = [
+  "Trà Đông",
+  "Trà Nú",
+  "Trà Kót",
+  "Tak Kót",
+  "Tăk Kót",
+  "Tak Ngưi",
+  "Tăk Ngưi",
+  "Tak Nú",
+  "Tăk Nú",
+  "Làng Gạch",
+  "Phương Đông",
+  "Định Yên",
+  "Ba Hương",
+];
+const TRA_LIEN_KEYWORD_SLUGS = TRA_LIEN_STATION_KEYWORDS.map(slug);
+
+function isTraLienStation(stationName) {
+  const s = slug(stationName);
+  return TRA_LIEN_KEYWORD_SLUGS.some((kw) => kw && s.includes(kw));
+}
+
 async function fetchFromXenvn() {
   const res = await fetch(config.evncpc.xenvnUrl, {
     headers: { "User-Agent": XENVN_UA },
@@ -124,7 +169,7 @@ async function fetchFromXenvn() {
   });
   if (!res.ok) throw new Error(`xenvn.com trả về HTTP ${res.status}`);
   const html = await res.text();
-  if (!html.includes("Điện lực Thăng Bình") && !html.includes("Lịch cúp điện") && !html.includes("xenvn")) {
+  if (!html.includes("Điện lực Trà My") && !html.includes("Lịch cúp điện") && !html.includes("xenvn")) {
     throw new Error("Nội dung trả về từ xenvn.com không đúng cấu trúc trang");
   }
   return parseXenvnHtml(html);
@@ -188,8 +233,11 @@ async function syncOutages() {
     }
   }
 
+  const filtered = items.filter((it) => isTraLienStation(it.stationName));
+  const skipped = items.length - filtered.length;
+
   const syncStart = new Date();
-  const upserted = await upsertItems(items, config.evncpc.subOrgCode);
+  const upserted = await upsertItems(filtered, config.evncpc.subOrgCode);
 
   // Dọn lịch trong khung CÒN HIỆU LỰC (toDate >= đầu ngày hôm nay, giờ VN — đúng
   // khung mà getOutages hiển thị) nhưng KHÔNG được lần cào này cập nhật (crawledAt
@@ -207,7 +255,7 @@ async function syncOutages() {
   });
 
   console.log(
-    `[CatDien] Cào xenvn.com: ${items.length} lịch, upsert ${upserted}, dọn ${purge.deletedCount || 0} lịch cũ`
+    `[CatDien] Cào xenvn.com: ${items.length} lịch (${skipped} ngoài khu vực Trà Liên, bỏ qua), upsert ${upserted}, dọn ${purge.deletedCount || 0} lịch cũ`
   );
   await recordSyncStatus({ source: "xenvn-vps", count: upserted });
   return upserted;
@@ -284,6 +332,7 @@ module.exports = {
   fetchOutagesForSubOrg,
   fetchFromXenvn,
   parseXenvnHtml,
+  isTraLienStation,
   syncOutages,
   ingestOutages,
   getOutages,

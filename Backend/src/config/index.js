@@ -45,10 +45,10 @@ module.exports = {
   mediaDir: process.env.MEDIA_DIR || path.join(__dirname, "..", "..", "media"),
 
   // ===== Lịch cắt điện (EVN CPC public API) =====
-  // TODO: orgCode/subOrgCode/xenvnUrl của Thăng Điền (điện lực Thăng Bình,
-  // PC05FF) KHÔNG áp dụng cho Trà Liên — copy nguyên từ xã khác sẽ trả sai khu
-  // vực. Để trống cho tới khi tra được mã đơn vị điện lực phụ trách Trà Liên
-  // (xem docs/SETUP_CHECKLIST.md); catDienService tự bỏ qua sync khi thiếu mã.
+  // Trà Liên do Điện lực Trà My (PC05NN) phụ trách — đã xác nhận 2026-09-14
+  // (xem docs/SETUP_CHECKLIST.md). Nguồn xenvn.com của điện lực này gộp chung
+  // NHIỀU xã (Trà Liên, Trà Giáp, Trà My...) nên catDienService.js lọc theo
+  // tên khu vực (isTraLienStation) trước khi lưu — không dùng nguyên feed thô.
   evncpc: {
     apiUrl: process.env.EVNCPC_API_URL || "https://cskh-api.cpc.vn/api/remote/outages/area",
     orgListUrl:
