@@ -112,25 +112,13 @@ Backend chạy đầy đủ tính năng và lên production. Đánh dấu `[x]` 
 - [x] **EVN CPC** (lịch cắt điện) — đã xác nhận (2026-09-14): Trà Liên do
       **Điện lực Trà My (PC05NN)** phụ trách. Đã điền
       `XENVN_URL=https://xenvn.com/lich-cup-dien/dien-luc-tra-my-pc05nn/` và
-      `EVNCPC_SUBORG_CODE=PC05NN` trong `Backend/.env`. **Lưu ý quan trọng**:
-      nguồn xenvn này gộp chung NHIỀU xã (Trà Liên, Trà Giáp, Trà My, Trà
-      Đốc...) trong cùng 1 feed — khác Thăng Điền (Điện lực Thăng Bình chỉ có
-      1 xã dùng chung nên không cần lọc). Đã thêm bước lọc theo tên khu vực
-      trong `catDienService.js` (`TRA_LIEN_STATION_KEYWORDS`/
-      `isTraLienStation`), chỉ giữ lại các "Khu Vực" đã XÁC NHẬN thuộc Trà
-      Liên: 3 tên xã cũ trước sáp nhập ("Trà Đông", "Trà Nú", "Trà Kót" —
-      Nghị quyết 1659/NQ-UBTVQH15) + thôn "Tak Kót"/"Tak Ngưi" (tên mới của
-      Thôn 1/2 xã Trà Kót cũ, theo đúng Nghị quyết đổi tên thôn của xã Trà
-      Liên) + các thôn đã biết qua tin tức chính thức ("Tăk Nú", "Làng Gạch",
-      "Phương Đông", "Định Yên", "Ba Hương"). Đã test cào thật: 10 dòng lịch
-      hiện có trên xenvn, chỉ 1 dòng ("Trà Đông 2-1") khớp allowlist, 9 dòng
-      còn lại (2 dòng "Trà Giáp..." thuộc xã Trà Giáp — xác nhận KHÔNG phải
-      Trà Liên; 7 dòng dạng "TBA Tak.../Nóc..." không xác nhận được thuộc xã
-      nào) bị loại đúng như phân tích. **Còn TODO**: nếu UBND xã xác nhận
-      thêm các thôn dạng "Tak.../Nóc..." (LăngPok, TakRâu, Tak Lủ, Nóc Ông
-      Xích, Nóc Ông Thu — quan sát 2026-09-14, có thể còn tên khác xuất hiện
-      sau) thuộc Trà Liên, bổ sung vào `TRA_LIEN_STATION_KEYWORDS` trong
-      `catDienService.js`. Không còn cần EVN CPC API trực tiếp
+      `EVNCPC_SUBORG_CODE=PC05NN` trong `Backend/.env`. **Lưu ý**: nguồn xenvn
+      này gộp chung NHIỀU xã (Trà Liên, Trà Giáp, Trà My, Trà Đốc...) trong
+      cùng 1 feed — ban đầu có thử lọc chỉ giữ khu vực xác nhận thuộc Trà
+      Liên, nhưng theo yêu cầu xã (2026-09-14) đã đổi lại lấy **TOÀN BỘ**
+      trạm của khu vực Trà My (giống cách Thăng Điền dùng chung feed Thăng
+      Bình) — dân tự chọn khu vực mình qua bộ lọc "chọn trạm" có sẵn trong
+      `lich-cup-dien.jsx`. Không còn cần EVN CPC API trực tiếp
       (`EVNCPC_ORG_CODE`) hay workflow ingest GitHub Actions nữa — xenvn.com
       cào thẳng được từ VPS.
 - [x] **Trang TTĐT xã Trà Liên — Tin tức**: đã xác nhận URL
@@ -178,6 +166,15 @@ Backend chạy đầy đủ tính năng và lên production. Đánh dấu `[x]` 
       `TODO`) và thông tin Chủ tịch UBND (Nguyễn Hồng Vương) vào
       `SiteInfo.contact` — **chưa có UI hiển thị** tên chủ tịch ở MiniApp,
       chỉ mới lưu dữ liệu.
+- [x] **Trang Liên hệ — bản đồ + logo** (2026-09-14): tab "Liên hệ" trước chỉ
+      hiện placeholder text "bản đồ vị trí UBND xã" — đã nhúng iframe Bản đồ
+      số Đà Nẵng lọc sẵn theo địa giới xã
+      (`https://bando.danang.gov.vn/?ward=Trà Liên`, cùng URL đã dùng ở
+      quick-link "Bản đồ" trên Trang chủ). Đã xác nhận `bando.danang.gov.vn`
+      không chặn iframe (không có header `X-Frame-Options`/CSP
+      `frame-ancestors`). Cũng đổi icon "UBND xã" (Material icon chung
+      chung) thành logo thật của xã (`static/logo-tralien.png`, cùng ảnh
+      dùng ở Trang chủ) cho đồng bộ nhận diện thương hiệu.
 
 ## 5. AI & tiện ích khác
 

@@ -4,6 +4,7 @@ import { Page, Header } from "zmp-ui";
 import Icon from "../components/icon.jsx";
 import API_BASE_URL from "../data/api-config.js";
 import { openExternal } from "../utils/open-external.js";
+import logo from "../static/logo-tralien.png";
 
 // Suy ra trạng thái "đang làm việc" từ chuỗi workHours dạng
 // "Thứ 2 - Thứ 6 · 07:30-11:30, 13:30-17:00". Trả về null nếu không tách
@@ -28,6 +29,11 @@ function getOpenStatus(workHours) {
   }
   return { open: false };
 }
+
+// Bản đồ số Đà Nẵng, lọc sẵn theo địa giới xã Trà Liên — cùng URL đã dùng ở
+// quick-link "Bản đồ" trên Trang chủ (data/quick-links.js). Nhúng iframe thay
+// vì mở tab ngoài để dân thấy ngay vị trí UBND xã trong tab Liên hệ.
+const WARD_MAP_URL = "https://bando.danang.gov.vn/?ward=Tr%C3%A0%20Li%C3%AAn";
 
 const ContactPage = () => {
   const navigate = useNavigate();
@@ -71,7 +77,7 @@ const ContactPage = () => {
       <div className="contact-card">
         <div className="contact-card__head">
           <div className="contact-card__crest">
-            <Icon name="account_balance" className="i26" />
+            <img src={logo} alt="Logo xã Trà Liên" />
           </div>
           <div>
             <div className="contact-card__name">{c.officeName}</div>
@@ -229,7 +235,12 @@ const ContactPage = () => {
 
       <div className="mapcard">
         <div className="mapcard__img">
-          <span className="mapcard__ph">bản đồ vị trí UBND xã</span>
+          <iframe
+            className="mapcard__iframe"
+            src={WARD_MAP_URL}
+            title="Bản đồ vị trí UBND xã Trà Liên"
+            loading="lazy"
+          />
         </div>
         <div className="mapcard__row">
           <Icon name="location_on" className="i20 pink" />

@@ -50,7 +50,7 @@ code. ✅ = chạy thật, có bằng chứng · 🟡 = có nhưng chưa đầy 
 | Việc | Trạng thái | Bằng chứng |
 |---|---|---|
 | **Lịch y tế** (module mới xây riêng cho Trà Liên) | ✅ | Đầy đủ 5 lớp (model → API admin/public → trang AdminWeb → trang MiniApp), đã test tạo/đọc/xoá qua API thật |
-| Lịch cắt điện | ✅ Đã xác định đúng điện lực + lọc đúng khu vực, chạy thật trên production | Điện lực Trà My (PC05NN) phụ trách Trà Liên. Nguồn xenvn.com gộp chung nhiều xã nên đã thêm bước lọc theo tên khu vực (`isTraLienStation` trong `catDienService.js`) — chỉ giữ "Khu Vực" đã xác nhận thuộc Trà Liên (Trà Đông/Trà Nú/Trà Kót + các thôn đã đổi tên/đã biết). Test thật: 10 dòng lịch trên xenvn, đúng 1 dòng khớp Trà Liên, 9 dòng của xã khác bị loại chính xác. |
+| Lịch cắt điện | ✅ Đã xác định đúng điện lực, chạy thật trên production | Điện lực Trà My (PC05NN) phụ trách Trà Liên. Nguồn xenvn.com gộp chung nhiều xã trong 1 feed — theo yêu cầu xã, lấy TOÀN BỘ trạm của khu vực Trà My (không lọc riêng Trà Liên), dân tự chọn khu vực mình qua bộ lọc "chọn trạm" có sẵn trong MiniApp. |
 | Tra cứu hồ sơ TTHC (IOCTC) | ⬜ Vẫn thiếu tài khoản | Tương tự CGY1022 — cần quyết định tài khoản riêng/chung |
 | Văn bản - Chính sách | ✅ Đã viết lại đúng site thật, chạy thật trên production | `vanBanTraLienService.js` cào đúng cấu trúc `ul.ArticleList > li.row` của `tralien.danang.gov.vn/van-ban-chi-dao-dieu-hanh` (ngày ban hành lấy từ `.Ngaydang`, không đoán từ tiêu đề nữa). Test `GET /api/public/van-ban` trên production trả về văn bản thật (VD: "Thông báo Lịch tiếp công dân năm 2026 của Thường trực HĐND..."). |
 
@@ -68,11 +68,5 @@ code. ✅ = chạy thật, có bằng chứng · 🟡 = có nhưng chưa đầy 
 
 **1 việc còn lại có giá trị cao nhất để hoàn thiện tiếp**:
 1. Xin `ANTHROPIC_API_KEY` — bật chatbot ngay lập tức, không cần code thêm.
-
-Ngoài ra, lịch cắt điện đang lọc theo danh sách thôn/khu vực đã XÁC NHẬN chắc
-chắn thuộc Trà Liên (xem mục 5 ở trên) — nếu UBND xã xác nhận thêm các khu vực
-dạng "Tak.../Nóc..." trên xenvn.com thuộc Trà Liên, cần bổ sung vào
-`TRA_LIEN_STATION_KEYWORDS` (`Backend/src/services/catDienService.js`) để
-không bỏ sót cảnh báo cắt điện thật.
 
 Việc "tự động broadcast tin/cảnh báo" (mục 1) và "IOCTC" (mục 5) cần xã quyết định trước (có muốn tự động hoàn toàn không kiểm duyệt? dùng tài khoản IOCTC nào?) nên xếp sau.
