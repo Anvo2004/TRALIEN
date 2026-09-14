@@ -1,10 +1,32 @@
 const config = require("../config");
 const VanBan = require("../models/VanBan");
 
-// Trang "Thông tin chỉ đạo điều hành" của xã dùng DotNetNuke/Telerik RadGrid — phân
-// trang qua __doPostBack (cần VIEWSTATE), không có ?page=N như 1022.vn của Đại Lộc.
-// Vì trang luôn hiển thị tin mới nhất ở đầu danh sách, chỉ cần cào trang mặc định
-// mỗi lần đồng bộ là đủ bắt được tin mới; tin cũ đã có sẵn trong DB (upsert theo detailUrl).
+// ============================================================
+// Cào "Văn bản" (thực chất là menu tổng hợp: Văn bản Đảng ủy/HĐND/UBND/Mặt
+// trận-Đoàn thể/Lịch công tác tuần/Lịch tiếp công dân — xem submenu thật) từ
+// config.vanBanSourceUrl (mặc định /van-ban-chi-dao-dieu-hanh).
+//
+// Cùng portal VNPT với Tin tức (newsScrapeService.js) NHƯNG cấu trúc HTML
+// KHÁC: danh sách phẳng <ul class="ArticleList"><li class="row"> (không chia
+// theo <div class="ArticleCat"> như trang Tin tức), có ngày ban hành riêng
+// trong <div class="Ngaydang"> — đáng tin hơn hẳn cách cũ (tách "Ngày
+// X/Y/Z" từ tiêu đề bằng regex, không phải văn bản nào cũng viết đúng mẫu
+// câu đó trong tiêu đề).
+//
+// Không cào trang chi tiết (dù có file PDF đính kèm thật, xem <a> "Tải về"
+// trong .ArticleContent) — theo đúng quy ước cũ, chỉ dẫn dân ra detailUrl
+// (trang nguồn) để xem/tải văn bản gốc, giữ cào nhẹ (không thêm 1 request/
+// văn bản mỗi lần đồng bộ).
+// ============================================================
+
+function toAbsoluteUrl(href, base) {
+  try {
+    return new URL(href, base).href;
+  } catch {
+    return href;
+  }
+}
+
 async function fetchListing() {
   const cheerio = require("cheerio");
   const res = await fetch(config.vanBanSourceUrl, {
@@ -15,20 +37,29 @@ async function fetchListing() {
   const $ = cheerio.load(html);
 
   const rows = [];
-  $("tr.rgRow, tr.rgAltRow").each((_, el) => {
-    const a = $(el).find("a.tieudetin").first();
-    const title = (a.attr("title") || a.text() || "").trim();
-    const detailUrl = a.attr("href") || "";
-    if (!title || !detailUrl) return;
-    rows.push({ title, detailUrl });
+  $("ul.ArticleList > li.row").each((_, el) => {
+    const $el = $(el);
+    const a = $el.find("h2.Title a").first();
+    const title = a.text().replace(/\s+/g, " ").trim();
+    const href = a.attr("href") || "";
+    if (!title || !href) return;
+
+    const dateStr = $el.find(".Ngaydang").first().text().replace(/\s+/g, " ").trim();
+    rows.push({
+      title,
+      detailUrl: toAbsoluteUrl(href, config.vanBanSourceUrl),
+      dateStr, // dd/MM/yyyy
+    });
   });
   return rows;
 }
 
-function parseVnDate(title) {
-  const m = title.match(/Ngày\s+(\d{1,2})\/(\d{1,2})\/(\d{4})/i);
+// dateStr dạng "dd/MM/yyyy" lấy trực tiếp từ .Ngaydang — không phải đoán từ tiêu đề.
+function parseNgaydang(dateStr) {
+  const m = (dateStr || "").match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
   if (!m) return null;
   const [, d, mo, y] = m;
+  // Giờ VN (UTC+7): mốc 00:00 VN = 17:00 UTC hôm trước -> offset -7h theo giờ UTC.
   return new Date(Date.UTC(parseInt(y), parseInt(mo) - 1, parseInt(d), -7, 0, 0, 0));
 }
 
@@ -65,7 +96,7 @@ async function syncVanBan() {
       title: r.title,
       detailUrl: r.detailUrl,
       soHieu: parseSoHieu(r.title),
-      ngayBanHanh: parseVnDate(r.title),
+      ngayBanHanh: parseNgaydang(r.dateStr),
       category: detectCategory(r.title),
       source: "Cổng TTĐT xã Trà Liên",
       crawledAt: new Date(),

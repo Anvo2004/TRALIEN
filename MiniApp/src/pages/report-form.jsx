@@ -5,7 +5,6 @@ import { getUserInfo, chooseImage } from "zmp-sdk/apis";
 import API_BASE_URL from "../data/api-config.js";
 
 const PHONE_RE = /^(0|\+84)[3-9]\d{8}$/;
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const MAX_IMAGES = 5;
 
 // Toạ độ lấy qua Web Geolocation chuẩn (navigator.geolocation) — chạy được
@@ -121,8 +120,8 @@ const ReportFormPage = () => {
       return;
     }
     const trimmedContact = contact.trim();
-    if (!PHONE_RE.test(trimmedContact) && !EMAIL_RE.test(trimmedContact)) {
-      setError("Số điện thoại hoặc email không hợp lệ.");
+    if (!PHONE_RE.test(trimmedContact)) {
+      setError("Số điện thoại không hợp lệ.");
       return;
     }
     if (content.trim().length < 5) {
@@ -275,11 +274,11 @@ const ReportFormPage = () => {
           </label>
 
           <label>
-            📞 Số điện thoại hoặc email *
+            📞 Số điện thoại *
             <input
               value={contact}
               onChange={(e) => setContact(e.target.value)}
-              placeholder="0912345678 hoặc email@example.com"
+              placeholder="0912345678"
               required
             />
           </label>

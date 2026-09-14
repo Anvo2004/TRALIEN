@@ -16,7 +16,6 @@ const upload = multer({
 });
 
 const PHONE_RE = /^(0|\+84)[3-9]\d{8}$/;
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 // Tiêu đề do dân nhập; bỏ trống thì suy ra từ lĩnh vực, cuối cùng mới cắt nội dung.
 function resolveTitle(rawTitle, content, categoryName) {
@@ -38,8 +37,8 @@ router.post("/feedbacks", upload.array("images", 5), async (req, res) => {
   if (!userId) {
     return res.status(400).json({ error: "Thiếu thông tin người dùng Zalo" });
   }
-  if (!contact || !(PHONE_RE.test(contact.trim()) || EMAIL_RE.test(contact.trim()))) {
-    return res.status(400).json({ error: "Số điện thoại hoặc email không hợp lệ" });
+  if (!contact || !PHONE_RE.test(contact.trim())) {
+    return res.status(400).json({ error: "Số điện thoại không hợp lệ" });
   }
   if (!content || content.trim().length < 5) {
     return res.status(400).json({ error: "Nội dung phải có ít nhất 5 ký tự" });
