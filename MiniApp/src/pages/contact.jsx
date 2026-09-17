@@ -5,6 +5,7 @@ import Icon from "../components/icon.jsx";
 import API_BASE_URL from "../data/api-config.js";
 import { openExternal } from "../utils/open-external.js";
 import logo from "../static/logo-tralien.png";
+import SITE from "../data/site.js";
 
 // Suy ra trạng thái "đang làm việc" từ chuỗi workHours dạng
 // "Thứ 2 - Thứ 6 · 07:30-11:30, 13:30-17:00". Trả về null nếu không tách
@@ -54,19 +55,15 @@ const ContactPage = () => {
 
   const c = contact || {};
   const openStatus = getOpenStatus(c.workHours);
-  // Địa chỉ lấy thẳng từ SiteInfo (Backend) — đổi trong DB là bản đồ + nút chỉ
-  // đường tự cập nhật theo, không hardcode toạ độ/tên xã nào ở đây. Dùng
-  // Google Maps (embed thường, không cần API key) thay cho bando.danang.gov.vn —
-  // portal đó là 1 SPA GIS phức tạp, nhúng iframe không đáng tin cậy để tự
-  // zoom/định vị đúng xã khi nhúng (kiểm chứng 2026-09-17: hiện bản đồ toàn
-  // thành phố thay vì riêng Trà Liên).
-  const mapQuery = [c.officeName, c.address].filter(Boolean).join(", ");
-  const mapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(
-    mapQuery || "UBND xã Trà Liên, Đà Nẵng"
-  )}&output=embed`;
-  const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    mapQuery || c.address || ""
-  )}`;
+  // Bản đồ số Đà Nẵng (bando.danang.gov.vn — .gov.vn, tránh bị Zalo từ chối
+  // kiểm duyệt vì điều hướng/nhúng trang thứ 3 không phải CQNN, xem
+  // .claude/rules — cùng lý do "Bản đồ mưa ngập" ở pctt.js bị ẩn). Kiểm
+  // chứng lại 2026-09-17 bằng Playwright: nhúng iframe VẪN đọc đúng query
+  // ?ward= và hiện đúng bảng thông tin xã Trà Liên (dân số/diện tích/trụ sở
+  // khớp SiteInfo) dù khung nền bản đồ zoom rộng hơn 1 xã — chấp nhận được
+  // vì mục đích của card này là hiển thị thông tin liên hệ, không phải GIS.
+  const mapEmbedUrl = `https://bando.danang.gov.vn/?ward=${encodeURIComponent(SITE.wardName)}`;
+  const mapsHref = mapEmbedUrl;
 
   return (
     <Page className="page-contact">

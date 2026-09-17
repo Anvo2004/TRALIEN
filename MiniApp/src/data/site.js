@@ -8,6 +8,7 @@ const SITE = {
   province: "Thành phố Đà Nẵng", // xác nhận từ tralien.danang.gov.vn
   badge: "Chính quyền số",
   heroCaption: "Xã Trà Liên",
+  wardName: "Trà Liên", // dùng để build query ?ward= cho bando.danang.gov.vn (pages/contact.jsx)
 };
 
 export default SITE;
