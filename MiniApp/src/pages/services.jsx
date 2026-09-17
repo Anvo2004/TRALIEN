@@ -1,11 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Page, Header } from "zmp-ui";
 import Icon from "../components/icon.jsx";
-import SERVICES, {
-  SERVICE_CATEGORIES,
-  SERVICE_PORTAL_LINKS,
-} from "../data/services.js";
+import { SERVICE_CATEGORIES } from "../data/services.js";
+import API_BASE_URL from "../data/api-config.js";
 import { openExternal } from "../utils/open-external.js";
 
 const STEPS = [
@@ -18,8 +16,22 @@ const STEPS = [
 const ServicesPage = () => {
   const navigate = useNavigate();
   const [activeCategory, setActiveCategory] = useState("all");
+  const [services, setServices] = useState([]);
+  const [portalLinks, setPortalLinks] = useState([]);
 
-  const filteredServices = SERVICES.filter(
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/public/app-links?section=service`)
+      .then((res) => res.json())
+      .then((data) => setServices(data.items || []))
+      .catch(() => setServices([]));
+
+    fetch(`${API_BASE_URL}/api/public/app-links?section=portal`)
+      .then((res) => res.json())
+      .then((data) => setPortalLinks(data.items || []))
+      .catch(() => setPortalLinks([]));
+  }, []);
+
+  const filteredServices = services.filter(
     (service) => activeCategory === "all" || service.type === activeCategory
   );
 
@@ -50,7 +62,7 @@ const ServicesPage = () => {
             <span className="services-hero__badge-label">Trực tuyến</span>
           </div>
           <div className="services-hero__badge">
-            <b className="services-hero__badge-value">{SERVICES.length}</b>
+            <b className="services-hero__badge-value">{services.length}</b>
             <span className="services-hero__badge-label">Nhóm dịch vụ</span>
           </div>
         </div>
@@ -87,7 +99,7 @@ const ServicesPage = () => {
           const Tag = service.path ? "button" : "div";
           return (
             <Tag
-              key={service.title}
+              key={service._id}
               type={service.path ? "button" : undefined}
               className="service-list__item"
               onClick={service.path ? () => navigate(service.path) : undefined}
@@ -95,7 +107,7 @@ const ServicesPage = () => {
               <span className={`tile tile-${service.color || "b"}`}>
                 <Icon name={service.icon} className="i22" />
               </span>
-              <h3 className="service-list__title">{service.title}</h3>
+              <h3 className="service-list__title">{service.label}</h3>
               <span
                 className={`service-list__badge service-list__badge--${service.type}`}
               >
@@ -116,21 +128,22 @@ const ServicesPage = () => {
         </span>
       </div>
       <div className="listcard">
-        {SERVICE_PORTAL_LINKS.map((link) => (
+        {portalLinks.map((link) => (
           <button
-            key={link.title}
+            key={link._id}
             type="button"
             className="prow"
             onClick={() =>
               link.path ? navigate(link.path) : openExternal(link.href)
             }
+            disabled={!link.path && !link.href}
           >
             <span className={`tile sm tile-${link.color || "b"}`}>
               <Icon name={link.icon} className="i20" />
             </span>
             <span className="prow__body">
               <span className="prow__title">
-                {link.title}
+                {link.label}
                 {link.badge && (
                   <em className="prow__badge">{link.badge}</em>
                 )}

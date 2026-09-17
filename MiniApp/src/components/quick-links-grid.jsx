@@ -1,17 +1,25 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import QUICK_LINKS from "../data/quick-links.js";
+import API_BASE_URL from "../data/api-config.js";
 import { openExternal } from "../utils/open-external.js";
 import Icon from "./icon.jsx";
 
 const QuickLinksGrid = () => {
   const navigate = useNavigate();
+  const [items, setItems] = useState([]);
+
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/api/public/app-links?section=quick_link`)
+      .then((res) => res.json())
+      .then((data) => setItems(data.items || []))
+      .catch(() => setItems([]));
+  }, []);
 
   return (
     <div className="quick-links">
-      {QUICK_LINKS.map((item) => (
+      {items.map((item) => (
         <button
-          key={item.label}
+          key={item._id}
           type="button"
           className="quick-links__item"
           onClick={() =>

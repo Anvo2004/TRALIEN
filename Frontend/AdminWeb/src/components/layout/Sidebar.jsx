@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { LayoutDashboard, MessageSquare, Users, LogOut, Settings, Send, Wallet, Stethoscope } from 'lucide-react'
+import { LayoutDashboard, MessageSquare, Users, LogOut, Settings, Send, Wallet, Stethoscope, FileText, LayoutGrid } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { cn } from '@/lib/utils'
 import logoImg from '@/images/logotralien.jpg'
@@ -74,6 +74,8 @@ export default function Sidebar() {
           <NavItem to="/feedbacks"  icon={MessageSquare}   label="Góp ý & Phản ánh" />
           <NavItem to="/tro-cap"    icon={Wallet}          label="Lịch chi trả trợ cấp" />
           <NavItem to="/lich-y-te"  icon={Stethoscope}     label="Lịch y tế" />
+          <NavItem to="/thu-tuc-hanh-chinh" icon={FileText} label="Thủ tục hành chính" />
+          <NavItem to="/app-links" icon={LayoutGrid} label="Icon & liên kết MiniApp" />
         </div>
 
         {user?.role === 'superadmin' && (

@@ -14,6 +14,8 @@ import SettingsPage from '@/pages/SettingsPage'
 import MessagesPage from '@/pages/MessagesPage'
 import TroCapPage from '@/pages/TroCapPage'
 import LichYTePage from '@/pages/LichYTePage'
+import ThuTucHanhChinhPage from '@/pages/ThuTucHanhChinhPage'
+import AppLinksPage from '@/pages/AppLinksPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -36,6 +38,8 @@ export default function App() {
                 <Route path="/feedbacks/:id" element={<FeedbackDetailPage />} />
                 <Route path="/tro-cap" element={<TroCapPage />} />
                 <Route path="/lich-y-te" element={<LichYTePage />} />
+                <Route path="/thu-tuc-hanh-chinh" element={<ThuTucHanhChinhPage />} />
+                <Route path="/app-links" element={<AppLinksPage />} />
                 <Route path="/users" element={<UsersPage />} />
                 <Route path="/users/new" element={<UserFormPage />} />
                 <Route path="/users/:id/edit" element={<UserFormPage />} />

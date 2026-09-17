@@ -465,6 +465,58 @@ body {
   }
 }
 
+.home-search__results {
+  position: absolute;
+  top: calc(100% + 6px);
+  left: 0;
+  right: 50px; // chừa chỗ nút QR bên phải, không che
+  z-index: 20;
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 12px 30px -8px rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  max-height: 280px;
+  overflow-y: auto;
+}
+
+.home-search__item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  cursor: pointer;
+
+  & + & {
+    border-top: 1px solid #f0f0f0;
+  }
+
+  &:active {
+    background: #f7f7f7;
+  }
+}
+
+.home-search__icon {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.home-search__label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #222;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.home-search__empty {
+  padding: 14px 12px;
+  font-size: 12.5px;
+  color: #888;
+  text-align: center;
+}
+
 /* Banner */
 .banner {
   position: relative;
@@ -2741,6 +2793,98 @@ body {
   justify-content: space-between;
   font-size: 12px;
   color: #888;
+}
+
+/* Danh mục thủ tục hành chính */
+.tthc-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.tthc-card {
+  background: #fff;
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.06);
+  cursor: pointer;
+}
+
+.tthc-card__head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.tthc-card__title {
+  font-weight: 700;
+  font-size: 14px;
+  flex: 1;
+}
+
+.tthc-card__chevron {
+  color: #999;
+  transition: transform 0.15s ease;
+  flex-shrink: 0;
+}
+
+.tthc-card.is-open .tthc-card__chevron {
+  transform: rotate(90deg);
+}
+
+.tthc-card__meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.tthc-card__tag {
+  background: #e8f0fe;
+  color: $blue;
+  font-size: 11px;
+  padding: 3px 8px;
+  border-radius: 999px;
+}
+
+.tthc-card__tag--muc4 {
+  background: #e6f4ea;
+  color: #1e8e3e;
+}
+
+.tthc-card__body {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed #e5e5e5;
+  font-size: 13px;
+  color: #444;
+}
+
+.tthc-card__body-row {
+  margin-bottom: 8px;
+}
+
+.tthc-card__body-row b {
+  display: block;
+  margin-bottom: 2px;
+  color: #222;
+}
+
+.tthc-card__body-row ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.tthc-card__link {
+  display: inline-block;
+  margin-top: 4px;
+  background: $gradient-brand;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  padding: 8px 16px;
+  border-radius: 999px;
 }
 
 /* Lịch cắt điện filter */

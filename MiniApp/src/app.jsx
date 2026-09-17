@@ -11,6 +11,7 @@ import ContactPage from "./pages/contact.jsx";
 import ReportFormPage from "./pages/report-form.jsx";
 import MyReportsPage from "./pages/phan-anh-cua-toi.jsx";
 import TraCuuHoSoPage from "./pages/tra-cuu-ho-so.jsx";
+import ThuTucHanhChinhPage from "./pages/thu-tuc-hanh-chinh.jsx";
 import VanBanPage from "./pages/van-ban.jsx";
 import LichCupDienPage from "./pages/lich-cup-dien.jsx";
 import LichYTePage from "./pages/lich-y-te.jsx";
@@ -49,6 +50,7 @@ const MyApp = () => {
             <Route path="/phan-anh" element={<ReportFormPage />} />
             <Route path="/phan-anh-cua-toi" element={<MyReportsPage />} />
             <Route path="/tra-cuu-ho-so" element={<TraCuuHoSoPage />} />
+            <Route path="/thu-tuc-hanh-chinh" element={<ThuTucHanhChinhPage />} />
             <Route path="/van-ban" element={<VanBanPage />} />
             <Route path="/lich-cup-dien" element={<LichCupDienPage />} />
             <Route path="/lich-y-te" element={<LichYTePage />} />

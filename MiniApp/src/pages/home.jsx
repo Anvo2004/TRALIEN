@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Page } from "zmp-ui";
 import Icon from "../components/icon.jsx";
+import HomeSearch from "../components/home-search.jsx";
 import StatsRow from "../components/stats-row.jsx";
 import QuickLinksGrid from "../components/quick-links-grid.jsx";
 import NewsCard from "../components/news-card.jsx";
@@ -53,15 +54,7 @@ const HomePage = () => {
             </p>
           </div>
         </div>
-        <div className="home-hero__search">
-          <div className="home-hero__search-input">
-            <Icon name="search" className="i18 mint" />
-            <input readOnly placeholder="Tìm dịch vụ, thủ tục, thông báo…" />
-          </div>
-          <button type="button" className="home-hero__qr" aria-label="Tạo mã QR">
-            <Icon name="qr_code_scanner" className="i20" />
-          </button>
-        </div>
+        <HomeSearch />
         <div className="home-hero__banner">
           <img src={bannerPortal} alt="Trang thông tin điện tử xã Trà Liên" />
         </div>

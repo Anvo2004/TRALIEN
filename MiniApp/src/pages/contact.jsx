@@ -30,11 +30,6 @@ function getOpenStatus(workHours) {
   return { open: false };
 }
 
-// Bản đồ số Đà Nẵng, lọc sẵn theo địa giới xã Trà Liên — cùng URL đã dùng ở
-// quick-link "Bản đồ" trên Trang chủ (data/quick-links.js). Nhúng iframe thay
-// vì mở tab ngoài để dân thấy ngay vị trí UBND xã trong tab Liên hệ.
-const WARD_MAP_URL = "https://bando.danang.gov.vn/?ward=Tr%C3%A0%20Li%C3%AAn";
-
 const ContactPage = () => {
   const navigate = useNavigate();
   const [contact, setContact] = useState(null);
@@ -59,8 +54,18 @@ const ContactPage = () => {
 
   const c = contact || {};
   const openStatus = getOpenStatus(c.workHours);
+  // Địa chỉ lấy thẳng từ SiteInfo (Backend) — đổi trong DB là bản đồ + nút chỉ
+  // đường tự cập nhật theo, không hardcode toạ độ/tên xã nào ở đây. Dùng
+  // Google Maps (embed thường, không cần API key) thay cho bando.danang.gov.vn —
+  // portal đó là 1 SPA GIS phức tạp, nhúng iframe không đáng tin cậy để tự
+  // zoom/định vị đúng xã khi nhúng (kiểm chứng 2026-09-17: hiện bản đồ toàn
+  // thành phố thay vì riêng Trà Liên).
+  const mapQuery = [c.officeName, c.address].filter(Boolean).join(", ");
+  const mapEmbedUrl = `https://www.google.com/maps?q=${encodeURIComponent(
+    mapQuery || "UBND xã Trà Liên, Đà Nẵng"
+  )}&output=embed`;
   const mapsHref = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
-    c.address || ""
+    mapQuery || c.address || ""
   )}`;
 
   return (
@@ -237,7 +242,7 @@ const ContactPage = () => {
         <div className="mapcard__img">
           <iframe
             className="mapcard__iframe"
-            src={WARD_MAP_URL}
+            src={mapEmbedUrl}
             title="Bản đồ vị trí UBND xã Trà Liên"
             loading="lazy"
           />

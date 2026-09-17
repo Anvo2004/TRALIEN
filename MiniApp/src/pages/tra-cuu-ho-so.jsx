@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
 import { Page, Header, Box } from "zmp-ui";
 import API_BASE_URL from "../data/api-config.js";
 
@@ -22,14 +23,13 @@ function statusColor(trangThai) {
 }
 
 const TraCuuHoSoPage = () => {
+  const location = useLocation();
   const [maHoSo, setMaHoSo] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [dossiers, setDossiers] = useState(null); // null = chưa tra, [] = không tìm thấy
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const code = maHoSo.trim();
+  const search = async (code) => {
     if (!code) return;
 
     setLoading(true);
@@ -50,6 +50,22 @@ const TraCuuHoSoPage = () => {
     } finally {
       setLoading(false);
     }
+  };
+
+  // Đến từ quét mã QR ở Trang chủ (xem home-search.jsx) — QR ghi mã hồ sơ
+  // trên biên nhận giấy thì tự điền + tra luôn, không bắt gõ lại tay.
+  useEffect(() => {
+    const prefill = location.state?.prefillMaHoSo;
+    if (prefill) {
+      setMaHoSo(prefill);
+      search(prefill);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [location.state]);
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    search(maHoSo.trim());
   };
 
   return (

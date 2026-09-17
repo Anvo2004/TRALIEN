@@ -12,6 +12,8 @@ const DanSo = require("../models/DanSo");
 const DuLich = require("../models/DuLich");
 const VanHoa = require("../models/VanHoa");
 const SiteInfo = require("../models/SiteInfo");
+const ThuTucHanhChinh = require("../models/ThuTucHanhChinh");
+const AppLink = require("../models/AppLink");
 
 const router = express.Router();
 
@@ -129,6 +131,30 @@ router.get("/thong-bao", async (req, res) => {
 // ===== Thôn xóm =====
 router.get("/thon-xom", async (req, res) => {
   const items = await Village.find().sort({ thuTu: 1, ten: 1 }).lean();
+  res.json({ items });
+});
+
+// ===== Danh mục thủ tục hành chính (xem trước, KHÁC tra cứu hồ sơ theo mã) =====
+// Hỗ trợ ?q= để lọc theo tên/lĩnh vực — dùng chung cho trang danh mục và ô
+// tìm kiếm ở Trang chủ.
+router.get("/thu-tuc-hanh-chinh", async (req, res) => {
+  const { q = "" } = req.query;
+  const filter = {};
+  if (q) {
+    const regex = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+    filter.$or = [{ tenThuTuc: regex }, { linhVuc: regex }];
+  }
+  const items = await ThuTucHanhChinh.find(filter).sort({ order: 1, tenThuTuc: 1 }).lean();
+  res.json({ items });
+});
+
+// ===== Icon/liên kết MiniApp (Tiện ích nhanh, Dịch vụ, Cổng dịch vụ công) =====
+// ?section=quick_link | service | portal — xem AppLink.js để biết ý nghĩa.
+router.get("/app-links", async (req, res) => {
+  const { section } = req.query;
+  const filter = {};
+  if (section) filter.section = section;
+  const items = await AppLink.find(filter).sort({ order: 1, label: 1 }).lean();
   res.json({ items });
 });
 

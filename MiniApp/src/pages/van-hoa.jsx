@@ -3,6 +3,7 @@ import { Page, Header, Box } from "zmp-ui";
 import API_BASE_URL from "../data/api-config.js";
 import CardMedia from "../components/card-media.jsx";
 import DetailSheet from "../components/detail-sheet.jsx";
+import { openExternal } from "../utils/open-external.js";
 
 const VanHoaPage = () => {
   const [vanHoa, setVanHoa] = useState(null);
@@ -114,24 +115,34 @@ const VanHoaPage = () => {
       <Box className="section">
         <div className="section__title">📰 Tin tức văn hóa</div>
         <div className="culture-news-list">
-          {tinTuc.map((news) => (
-            <div key={news.id} className="culture-news-card">
-              <div className="culture-news-card__banner">
-                <CardMedia item={news} fallback={<div className="culture-news-card__ph">🏛️</div>} />
-              </div>
-              <div className="culture-news-card__body">
-                <div className="culture-news-card__meta">
-                  <span className="culture-news-card__tag">{news.tag}</span>
-                  <span className="culture-news-card__date">{news.date}</span>
+          {tinTuc.map((news) => {
+            const clickable = Boolean(news.link);
+            return (
+              <div
+                key={news.id}
+                className="culture-news-card"
+                onClick={clickable ? () => openExternal(news.link) : undefined}
+                role={clickable ? "button" : undefined}
+                tabIndex={clickable ? 0 : undefined}
+                style={clickable ? { cursor: "pointer" } : undefined}
+              >
+                <div className="culture-news-card__banner">
+                  <CardMedia item={news} fallback={<div className="culture-news-card__ph">🏛️</div>} />
                 </div>
-                <div className="culture-news-card__title">{news.title}</div>
-                <div className="culture-news-card__summary">{news.summary}</div>
-                <div className="culture-news-card__source">
-                  📰 {news.source}
+                <div className="culture-news-card__body">
+                  <div className="culture-news-card__meta">
+                    <span className="culture-news-card__tag">{news.tag}</span>
+                    <span className="culture-news-card__date">{news.date}</span>
+                  </div>
+                  <div className="culture-news-card__title">{news.title}</div>
+                  <div className="culture-news-card__summary">{news.summary}</div>
+                  <div className="culture-news-card__source">
+                    📰 {news.source}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       </Box>
 
