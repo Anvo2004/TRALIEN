@@ -90,11 +90,13 @@ async function importGroupsFromCategories() {
 
 const jobs = new Map(); // jobId -> { total, sent, failed, done }
 
-function createJob(total) {
+// ttlMs: job gửi lâu (vd. thẻ tin tới hàng nghìn người, 500ms/người) phải sống
+// lâu hơn thời gian gửi, nếu không bị xoá giữa chừng và trang theo dõi mất tiến độ.
+function createJob(total, ttlMs = 10 * 60 * 1000) {
   const jobId = `job_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
   jobs.set(jobId, { total, sent: 0, failed: 0, done: false });
-  // auto-purge after 10 minutes so this Map doesn't grow unbounded
-  setTimeout(() => jobs.delete(jobId), 10 * 60 * 1000).unref?.();
+  // auto-purge so this Map doesn't grow unbounded
+  setTimeout(() => jobs.delete(jobId), ttlMs).unref?.();
   return jobId;
 }
 
@@ -220,5 +222,6 @@ module.exports = {
   removeGroup,
   importGroupsFromCategories,
   sendBroadcast,
+  createJob,
   getJobStatus,
 };

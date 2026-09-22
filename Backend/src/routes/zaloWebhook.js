@@ -1,6 +1,7 @@
 const crypto = require("crypto");
 const express = require("express");
 const config = require("../config");
+const { recordInteraction } = require("../services/zaloActivityService");
 
 const router = express.Router();
 
@@ -37,6 +38,13 @@ router.post("/webhook", (req, res) => {
   console.log(`[zaloWebhook] Nhận sự kiện: ${event.event_name}`, JSON.stringify(event));
 
   res.status(200).send("OK");
+
+  // Ghi lần tương tác cuối — để biết ai còn trong khung gửi tin tư vấn 48h/7 ngày
+  // (xem services/zaloActivityService.js). Làm SAU khi đã trả 200 cho Zalo; bỏ
+  // qua sự kiện sai chữ ký để không bị giả mạo "đã tương tác".
+  if (verified !== false) {
+    recordInteraction(event).catch((err) => console.error("[zaloWebhook] Ghi tương tác lỗi:", err.message));
+  }
 });
 
 module.exports = router;

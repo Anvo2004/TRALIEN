@@ -18,6 +18,8 @@ const newsSchema = new mongoose.Schema(
     // Trạng thái đăng lên Zalo OA (Nội dung dạng Bài viết) — xem services/zaloNewsService.js
     zalo: {
       articleId: { type: String, default: "" }, // id bài trên OA (đã tạo)
+      // link mở bài viết trong Zalo (article/getdetail → link_view) — "thẻ tin" trỏ vào đây
+      linkView: { type: String, default: "" },
       postedAt: { type: Date, default: null },
       attempts: { type: Number, default: 0 },
       lastError: { type: String, default: "" },

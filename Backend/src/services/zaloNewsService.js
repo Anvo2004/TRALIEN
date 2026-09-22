@@ -1,6 +1,6 @@
 const config = require("../config");
 const News = require("../models/News");
-const { createArticle, verifyArticle, broadcastArticle } = require("../utils/zaloArticle");
+const { createArticle, verifyArticle, getArticleDetail, broadcastArticle } = require("../utils/zaloArticle");
 const { redisGet, redisSet } = require("../utils/redis");
 
 // ============================================================
@@ -50,9 +50,24 @@ async function postOne(news) {
   try {
     const token = await createArticle(item);
     const articleId = await verifyArticle(token);
+    // link_view để "thẻ tin" (newsCardService.js) mở thẳng bài OA — lỗi thì bỏ
+    // qua, lúc gửi thẻ sẽ tự lấy lại.
+    let linkView = "";
+    try {
+      linkView = (await getArticleDetail(articleId)).link_view || "";
+    } catch (err) {
+      console.warn(`[ZaloArticle] Chưa lấy được link_view bài ${articleId}: ${err.message}`);
+    }
     await News.updateOne(
       { _id: news._id },
-      { $set: { "zalo.articleId": articleId, "zalo.postedAt": new Date(), "zalo.lastError": "" } }
+      {
+        $set: {
+          "zalo.articleId": articleId,
+          "zalo.linkView": linkView,
+          "zalo.postedAt": new Date(),
+          "zalo.lastError": "",
+        },
+      }
     );
     console.log(`[ZaloArticle] Đã tạo bài OA cho tin nid=${news.nid} (id=${articleId}): ${item.title.slice(0, 50)}`);
     return { ok: true, newsId: news._id, articleId };

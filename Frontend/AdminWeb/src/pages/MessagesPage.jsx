@@ -4,7 +4,7 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Send, RefreshCw, Loader2, Image, Video, FileText, Users, History,
   X, Plus, Trash2, Search, CheckSquare, Square, ChevronDown, ChevronUp,
-  AlertTriangle, ExternalLink, CalendarClock, Ban,
+  AlertTriangle, ExternalLink, CalendarClock, Ban, Newspaper,
 } from 'lucide-react'
 import { api } from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
@@ -15,6 +15,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn } from '@/lib/utils'
+import NewsCardTab from '@/components/messages/NewsCardTab'
 
 function TokenExpiredBanner() {
   return (
@@ -73,6 +74,7 @@ function FollowerAvatar({ f, size = 8 }) {
 function TabBar({ active, onChange }) {
   const tabs = [
     { id: 'send',      label: 'Gửi tin nhắn', icon: Send },
+    { id: 'news-card', label: 'Gửi thẻ tin', icon: Newspaper },
     { id: 'scheduled', label: 'Lịch hẹn', icon: CalendarClock },
     { id: 'followers', label: 'Followers & Nhóm', icon: Users },
     { id: 'logs',      label: 'Lịch sử gửi', icon: History },
@@ -1089,6 +1091,7 @@ export default function MessagesPage() {
           syncedAt={followersData?.syncedAt}
         />
       )}
+      {tab === 'news-card' && <NewsCardTab />}
       {tab === 'scheduled' && <ScheduledTab />}
       {tab === 'followers' && <FollowersTab />}
       {tab === 'logs' && <LogsTab />}

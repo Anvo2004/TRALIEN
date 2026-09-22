@@ -18,6 +18,7 @@ const { getAccessToken, refreshAccessToken } = require("./zaloToken");
 
 const CREATE_URL = "https://openapi.zalo.me/v2.0/article/create";
 const VERIFY_URL = "https://openapi.zalo.me/v2.0/article/verify";
+const DETAIL_URL = "https://openapi.zalo.me/v2.0/article/getdetail";
 const BROADCAST_URL = "https://openapi.zalo.me/v2.0/oa/message";
 const TIMEOUT_MS = 15000;
 const BROADCAST_MAX_ARTICLES = 5;
@@ -45,6 +46,31 @@ async function articlePost(url, body, { retried = false } = {}) {
     return articlePost(url, body, { retried: true });
   }
   return data;
+}
+
+async function articleGet(url, { retried = false } = {}) {
+  const accessToken = await getAccessToken();
+  const res = await fetch(url, {
+    headers: { access_token: accessToken },
+    signal: AbortSignal.timeout(TIMEOUT_MS),
+  });
+  const data = await res.json();
+  if (data.error === -216 && !retried) {
+    await refreshAccessToken();
+    return articleGet(url, { retried: true });
+  }
+  return data;
+}
+
+// Chi tiết 1 bài viết đã tạo trên OA (id từ verifyArticle). Trả data của Zalo:
+// cần `link_view` (link mở bài trong Zalo) cho "thẻ tin" — xem newsCardService.js.
+// Cùng endpoint HOATIEN đang dùng (zaloBroadcast.getArticleDetail).
+async function getArticleDetail(id) {
+  const data = await articleGet(`${DETAIL_URL}?id=${encodeURIComponent(id)}`);
+  if (data.error !== 0 || !data.data) {
+    throw new Error(`Lấy chi tiết bài viết Zalo thất bại: ${JSON.stringify(data)}`);
+  }
+  return data.data;
 }
 
 // Tạo 1 bài viết trên OA. Trả về "token" (chưa phải id thật) → gọi verifyArticle sau.
@@ -109,4 +135,4 @@ async function broadcastArticle(articleIds) {
   return data.data.message_id;
 }
 
-module.exports = { createArticle, verifyArticle, broadcastArticle };
+module.exports = { createArticle, verifyArticle, getArticleDetail, broadcastArticle };

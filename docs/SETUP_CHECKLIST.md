@@ -103,6 +103,33 @@ Backend chạy đầy đủ tính năng và lên production. Đánh dấu `[x]` 
       xã kiểm tra mục này**. Khi xác nhận có quyền: chỉ cần đặt
       `ZALO_BROADCAST_ENABLED=true` trong `.env` (VPS) + restart backend, code
       không cần sửa gì thêm.
+- [ ] **Gửi thẻ tin qua tin nhắn** (thay cho broadcast — code xong 2026-09-22,
+      AdminWeb → Gửi tin nhắn Zalo → tab "Gửi thẻ tin"): gửi 1 tin tức tới
+      từng người dạng thẻ (ảnh + tiêu đề + mô tả, bấm vào mở bài viết OA hoặc
+      trang tin gốc) bằng **tin tư vấn** list template — cùng cơ chế
+      HOATIEN/QUESON đang chạy thật; KHÔNG cần quyền Broadcast (nhóm quyền
+      "Gửi tin nhắn" đã được duyệt — xem mục trên). Xem
+      `Backend/src/services/newsCardService.js`.
+      Luật Zalo (oa.zalo.me → Tổng quan các loại tin nhắn / Tin Tư vấn): chỉ
+      gửi được qua OpenAPI tới người **tương tác với OA trong 7 ngày**; miễn phí
+      trong 48 giờ, sau đó tính phí (~55đ/tin sau khi hết hạn mức gói); quá 7
+      ngày Zalo từ chối. Việc cần làm trước khi dùng thật (gửi thử qua
+      AdminWeb **production**, KHÔNG chạy script gọi Zalo từ máy local — xem
+      sự cố token ở mục trên):
+      1. **Cấu hình Webhook** app OA trên Zalo Developers: URL
+         `https://tralienapi.dxvtech.vn/api/zalo/webhook`, bật các sự kiện
+         người dùng gửi tin (`user_send_*`), `follow`/`unfollow`,
+         `user_click_chatnow`, `user_submit_info`. Sau đó kiểm tra log PM2 có
+         dòng `[zaloWebhook] Nhận sự kiện` và đối chiếu payload thật với
+         `eventUserId()` trong `zaloActivityService.js` (sender.id /
+         follower.id / user_id). Chưa có webhook thì mọi follower ở nhóm "Chưa rõ".
+      2. Gắn **Zalo User ID** cho tài khoản admin của mình (Tài khoản Admin →
+         Sửa) rồi nhắn 1 tin vào OA → bấm **"Gửi thử cho tôi"** để xem thẻ thật
+         và bấm thử link.
+      3. Lần gửi thật đầu tiên: ghi lại mã lỗi Zalo trả về cho người quá 7 ngày
+         (hiện ở tiến độ gửi + lịch sử) để gắn tên tiếng Việt cho mã đó.
+      4. Xác nhận với Zalo/bảng giá gói OA: "miễn phí trong 48h" có giới hạn 8
+         tin/người hay không (hệ thống đang tính theo giới hạn 8 cho an toàn).
 
 ## 4. Tích hợp thành phố (quyết định dùng chung hay tài khoản riêng)
 
