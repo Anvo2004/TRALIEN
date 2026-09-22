@@ -5,6 +5,7 @@ const catDienService = require("./src/services/catDienService");
 const vanBanService = require("./src/services/vanBanTraLienService");
 const newsScrapeService = require("./src/services/newsScrapeService");
 const zaloNewsService = require("./src/services/zaloNewsService");
+const newsCardService = require("./src/services/newsCardService");
 const { startCgy1022Retry } = require("./src/services/cgy1022RetryService");
 const { startCgy1022StatusPolling } = require("./src/services/cgy1022StatusService");
 
@@ -20,6 +21,7 @@ async function main() {
   vanBanService.startAutoSync();
   newsScrapeService.startAutoSync();
   zaloNewsService.startAutoPost();
+  newsCardService.startAutoSend();
   startCgy1022Retry();
   startCgy1022StatusPolling();
 }

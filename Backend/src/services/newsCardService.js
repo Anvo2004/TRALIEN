@@ -4,6 +4,7 @@ const NewsCardSend = require("../models/NewsCardSend");
 const SendLog = require("../models/SendLog");
 const { sendZaloCard } = require("../utils/zaloApi");
 const { getArticleDetail } = require("../utils/zaloArticle");
+const { redisGet, redisSet } = require("../utils/redis");
 const { createJob, getJobStatus, fetchAllFollowers } = require("./broadcastService");
 
 // ============================================================
@@ -18,6 +19,9 @@ const { createJob, getJobStatus, fetchAllFollowers } = require("./broadcastServi
 // để người mới quan tâm cũng nhận). Theo tài liệu Zalo, tin tư vấn qua OpenAPI
 // chỉ tới được người có tương tác với OA trong 7 ngày — người còn lại Zalo trả
 // lỗi, được đếm và gom theo mã trong lịch sử gửi.
+//
+// Tự động gửi (runAutoSend): tin MỚI cào về được gửi thẻ tự động, mỗi tin 1
+// lần, trong giờ hành chính — bật/tắt ở AdminWeb (tab "Gửi thẻ tin").
 // ============================================================
 
 const SEND_DELAY_MS = 500; // cùng nhịp với broadcastService.sendBroadcast (tránh rate limit OA)
@@ -25,6 +29,13 @@ const PROGRESS_SAVE_EVERY = 20; // lưu tiến độ vào DB sau mỗi 20 ngư�
 const TITLE_MAX = 100; // giới hạn HOATIEN đã gửi thật thành công
 const SUBTITLE_MAX = 255;
 const NEWS_PAGE_SIZE = 20;
+
+const AUTO_KEY = "tralien_news_card_auto"; // Setting: { enabled, since }
+const AUTO_INTERVAL_MS = 10 * 60 * 1000; // quét tin mới mỗi 10 phút
+const AUTO_MAX_PER_RUN = 2; // mỗi lượt tối đa 2 tin — nhiều tin mới thì giãn ra các lượt sau
+const AUTO_WAIT_ARTICLE_MS = 60 * 60 * 1000; // chờ bài OA đầy đủ tối đa 60 phút rồi gửi với trang gốc
+const AUTO_MAX_ATTEMPTS = 5;
+const AUTO_HOURS = { from: 7, to: 20 }; // chỉ tự gửi 7h00–19h59 giờ Việt Nam
 
 function httpError(status, message) {
   const err = new Error(message);
@@ -42,10 +53,15 @@ function toHttps(url) {
   return (url || "").replace(/^http:\/\//i, "https://");
 }
 
-// Link mở khi bấm thẻ: bài viết OA nếu tin đã được đăng lên OA (zaloNewsService),
-// không có thì trang tin gốc. link_view thiếu thì lấy lại từ Zalo rồi lưu luôn.
+// Bài OA chỉ đáng mở khi có nội dung đầy đủ — bài tạo trước đây chỉ có tóm tắt.
+function opensOaArticle(news) {
+  return Boolean(news.zalo?.articleId && news.zalo?.fullContent);
+}
+
+// Link mở khi bấm thẻ: bài viết OA nếu bài có nội dung đầy đủ (zaloNewsService),
+// còn lại trang tin gốc (luôn đầy đủ). link_view thiếu thì lấy lại từ Zalo rồi lưu.
 async function resolveTarget(news) {
-  if (news.zalo?.articleId) {
+  if (opensOaArticle(news)) {
     let linkView = news.zalo.linkView || "";
     if (!linkView) {
       try {
@@ -101,7 +117,7 @@ async function listNews({ q = "", page = 1 } = {}) {
       .sort({ nid: -1 })
       .skip((current - 1) * NEWS_PAGE_SIZE)
       .limit(NEWS_PAGE_SIZE)
-      .select("nid title summary date tag imageUrl link zalo.articleId zalo.linkView")
+      .select("nid title summary date tag imageUrl link zalo.articleId zalo.linkView zalo.fullContent")
       .lean(),
     News.countDocuments(filter),
   ]);
@@ -124,7 +140,7 @@ async function listNews({ q = "", page = 1 } = {}) {
         tag: n.tag,
         imageUrl: n.imageUrl,
         link: n.link,
-        hasOaArticle: Boolean(n.zalo?.articleId),
+        opensOaArticle: opensOaArticle(n),
         lastSend: last ? { at: last.at, sent: last.sent, times: last.times } : null,
       };
     }),
@@ -145,7 +161,8 @@ async function sendTestCard(newsId, zaloUserId) {
 
 // Gửi tới toàn bộ người quan tâm OA ở nền. Trả jobId ngay; tiến độ đọc qua
 // broadcastService.getJobStatus (route có sẵn GET /api/broadcast/status/:jobId).
-async function sendNewsCard({ newsId, sentBy = null }) {
+// `finished`: promise xong lượt gửi — bộ tự động chờ để gửi tuần tự từng tin.
+async function sendNewsCard({ newsId, sentBy = null, auto = false }) {
   const news = await loadNews(newsId);
   // Lỗi thiếu ảnh/link báo ngay cho cán bộ, trước khi tạo job.
   const { element, target } = await buildCard(news);
@@ -166,6 +183,7 @@ async function sendNewsCard({ newsId, sentBy = null }) {
     targetUrl: target.url,
     targetType: target.type,
     recipientCount: recipients.length,
+    auto,
     sentBy,
   });
 
@@ -181,7 +199,7 @@ async function sendNewsCard({ newsId, sentBy = null }) {
       { $set: { sent: job.sent, failed: job.failed, errorCounts: [...errors.values()], ...extra } }
     ).catch((err) => console.error("[NewsCard] Lưu tiến độ lỗi:", err.message));
 
-  (async () => {
+  const finished = (async () => {
     let done = 0;
     for (const userId of recipients) {
       try {
@@ -203,18 +221,18 @@ async function sendNewsCard({ newsId, sentBy = null }) {
     job.done = true;
     await saveProgress({ status: job.sent > 0 ? "done" : "failed" });
     await SendLog.create({
-      message: `[Thẻ tin] ${element.title}`,
+      message: `[Thẻ tin${auto ? " tự động" : ""}] ${element.title}`,
       recipientCount: recipients.length,
       sentCount: job.sent,
       failedCount: job.failed,
       sentBy,
     }).catch((err) => console.error("[NewsCard] Ghi SendLog lỗi:", err.message));
     console.log(
-      `[NewsCard] Gửi thẻ "${element.title.slice(0, 50)}": ${job.sent}/${recipients.length} thành công, ${job.failed} lỗi`
+      `[NewsCard] Gửi thẻ${auto ? " (tự động)" : ""} "${element.title.slice(0, 50)}": ${job.sent}/${recipients.length} thành công, ${job.failed} lỗi`
     );
   })();
 
-  return { jobId, sendId: String(doc._id), total: recipients.length };
+  return { jobId, sendId: String(doc._id), total: recipients.length, finished };
 }
 
 async function listHistory(limit = 50) {
@@ -225,4 +243,123 @@ async function listHistory(limit = 50) {
     .lean();
 }
 
-module.exports = { buildCard, listNews, sendTestCard, sendNewsCard, listHistory };
+// ===== Tự động gửi thẻ cho tin mới =====
+
+// Chưa có cấu hình = BẬT sẵn (xã yêu cầu tự động), mốc `since` = lúc này để
+// không gửi dồn tin cũ — chỉ tin cào về SAU mốc này mới được tự gửi.
+async function getAutoConfig() {
+  const raw = await redisGet(AUTO_KEY);
+  if (raw) {
+    try {
+      return JSON.parse(raw);
+    } catch {
+      /* hỏng thì tạo lại bên dưới */
+    }
+  }
+  const cfg = { enabled: true, since: new Date().toISOString() };
+  await redisSet(AUTO_KEY, JSON.stringify(cfg));
+  return cfg;
+}
+
+// Bật lại sau khi đã tắt → mốc mới = lúc bật: tin xuất hiện trong lúc tắt không bị gửi bù.
+async function setAutoConfig(enabled) {
+  const current = await getAutoConfig();
+  const next = {
+    enabled: Boolean(enabled),
+    since: enabled && !current.enabled ? new Date().toISOString() : current.since,
+  };
+  await redisSet(AUTO_KEY, JSON.stringify(next));
+  return next;
+}
+
+function vnHour(date) {
+  return Number(
+    new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Ho_Chi_Minh", hour: "numeric", hourCycle: "h23" }).format(date)
+  );
+}
+
+function inAutoHours(date = new Date()) {
+  const h = vnHour(date);
+  return h >= AUTO_HOURS.from && h < AUTO_HOURS.to;
+}
+
+// Sẵn sàng gửi khi bài OA đầy đủ đã tạo xong (thẻ mở bài OA); không tạo bài OA
+// hoặc chờ quá lâu (tạo bài lỗi) thì gửi luôn với trang tin gốc.
+function isReadyToSend(news, now = Date.now()) {
+  if (!config.zaloArticle.enabled) return true;
+  if (opensOaArticle(news)) return true;
+  return now - new Date(news.createdAt).getTime() >= AUTO_WAIT_ARTICLE_MS;
+}
+
+// Tin mới (tạo sau mốc bật), chưa từng gửi thẻ (kể cả gửi tay), chưa broadcast
+// bài OA (tránh báo 2 lần nếu sau này bật ZALO_BROADCAST_ENABLED), chưa quá số lần thử.
+async function findAutoCandidates(since) {
+  const sentNewsIds = await NewsCardSend.distinct("newsId");
+  return News.find({
+    _id: { $nin: sentNewsIds },
+    createdAt: { $gte: since },
+    "zalo.broadcastedAt": null,
+    "zalo.cardAttempts": { $not: { $gte: AUTO_MAX_ATTEMPTS } },
+  })
+    .sort({ nid: 1 })
+    .limit(20)
+    .lean();
+}
+
+let autoRunning = false;
+
+async function runAutoSend() {
+  if (autoRunning) return; // lượt trước còn đang gửi
+  autoRunning = true;
+  try {
+    const cfg = await getAutoConfig();
+    if (!cfg.enabled || !inAutoHours()) return;
+
+    const now = Date.now();
+    const candidates = await findAutoCandidates(new Date(cfg.since));
+    const ready = candidates.filter((n) => isReadyToSend(n, now)).slice(0, AUTO_MAX_PER_RUN);
+
+    for (const news of ready) {
+      try {
+        const { finished } = await sendNewsCard({ newsId: news._id, auto: true });
+        await finished; // gửi xong tin này mới sang tin sau
+      } catch (err) {
+        await News.updateOne(
+          { _id: news._id },
+          { $inc: { "zalo.cardAttempts": 1 }, $set: { "zalo.cardError": err.message || "unknown" } }
+        ).catch(() => {});
+        console.error(`[NewsCard] Tự động gửi tin nid=${news.nid} lỗi: ${err.message}`);
+      }
+    }
+  } catch (err) {
+    console.error("[NewsCard] Lượt tự động gửi lỗi:", err.message);
+  } finally {
+    autoRunning = false;
+  }
+}
+
+function startAutoSend() {
+  // Lần đầu sau 5 phút khởi động (sau lượt tạo bài OA đầu tiên — zaloNewsService
+  // chạy ở phút thứ 3), rồi mỗi 10 phút.
+  setTimeout(() => {
+    runAutoSend();
+    setInterval(runAutoSend, AUTO_INTERVAL_MS);
+  }, 5 * 60 * 1000);
+  console.log(
+    `[NewsCard] Bộ tự động gửi thẻ tin đã chạy (quét mỗi 10 phút, gửi ${AUTO_HOURS.from}h–${AUTO_HOURS.to}h, bật/tắt ở AdminWeb)`
+  );
+}
+
+module.exports = {
+  buildCard,
+  listNews,
+  sendTestCard,
+  sendNewsCard,
+  listHistory,
+  getAutoConfig,
+  setAutoConfig,
+  runAutoSend,
+  startAutoSend,
+  isReadyToSend,
+  inAutoHours,
+};

@@ -228,7 +228,17 @@ router.post("/news-cards/test", async (req, res) => {
 router.post("/news-cards", async (req, res) => {
   const { newsId } = req.body;
   if (!newsId) return res.status(400).json({ error: "Thiếu tin cần gửi" });
-  res.json(await newsCardService.sendNewsCard({ newsId, sentBy: req.user.id }));
+  const { jobId, sendId, total } = await newsCardService.sendNewsCard({ newsId, sentBy: req.user.id });
+  res.json({ jobId, sendId, total });
+});
+
+// Tự động gửi thẻ cho tin mới — { enabled, since }.
+router.get("/news-cards/auto", async (req, res) => {
+  res.json(await newsCardService.getAutoConfig());
+});
+
+router.put("/news-cards/auto", async (req, res) => {
+  res.json(await newsCardService.setAutoConfig(Boolean(req.body.enabled)));
 });
 
 router.get("/news-cards/history", async (req, res) => {

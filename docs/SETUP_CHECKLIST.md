@@ -103,23 +103,28 @@ Backend chạy đầy đủ tính năng và lên production. Đánh dấu `[x]` 
       xã kiểm tra mục này**. Khi xác nhận có quyền: chỉ cần đặt
       `ZALO_BROADCAST_ENABLED=true` trong `.env` (VPS) + restart backend, code
       không cần sửa gì thêm.
-- [ ] **Gửi thẻ tin qua tin nhắn** (thay cho broadcast — code xong 2026-09-22,
+- [x] **Gửi thẻ tin qua tin nhắn** (thay cho broadcast — chạy thật 2026-09-22,
       AdminWeb → Gửi tin nhắn Zalo → tab "Gửi thẻ tin"): gửi 1 tin tức tới
       **tất cả người quan tâm OA** (danh sách lấy thẳng từ Zalo lúc gửi), từng
-      người một, dạng thẻ (ảnh + tiêu đề + mô tả, bấm vào mở bài viết OA hoặc
-      trang tin gốc) bằng **tin tư vấn** list template — cùng cơ chế
-      HOATIEN/QUESON đang chạy thật; KHÔNG cần quyền Broadcast (nhóm quyền
-      "Gửi tin nhắn" đã được duyệt — xem mục trên). Xem
+      người một, dạng thẻ (ảnh + tiêu đề + mô tả, bấm vào mở bài) bằng **tin
+      tư vấn** list template — cùng cơ chế HOATIEN/QUESON; KHÔNG cần quyền
+      Broadcast (nhóm quyền "Gửi tin nhắn" đã được duyệt — xem mục trên). Xem
       `Backend/src/services/newsCardService.js`. Theo tài liệu Zalo, tin tư
       vấn qua OpenAPI chỉ tới được người có tương tác với OA trong 7 ngày —
       người còn lại Zalo trả lỗi, hiện ở tiến độ gửi + lịch sử (gom theo mã).
-      Việc cần làm trước khi dùng thật (gửi thử qua AdminWeb **production**,
-      KHÔNG chạy script gọi Zalo từ máy local — xem sự cố token ở mục trên):
-      1. Gắn **Zalo User ID** cho tài khoản admin của mình (Tài khoản Admin →
-         Sửa) rồi nhắn 1 tin vào OA → bấm **"Gửi thử cho tôi"** để xem thẻ thật
-         và bấm thử link.
-      2. Lần gửi thật đầu tiên: xem số lỗi và mã lỗi Zalo trả về để biết thực
-         tế bao nhiêu follower nhận được.
+      Gửi thử qua AdminWeb **production** ("Gửi thử cho tôi", cần gắn Zalo
+      User ID cho tài khoản admin), KHÔNG chạy script gọi Zalo từ máy local.
+      - **Tự động gửi tin mới** (thêm 2026-09-22, bật/tắt ở đầu tab — mặc định
+        BẬT, mốc tính từ lúc bật để không gửi dồn tin cũ): tin mới cào về được
+        tự gửi thẻ tới tất cả người quan tâm OA, mỗi tin 1 lần, 7h–20h giờ VN,
+        tối đa 2 tin/lượt quét (10 phút) — `runAutoSend()`. Chờ bài OA đầy đủ
+        tạo xong (tối đa 60 phút) để thẻ mở bài OA. Tin đã broadcast bài OA
+        thì bỏ qua (không báo 2 lần nếu sau này bật `ZALO_BROADCAST_ENABLED`).
+      - **Bài OA đầy đủ nội dung**: bài OA tạo tự động giờ gồm TOÀN BỘ tin
+        (sapo + đoạn văn + tối đa 10 ảnh, lấy từ trang chi tiết —
+        `newsScrapeService.parseNewsDetail`), lùi về chỉ chữ/tóm tắt nếu Zalo
+        từ chối (`zalo.fullContent`). Bài OA tạo trước đó chỉ có tóm tắt nên
+        thẻ của các tin cũ mở **trang tin gốc** (đầy đủ) thay vì bài OA.
 
 ## 4. Tích hợp thành phố (quyết định dùng chung hay tài khoản riêng)
 

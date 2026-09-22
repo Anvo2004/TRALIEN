@@ -74,7 +74,10 @@ async function getArticleDetail(id) {
 }
 
 // Tạo 1 bài viết trên OA. Trả về "token" (chưa phải id thật) → gọi verifyArticle sau.
-async function createArticle({ title, author, description, coverPhotoUrl, bodyText }) {
+// body: danh sách khối Zalo đã dựng sẵn — { type: "text", content: "<p>…</p>" } |
+// { type: "image", url, caption } (cùng định dạng HOATIEN đang tạo bài thật; ảnh
+// là URL công khai, Zalo tự tải về host lại). Không truyền thì dùng bodyText.
+async function createArticle({ title, author, description, coverPhotoUrl, bodyText, body }) {
   if (!coverPhotoUrl) throw new Error("Bài viết Zalo bắt buộc có ảnh cover (coverPhotoUrl)");
 
   // Zalo công bố title 150 / description 300 nhưng thực tế từ chối chuỗi đúng bằng
@@ -85,14 +88,16 @@ async function createArticle({ title, author, description, coverPhotoUrl, bodyTe
     author: truncate(author || "UBND xã Trà Liên", 50),
     cover: { cover_type: "photo", photo_url: coverPhotoUrl, status: "show" },
     description: truncate(description || title, 250),
-    body: [{ type: "text", content: bodyText || description || title }],
+    body: body && body.length ? body : [{ type: "text", content: bodyText || description || title }],
     status: "show",
     comment: "show",
   };
 
   const data = await articlePost(CREATE_URL, payload);
   if (data.error !== 0 || !data.data || !data.data.token) {
-    throw new Error(`Tạo bài viết Zalo thất bại: ${JSON.stringify(data)}`);
+    const err = new Error(`Tạo bài viết Zalo thất bại: ${JSON.stringify(data)}`);
+    err.zaloRejected = true; // Zalo trả lỗi cho nội dung — khác lỗi mạng/timeout
+    throw err;
   }
   return data.data.token;
 }

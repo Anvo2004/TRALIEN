@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Search, Loader2, Send, FlaskConical, Newspaper, Users,
-  ChevronLeft, ChevronRight, ExternalLink,
+  ChevronLeft, ChevronRight, ExternalLink, Zap,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { api } from '@/lib/api'
@@ -77,8 +77,8 @@ function NewsPicker({ selected, onSelect }) {
                   <p className="line-clamp-2 text-sm font-medium leading-snug text-slate-700">{n.title}</p>
                   <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px]">
                     {n.date && <span className="text-slate-400">{n.date}</span>}
-                    <span className={cn('rounded-full px-1.5 py-0.5 font-medium', n.hasOaArticle ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-500')}>
-                      {n.hasOaArticle ? 'Mở bài OA' : 'Mở trang gốc'}
+                    <span className={cn('rounded-full px-1.5 py-0.5 font-medium', n.opensOaArticle ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-500')}>
+                      {n.opensOaArticle ? 'Mở bài OA' : 'Mở trang gốc'}
                     </span>
                     {n.lastSend && (
                       <span className="rounded-full bg-amber-50 px-1.5 py-0.5 font-medium text-amber-700">
@@ -166,7 +166,9 @@ function NewsCardHistory() {
                       <td className="px-3 py-2.5">
                         <span className={cn('rounded-full px-2 py-0.5 text-[11px] font-semibold', st.className)}>{st.text}</span>
                       </td>
-                      <td className="px-3 py-2.5 text-xs text-slate-500">{s.sentBy?.fullName || '—'}</td>
+                      <td className="px-3 py-2.5 text-xs text-slate-500">
+                        {s.auto ? <span className="font-semibold text-violet-600">Tự động</span> : s.sentBy?.fullName || '—'}
+                      </td>
                     </tr>
                   )
                 })}
@@ -176,6 +178,54 @@ function NewsCardHistory() {
         )}
       </CardContent>
     </Card>
+  )
+}
+
+// ── Tự động gửi tin mới ───────────────────────────────────────────────────────
+function AutoSendCard() {
+  const qc = useQueryClient()
+  const { data, isLoading } = useQuery({
+    queryKey: ['news-card-auto'],
+    queryFn: () => api.get('/api/broadcast/news-cards/auto').then((r) => r.data),
+  })
+  const toggleMut = useMutation({
+    mutationFn: (enabled) => api.put('/api/broadcast/news-cards/auto', { enabled }).then((r) => r.data),
+    onSuccess: (cfg) => {
+      qc.setQueryData(['news-card-auto'], cfg)
+      toast.success(cfg.enabled ? 'Đã bật tự động gửi tin mới' : 'Đã tắt tự động gửi tin mới')
+    },
+    onError: (e) => toast.error(e.response?.data?.error || 'Không đổi được cài đặt'),
+  })
+  const enabled = Boolean(data?.enabled)
+
+  return (
+    <div
+      className={cn(
+        'flex flex-wrap items-center gap-3 rounded-xl border px-4 py-3',
+        enabled ? 'border-violet-200 bg-violet-50/60' : 'border-slate-200 bg-white'
+      )}
+    >
+      <Zap className={cn('h-5 w-5 shrink-0', enabled ? 'text-violet-600' : 'text-slate-400')} />
+      <div className="min-w-0 flex-1">
+        <p className="text-sm font-semibold text-slate-700">
+          Tự động gửi tin mới: {isLoading ? '…' : enabled ? 'Đang bật' : 'Đang tắt'}
+        </p>
+        <p className="text-xs text-slate-500">
+          Có tin mới trên trang TTĐT xã thì hệ thống tự gửi thẻ tới tất cả người quan tâm OA — mỗi tin 1 lần,
+          trong khung 7h–20h
+          {enabled && data?.since && <> (áp dụng cho tin từ {formatDate(data.since)})</>}.
+        </p>
+      </div>
+      <Button
+        size="sm"
+        variant={enabled ? 'outline' : 'default'}
+        disabled={isLoading || toggleMut.isPending}
+        onClick={() => toggleMut.mutate(!enabled)}
+      >
+        {toggleMut.isPending && <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" />}
+        {enabled ? 'Tắt' : 'Bật'}
+      </Button>
+    </div>
   )
 }
 
@@ -247,6 +297,8 @@ export default function NewsCardTab() {
 
   return (
     <div className="space-y-4">
+      <AutoSendCard />
+
       <div className="grid gap-4 lg:grid-cols-5">
         <NewsPicker selected={selected} onSelect={setSelected} />
 
@@ -262,8 +314,8 @@ export default function NewsCardTab() {
                   <ZaloCardPreview title={selected.title} summary={selected.summary} imageUrl={selected.imageUrl} />
                   <p className="text-xs text-slate-500">
                     Bấm vào thẻ sẽ mở:{' '}
-                    <b>{selected.hasOaArticle ? 'bài viết trên OA (ngay trong Zalo)' : 'trang tin gốc'}</b>
-                    {!selected.hasOaArticle && selected.link && (
+                    <b>{selected.opensOaArticle ? 'bài viết đầy đủ trên OA (ngay trong Zalo)' : 'trang tin gốc (đầy đủ nội dung)'}</b>
+                    {!selected.opensOaArticle && selected.link && (
                       <a href={selected.link} target="_blank" rel="noreferrer" className="ml-1 inline-flex items-center gap-1 text-blue-600 hover:underline">
                         xem <ExternalLink className="h-3 w-3" />
                       </a>

@@ -143,6 +143,74 @@ async function syncNews() {
   return created;
 }
 
+// ===== Nội dung đầy đủ 1 tin (trang chi tiết) — dùng để tạo bài viết OA đầy đủ =====
+// Trang chi tiết portal VNPT: .ArticleDetailControl > .ArticleHeader (tiêu đề),
+// .ArticleSummary (sapo), .ArticleContent (thân bài: <p> xen <div><img>, bảng,
+// danh sách). Duyệt thân bài ĐÚNG THỨ TỰ, gom đoạn văn liên tiếp thành 1 khối
+// chữ, mỗi ảnh 1 khối ảnh; bảng thành từng dòng "ô | ô". Đã chạy thử trên 7
+// bài thật của tralien.danang.gov.vn (tin thường, bài dài, danh sách ứng cử có ảnh).
+const DETAIL_BLOCK_TAGS = new Set([
+  "p", "div", "h1", "h2", "h3", "h4", "h5", "h6", "li", "ul", "ol", "blockquote",
+  "figure", "figcaption", "section", "article", "table", "thead", "tbody", "tr",
+]);
+
+// → [{ type: "text", paragraphs: [...] } | { type: "image", url }] — sapo (nếu có) là đoạn đầu.
+function parseNewsDetail(html, pageUrl) {
+  const $ = cheerio.load(html);
+  const root = $(".ArticleDetailControl .ArticleContent").first().length
+    ? $(".ArticleDetailControl .ArticleContent").first()
+    : $(".ArticleContent").first();
+  const sapo = $(".ArticleSummary").first().text().replace(/\s+/g, " ").trim();
+
+  const blocks = sapo ? [{ type: "text", paragraphs: [sapo] }] : [];
+  let para = "";
+  const flush = () => {
+    const text = para.replace(/\s+/g, " ").trim();
+    para = "";
+    if (!text) return;
+    const last = blocks[blocks.length - 1];
+    if (last && last.type === "text") last.paragraphs.push(text);
+    else blocks.push({ type: "text", paragraphs: [text] });
+  };
+  const walk = (node) => {
+    if (node.type === "text") {
+      para += node.data;
+      return;
+    }
+    if (node.type !== "tag" || node.name === "script" || node.name === "style") return;
+    if (node.name === "img") {
+      const src = $(node).attr("src") || $(node).attr("data-src") || "";
+      // new URL().href giữ nguyên %XX sẵn có, chỉ mã hoá dấu cách/chữ có dấu trong src.
+      const url = src ? toAbsoluteUrl(src, pageUrl) : "";
+      if (url) {
+        flush();
+        blocks.push({ type: "image", url });
+      }
+      return;
+    }
+    if (node.name === "br") return flush();
+    if (node.name === "td" || node.name === "th") {
+      for (const child of node.children || []) walk(child);
+      para += " | ";
+      return;
+    }
+    const isBlock = DETAIL_BLOCK_TAGS.has(node.name);
+    if (isBlock) flush();
+    for (const child of node.children || []) walk(child);
+    if (node.name === "tr") para = para.replace(/\s*\|\s*$/, "");
+    if (isBlock) flush();
+  };
+  root.contents().each((_, node) => walk(node));
+  flush();
+  return blocks;
+}
+
+async function fetchNewsDetail(link) {
+  const res = await fetch(link, { headers: { "User-Agent": UA }, signal: AbortSignal.timeout(20000) });
+  if (!res.ok) throw new Error(`Không tải được trang chi tiết: HTTP ${res.status}`);
+  return parseNewsDetail(await res.text(), link);
+}
+
 // Tin mới nhất — sắp theo nid giảm dần (id bài lớn hơn ~ bài mới hơn).
 async function listNews(limit = 20) {
   return News.find().sort({ nid: -1 }).limit(limit).lean();
@@ -157,4 +225,12 @@ function startAutoSync() {
   console.log("[News] Đã bật tự động cào tin tức (3 lần/ngày)");
 }
 
-module.exports = { fetchListing, syncNews, listNews, startAutoSync, isConfigured };
+module.exports = {
+  fetchListing,
+  syncNews,
+  listNews,
+  startAutoSync,
+  isConfigured,
+  parseNewsDetail,
+  fetchNewsDetail,
+};

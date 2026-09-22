@@ -2,12 +2,15 @@ const config = require("../config");
 const News = require("../models/News");
 const { createArticle, verifyArticle, getArticleDetail, broadcastArticle } = require("../utils/zaloArticle");
 const { redisGet, redisSet } = require("../utils/redis");
+const { fetchNewsDetail } = require("./newsScrapeService");
 
 // ============================================================
 // Tự động đăng tin đã cào (model News) lên Zalo OA dạng "Bài viết", rồi
 // broadcast (gửi) bài đó tới TOÀN BỘ người quan tâm OA.
 // - Tạo bài (create + verify): xem postPendingArticles(). Luôn chạy nếu
-//   ZALO_ARTICLE_ENABLED=true, độc lập với broadcast.
+//   ZALO_ARTICLE_ENABLED=true, độc lập với broadcast. Nội dung bài = TOÀN BỘ
+//   tin (chữ + ảnh, lấy từ trang chi tiết), lùi dần về chỉ chữ / tóm tắt nếu
+//   Zalo từ chối — zalo.fullContent=true khi bài có nội dung đầy đủ.
 // - Broadcast: xem broadcastPendingArticles(), CHỈ chạy nếu
 //   ZALO_BROADCAST_ENABLED=true. Gộp tối đa 5 bài/lượt gửi (giới hạn của
 //   Zalo), và tự giãn cách >= MIN_BROADCAST_GAP_MS giữa 2 lượt gửi (Zalo yêu
@@ -26,6 +29,8 @@ const BROADCAST_BATCH_SIZE = 5; // giới hạn cứng của Zalo: tối đa 5 b
 const MIN_BROADCAST_GAP_MS = 35 * 60 * 1000; // Zalo yêu cầu >= 30 phút/lượt, chừa biên an toàn
 const LAST_BROADCAST_KEY = "tralien_zalo_last_broadcast_at";
 
+const MAX_BODY_IMAGES = 10; // mỗi ảnh Zalo phải tải về host lại — giới hạn để bài không quá nặng
+
 function toArticleItem(news) {
   const summary = news.summary || news.title;
   return {
@@ -35,6 +40,46 @@ function toArticleItem(news) {
     coverPhotoUrl: news.imageUrl || config.zaloArticle.defaultCover || "",
     bodyText: `${summary}${news.link ? `\n\nNguồn: ${news.link}` : ""}`,
   };
+}
+
+function escapeHtml(s) {
+  return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+// Khối nội dung trang chi tiết (newsScrapeService.parseNewsDetail) → body bài viết
+// Zalo, cùng định dạng HOATIEN đang tạo bài thật: đoạn văn thành <p>, ảnh giữ
+// nguyên URL gốc. withImages=false: chỉ giữ chữ (bản dự phòng khi Zalo từ chối ảnh).
+function toArticleBody(detail, news, { withImages = true } = {}) {
+  const body = [];
+  let images = 0;
+  const pushText = (paragraphs) => {
+    const html = paragraphs.map((p) => `<p>${escapeHtml(p)}</p>`).join("");
+    const last = body[body.length - 1];
+    if (last && last.type === "text") last.content += html;
+    else body.push({ type: "text", content: html });
+  };
+  for (const block of detail) {
+    if (block.type === "image") {
+      if (!withImages || images >= MAX_BODY_IMAGES) continue;
+      images += 1;
+      body.push({ type: "image", url: block.url, caption: "" });
+    } else {
+      pushText(block.paragraphs);
+    }
+  }
+  if (news.link) pushText([`Nguồn: ${news.link}`]);
+  return body;
+}
+
+// Các bản nội dung thử lần lượt khi tạo bài: đầy đủ (chữ + ảnh) → chỉ chữ → tóm tắt.
+function articleVariants(detail, news) {
+  const hasText = detail.some((b) => b.type === "text");
+  const hasImage = detail.some((b) => b.type === "image");
+  const variants = [];
+  if (hasText) variants.push({ level: "full", body: toArticleBody(detail, news) });
+  if (hasText && hasImage) variants.push({ level: "text", body: toArticleBody(detail, news, { withImages: false }) });
+  variants.push({ level: "summary", body: null });
+  return variants;
 }
 
 async function postOne(news) {
@@ -47,8 +92,33 @@ async function postOne(news) {
     );
     return { ok: false, error: "Thiếu ảnh cover" };
   }
+
+  // Nội dung đầy đủ lấy từ trang chi tiết — tải lỗi thì vẫn đăng bản tóm tắt như trước.
+  let detail = [];
+  if (news.link) {
+    try {
+      detail = await fetchNewsDetail(news.link);
+    } catch (err) {
+      console.warn(`[ZaloArticle] Không tải được nội dung đầy đủ tin nid=${news.nid}: ${err.message}`);
+    }
+  }
+
   try {
-    const token = await createArticle(item);
+    // Chỉ lùi xuống bản gọn hơn khi Zalo TỪ CHỐI nội dung (lỗi tạo bài); lỗi
+    // mạng/verify thì ném ra để cơ chế thử lại (zalo.attempts) xử lý như cũ.
+    const variants = articleVariants(detail, news);
+    let token;
+    let level;
+    for (const v of variants) {
+      try {
+        token = await createArticle({ ...item, body: v.body });
+        level = v.level;
+        break;
+      } catch (err) {
+        if (!err.zaloRejected || v === variants[variants.length - 1]) throw err;
+        console.warn(`[ZaloArticle] Zalo từ chối bản "${v.level}" của tin nid=${news.nid}, thử bản gọn hơn: ${err.message}`);
+      }
+    }
     const articleId = await verifyArticle(token);
     // link_view để "thẻ tin" (newsCardService.js) mở thẳng bài OA — lỗi thì bỏ
     // qua, lúc gửi thẻ sẽ tự lấy lại.
@@ -64,12 +134,15 @@ async function postOne(news) {
         $set: {
           "zalo.articleId": articleId,
           "zalo.linkView": linkView,
+          "zalo.fullContent": level !== "summary",
           "zalo.postedAt": new Date(),
           "zalo.lastError": "",
         },
       }
     );
-    console.log(`[ZaloArticle] Đã tạo bài OA cho tin nid=${news.nid} (id=${articleId}): ${item.title.slice(0, 50)}`);
+    console.log(
+      `[ZaloArticle] Đã tạo bài OA (${level}) cho tin nid=${news.nid} (id=${articleId}): ${item.title.slice(0, 50)}`
+    );
     return { ok: true, newsId: news._id, articleId };
   } catch (err) {
     await News.updateOne(
@@ -170,4 +243,4 @@ function startAutoPost() {
   );
 }
 
-module.exports = { postPendingArticles, broadcastPendingArticles, startAutoPost, postOne };
+module.exports = { postPendingArticles, broadcastPendingArticles, startAutoPost, postOne, articleVariants };

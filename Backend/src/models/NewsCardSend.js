@@ -16,6 +16,7 @@ const newsCardSendSchema = new mongoose.Schema(
     // Lỗi Zalo gom theo mã: [{ code, message, count }]
     errorCounts: [{ _id: false, code: String, message: String, count: Number }],
     status: { type: String, enum: ["sending", "done", "failed"], default: "sending" },
+    auto: { type: Boolean, default: false }, // do bộ tự động gửi (không phải cán bộ bấm)
     sentBy: { type: mongoose.Schema.Types.ObjectId, ref: "AdminUser", default: null },
   },
   { timestamps: true }
