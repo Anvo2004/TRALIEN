@@ -224,12 +224,13 @@ router.post("/news-cards/test", async (req, res) => {
   }
 });
 
-// Gửi tới TẤT CẢ người quan tâm OA (danh sách lấy thẳng từ Zalo lúc gửi).
+// Gửi tới TẤT CẢ người quan tâm OA (danh sách lấy thẳng từ Zalo lúc gửi). Trả
+// jobId ngay — tạo bài OA + gửi chạy nền, theo dõi qua /status/:jobId.
 router.post("/news-cards", async (req, res) => {
   const { newsId } = req.body;
   if (!newsId) return res.status(400).json({ error: "Thiếu tin cần gửi" });
-  const { jobId, sendId, total } = await newsCardService.sendNewsCard({ newsId, sentBy: req.user.id });
-  res.json({ jobId, sendId, total });
+  const { jobId } = await newsCardService.sendNewsCard({ newsId, sentBy: req.user.id });
+  res.json({ jobId });
 });
 
 // Tự động gửi thẻ cho tin mới — { enabled, since }.

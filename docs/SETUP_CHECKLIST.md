@@ -117,14 +117,24 @@ Backend chạy đầy đủ tính năng và lên production. Đánh dấu `[x]` 
       - **Tự động gửi tin mới** (thêm 2026-09-22, bật/tắt ở đầu tab — mặc định
         BẬT, mốc tính từ lúc bật để không gửi dồn tin cũ): tin mới cào về được
         tự gửi thẻ tới tất cả người quan tâm OA, mỗi tin 1 lần, 7h–20h giờ VN,
-        tối đa 2 tin/lượt quét (10 phút) — `runAutoSend()`. Chờ bài OA đầy đủ
-        tạo xong (tối đa 60 phút) để thẻ mở bài OA. Tin đã broadcast bài OA
-        thì bỏ qua (không báo 2 lần nếu sau này bật `ZALO_BROADCAST_ENABLED`).
-      - **Bài OA đầy đủ nội dung**: bài OA tạo tự động giờ gồm TOÀN BỘ tin
-        (sapo + đoạn văn + tối đa 10 ảnh, lấy từ trang chi tiết —
-        `newsScrapeService.parseNewsDetail`), lùi về chỉ chữ/tóm tắt nếu Zalo
-        từ chối (`zalo.fullContent`). Bài OA tạo trước đó chỉ có tóm tắt nên
-        thẻ của các tin cũ mở **trang tin gốc** (đầy đủ) thay vì bài OA.
+        tối đa 2 tin/lượt quét (10 phút) — `runAutoSend()`. Tin đã broadcast
+        bài OA thì bỏ qua (không báo 2 lần nếu sau này bật `ZALO_BROADCAST_ENABLED`).
+      - **Thẻ LUÔN mở bài viết OA** (2026-09-22, theo yêu cầu xã — không mở
+        trang tin gốc nữa): tin chưa có bài OA, hoặc bài cũ chỉ có tóm tắt /
+        link PDF, được tạo bài đầy đủ ngay lúc gửi (`zaloNewsService.ensureArticle`
+        — chạy cả khi `ZALO_ARTICLE_ENABLED` tắt). Bài cũ vẫn nằm trong danh
+        sách bài viết của OA (không xoá — thẻ đã gửi trước đây trỏ tới), xoá tay
+        trên OA nếu muốn gọn.
+      - **Bài OA đầy đủ nội dung**: gồm TOÀN BỘ tin (sapo + đoạn văn + ảnh,
+        lấy từ trang chi tiết — `newsScrapeService.parseNewsDetail`), tối đa 20
+        ảnh/bài; lùi về chỉ chữ/tóm tắt nếu Zalo từ chối (`zalo.fullContent`).
+      - **Tin chỉ có văn bản PDF** (vd. "V/v tin bão..."): từng trang PDF được
+        chuyển thành ảnh (`Backend/src/utils/pdfPages.js`, pdfjs-dist +
+        @napi-rs/canvas — **cần Node ≥ 20 trên VPS**), lưu ở
+        `Backend/public/images/tin/` và đưa vào bài OA kèm link tải văn bản gốc.
+        Cần `PUBLIC_URL` là domain https công khai của Backend (Zalo tải ảnh từ
+        đó). Không render được thì bài OA hiện link văn bản thay cho ảnh (log
+        `[PdfPages]` trong PM2).
 
 ## 4. Tích hợp thành phố (quyết định dùng chung hay tài khoản riêng)
 

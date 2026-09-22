@@ -20,9 +20,12 @@ const newsSchema = new mongoose.Schema(
       articleId: { type: String, default: "" }, // id bài trên OA (đã tạo)
       // link mở bài viết trong Zalo (article/getdetail → link_view) — "thẻ tin" trỏ vào đây
       linkView: { type: String, default: "" },
-      // Bài OA có nội dung đầy đủ (chữ + ảnh từ trang chi tiết), không chỉ tóm tắt —
-      // thẻ tin chỉ mở bài OA khi true, còn lại mở trang tin gốc.
+      // Bài OA có nội dung đầy đủ (chữ + ảnh + văn bản PDF thành ảnh, từ trang chi
+      // tiết), không chỉ tóm tắt.
       fullContent: { type: Boolean, default: false },
+      // Phiên bản cách dựng nội dung bài (zaloNewsService.ARTICLE_BODY_VERSION) —
+      // bài chưa đầy đủ dựng bằng bản cũ được dựng lại khi gửi thẻ tin.
+      bodyVersion: { type: Number, default: 0 },
       postedAt: { type: Date, default: null },
       attempts: { type: Number, default: 0 },
       lastError: { type: String, default: "" },
@@ -32,7 +35,7 @@ const newsSchema = new mongoose.Schema(
       broadcastedAt: { type: Date, default: null },
       broadcastError: { type: String, default: "" },
       // Tự động gửi thẻ tin (newsCardService.runAutoSend) — số lần thử lỗi (vd. không
-      // lấy được danh sách follower), quá AUTO_MAX_ATTEMPTS thì thôi.
+      // tạo được bài OA, không lấy được danh sách follower), quá AUTO_MAX_ATTEMPTS thì thôi.
       cardAttempts: { type: Number, default: 0 },
       cardError: { type: String, default: "" },
     },

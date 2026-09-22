@@ -18,6 +18,14 @@ const STATUS_LABEL = {
   failed: { text: 'Thất bại', className: 'bg-red-50 text-red-600' },
 }
 
+// Trạng thái bài viết OA của tin (Backend: newsCardService.listNews) — thẻ luôn mở
+// bài OA, tin chưa có bài đầy đủ thì hệ thống tạo lúc gửi.
+const ARTICLE_LABEL = {
+  ready: { text: 'Có bài OA', className: 'bg-blue-50 text-blue-600' },
+  rebuild: { text: 'Tạo lại bài OA khi gửi', className: 'bg-amber-50 text-amber-700' },
+  none: { text: 'Tạo bài OA khi gửi', className: 'bg-slate-100 text-slate-500' },
+}
+
 function errorSummary(errors = []) {
   return errors.map((e) => `${e.code}: ${e.message} (${e.count})`).join('\n')
 }
@@ -77,9 +85,10 @@ function NewsPicker({ selected, onSelect }) {
                   <p className="line-clamp-2 text-sm font-medium leading-snug text-slate-700">{n.title}</p>
                   <div className="mt-1 flex flex-wrap items-center gap-1.5 text-[11px]">
                     {n.date && <span className="text-slate-400">{n.date}</span>}
-                    <span className={cn('rounded-full px-1.5 py-0.5 font-medium', n.opensOaArticle ? 'bg-blue-50 text-blue-600' : 'bg-slate-100 text-slate-500')}>
-                      {n.opensOaArticle ? 'Mở bài OA' : 'Mở trang gốc'}
-                    </span>
+                    {(() => {
+                      const a = ARTICLE_LABEL[n.article] ?? ARTICLE_LABEL.none
+                      return <span className={cn('rounded-full px-1.5 py-0.5 font-medium', a.className)}>{a.text}</span>
+                    })()}
                     {n.lastSend && (
                       <span className="rounded-full bg-amber-50 px-1.5 py-0.5 font-medium text-amber-700">
                         Đã gửi {formatDateShort(n.lastSend.at)} · {n.lastSend.sent} người
@@ -211,8 +220,8 @@ function AutoSendCard() {
           Tự động gửi tin mới: {isLoading ? '…' : enabled ? 'Đang bật' : 'Đang tắt'}
         </p>
         <p className="text-xs text-slate-500">
-          Có tin mới trên trang TTĐT xã thì hệ thống tự gửi thẻ tới tất cả người quan tâm OA — mỗi tin 1 lần,
-          trong khung 7h–20h
+          Có tin mới trên trang TTĐT xã thì hệ thống tự tạo bài viết OA đầy đủ và gửi thẻ tới tất cả người
+          quan tâm OA — mỗi tin 1 lần, trong khung 7h–20h
           {enabled && data?.since && <> (áp dụng cho tin từ {formatDate(data.since)})</>}.
         </p>
       </div>
@@ -247,9 +256,18 @@ export default function NewsCardTab() {
   const knownFollowers = followersData?.followers?.length ?? 0
   const sending = Boolean(jobId) && !job?.done && !job?.lost
 
+  // Bài OA của tin vừa được tạo (lúc gửi thử/gửi) — cập nhật nhãn nếu tin đó còn đang chọn.
+  function markArticleReady(newsId) {
+    setSelected((s) => (s && s._id === newsId ? { ...s, article: 'ready' } : s))
+    qc.invalidateQueries({ queryKey: ['news-card-news'] })
+  }
+
   const testMut = useMutation({
-    mutationFn: () => api.post('/api/broadcast/news-cards/test', { newsId: selected._id }).then((r) => r.data),
-    onSuccess: () => toast.success('Đã gửi thử — mở Zalo của bạn để xem thẻ'),
+    mutationFn: (newsId) => api.post('/api/broadcast/news-cards/test', { newsId }).then((r) => r.data),
+    onSuccess: (_, newsId) => {
+      markArticleReady(newsId)
+      toast.success('Đã gửi thử — mở Zalo của bạn để xem thẻ')
+    },
     onError: (e) => toast.error(e.response?.data?.error || 'Gửi thử thất bại'),
   })
 
@@ -257,7 +275,7 @@ export default function NewsCardTab() {
     mutationFn: (body) => api.post('/api/broadcast/news-cards', body).then((r) => r.data),
     onSuccess: (data) => {
       setJobId(data.jobId)
-      setJob({ total: data.total, sent: 0, failed: 0, done: false, errors: [] })
+      setJob({ stage: 'preparing', total: 0, sent: 0, failed: 0, done: false, errors: [] })
     },
     onError: (e) => toast.error(e.response?.data?.error || 'Không gửi được thẻ tin'),
   })
@@ -271,7 +289,11 @@ export default function NewsCardTab() {
         setJob(data)
         if (data.done) {
           clearInterval(pollRef.current)
-          toast.success(`Gửi xong: ${data.sent} thành công${data.failed ? `, ${data.failed} lỗi` : ''}`)
+          if (data.error) toast.error(`Không gửi được thẻ tin: ${data.error}`)
+          else toast.success(`Gửi xong: ${data.sent} thành công${data.failed ? `, ${data.failed} lỗi` : ''}`)
+          if (data.stage === 'done') {
+            setSelected((s) => (s && s._id === data.newsId ? { ...s, article: 'ready' } : s))
+          }
           qc.invalidateQueries({ queryKey: ['news-card-news'] })
           qc.invalidateQueries({ queryKey: ['news-card-history'] })
         }
@@ -313,17 +335,15 @@ export default function NewsCardTab() {
                 <>
                   <ZaloCardPreview title={selected.title} summary={selected.summary} imageUrl={selected.imageUrl} />
                   <p className="text-xs text-slate-500">
-                    Bấm vào thẻ sẽ mở:{' '}
-                    <b>{selected.opensOaArticle ? 'bài viết đầy đủ trên OA (ngay trong Zalo)' : 'trang tin gốc (đầy đủ nội dung)'}</b>
-                    {!selected.opensOaArticle && selected.link && (
-                      <a href={selected.link} target="_blank" rel="noreferrer" className="ml-1 inline-flex items-center gap-1 text-blue-600 hover:underline">
-                        xem <ExternalLink className="h-3 w-3" />
-                      </a>
+                    Bấm vào thẻ sẽ mở: <b>bài viết đầy đủ trên OA (ngay trong Zalo)</b>.
+                    {selected.article !== 'ready' && (
+                      <> Tin này chưa có bài OA đầy đủ — hệ thống tự tạo bài khi gửi (thêm khoảng 10–30 giây;
+                        văn bản PDF được chuyển thành ảnh từng trang trong bài).</>
                     )}
                   </p>
-                  <Button variant="outline" size="sm" onClick={() => testMut.mutate()} disabled={testMut.isPending}>
+                  <Button variant="outline" size="sm" onClick={() => testMut.mutate(selected._id)} disabled={testMut.isPending}>
                     {testMut.isPending ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <FlaskConical className="mr-1.5 h-3.5 w-3.5" />}
-                    Gửi thử cho tôi
+                    {testMut.isPending && selected.article !== 'ready' ? 'Đang tạo bài OA và gửi thử…' : 'Gửi thử cho tôi'}
                   </Button>
                 </>
               ) : (
@@ -353,15 +373,26 @@ export default function NewsCardTab() {
 
               {job && (
                 <div className="space-y-2 rounded-xl border border-slate-100 p-3">
-                  <div className="flex justify-between text-xs text-slate-500">
-                    <span>{job.done ? 'Đã gửi xong' : job.lost ? 'Mất kết nối tiến độ' : 'Đang gửi...'}</span>
-                    <span>
-                      <b className="text-emerald-600">{job.sent}</b> thành công · <b className="text-red-600">{job.failed}</b> lỗi / {job.total}
-                    </span>
-                  </div>
-                  <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-                    <div className="h-full rounded-full bg-blue-500 transition-all" style={{ width: `${progress}%` }} />
-                  </div>
+                  {job.error ? (
+                    <p className="text-sm text-red-600">Không gửi được: {job.error}</p>
+                  ) : job.stage === 'preparing' && !job.lost ? (
+                    <>
+                      <p className="text-xs text-slate-500">Đang chuẩn bị bài viết OA và danh sách người nhận…</p>
+                      <div className="h-2 animate-pulse rounded-full bg-blue-200" />
+                    </>
+                  ) : (
+                    <>
+                      <div className="flex justify-between text-xs text-slate-500">
+                        <span>{job.done ? 'Đã gửi xong' : job.lost ? 'Mất kết nối tiến độ' : 'Đang gửi...'}</span>
+                        <span>
+                          <b className="text-emerald-600">{job.sent}</b> thành công · <b className="text-red-600">{job.failed}</b> lỗi / {job.total}
+                        </span>
+                      </div>
+                      <div className="h-2 overflow-hidden rounded-full bg-slate-100">
+                        <div className="h-full rounded-full bg-blue-500 transition-all" style={{ width: `${progress}%` }} />
+                      </div>
+                    </>
+                  )}
                   {job.lost && (
                     <p className="text-xs text-slate-500">Không theo dõi được tiến độ nữa — số liệu cuối cùng xem ở "Lịch sử gửi thẻ tin" bên dưới.</p>
                   )}
