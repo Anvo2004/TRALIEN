@@ -4,18 +4,20 @@ const NewsCardSend = require("../models/NewsCardSend");
 const SendLog = require("../models/SendLog");
 const { sendZaloCard } = require("../utils/zaloApi");
 const { getArticleDetail } = require("../utils/zaloArticle");
-const { createJob, getJobStatus } = require("./broadcastService");
+const { createJob, getJobStatus, fetchAllFollowers } = require("./broadcastService");
 
 // ============================================================
-// "Thẻ tin": gửi 1 tin tức (News) tới từng người bằng TIN TƯ VẤN dạng danh sách
-// (list template) — Zalo hiển thị ảnh lớn + tiêu đề đậm + mô tả, bấm vào mở bài.
-// KHÔNG phải broadcast (broadcast bị giới hạn vài lượt/tháng theo gói OA và cần
-// quyền riêng — xem comment đầu zaloNewsService.js). Cơ chế đối chiếu từ
-// HOATIEN/QUESON (zaloBroadcast.sendArticleCard), đã chạy thật.
+// "Thẻ tin": gửi 1 tin tức (News) tới TẤT CẢ người quan tâm OA, từng người một,
+// bằng TIN TƯ VẤN dạng danh sách (list template) — Zalo hiển thị ảnh lớn + tiêu
+// đề đậm + mô tả, bấm vào mở bài. KHÔNG phải broadcast (broadcast bị giới hạn
+// vài lượt/tháng theo gói OA và cần quyền riêng — xem comment đầu
+// zaloNewsService.js). Cơ chế đối chiếu từ HOATIEN/QUESON
+// (zaloBroadcast.sendArticleCard), đã chạy thật.
 //
-// Ràng buộc Zalo: tin tư vấn qua OpenAPI chỉ tới được người đã tương tác với OA
-// trong 7 ngày (miễn phí trong 48h, sau đó tính phí) — AdminWeb chọn người nhận
-// theo nhóm do zaloActivityService.classifyFollowers() phân loại.
+// Danh sách người nhận lấy thẳng từ Zalo lúc gửi (không dùng cache follower,
+// để người mới quan tâm cũng nhận). Theo tài liệu Zalo, tin tư vấn qua OpenAPI
+// chỉ tới được người có tương tác với OA trong 7 ngày — người còn lại Zalo trả
+// lỗi, được đếm và gom theo mã trong lịch sử gửi.
 // ============================================================
 
 const SEND_DELAY_MS = 500; // cùng nhịp với broadcastService.sendBroadcast (tránh rate limit OA)
@@ -141,18 +143,21 @@ async function sendTestCard(newsId, zaloUserId) {
   return { target };
 }
 
-// Gửi hàng loạt ở nền. Trả jobId ngay; tiến độ đọc qua broadcastService.getJobStatus
-// (route có sẵn GET /api/broadcast/status/:jobId).
-async function sendNewsCard({ newsId, userIds = [], groupIds = [], sentBy = null }) {
+// Gửi tới toàn bộ người quan tâm OA ở nền. Trả jobId ngay; tiến độ đọc qua
+// broadcastService.getJobStatus (route có sẵn GET /api/broadcast/status/:jobId).
+async function sendNewsCard({ newsId, sentBy = null }) {
   const news = await loadNews(newsId);
   // Lỗi thiếu ảnh/link báo ngay cho cán bộ, trước khi tạo job.
   const { element, target } = await buildCard(news);
 
-  const recipients = [
-    ...[...new Set(userIds.map(String))].map((id) => ({ id, isGroup: false })),
-    ...[...new Set(groupIds.map(String))].map((id) => ({ id, isGroup: true })),
-  ];
-  if (!recipients.length) throw httpError(400, "Chưa chọn người nhận");
+  let followers;
+  try {
+    followers = await fetchAllFollowers();
+  } catch (err) {
+    throw httpError(502, `Không lấy được danh sách người quan tâm từ Zalo: ${err.message}`);
+  }
+  const recipients = [...new Set(followers.map((f) => String(f.user_id || "")).filter(Boolean))];
+  if (!recipients.length) throw httpError(400, "OA chưa có người quan tâm nào để gửi");
 
   const doc = await NewsCardSend.create({
     newsId: news._id,
@@ -178,9 +183,9 @@ async function sendNewsCard({ newsId, userIds = [], groupIds = [], sentBy = null
 
   (async () => {
     let done = 0;
-    for (const r of recipients) {
+    for (const userId of recipients) {
       try {
-        await sendZaloCard(r.id, element, r.isGroup);
+        await sendZaloCard(userId, element);
         job.sent += 1;
       } catch (err) {
         job.failed += 1;

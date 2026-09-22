@@ -11,7 +11,9 @@ async function getCachedFollowers() {
   return raw ? JSON.parse(raw) : [];
 }
 
-async function syncFollowers() {
+// Toàn bộ người đang quan tâm OA, lấy thẳng từ Zalo (phân trang 50/lượt) —
+// [{ user_id }]. Dùng cho đồng bộ danh sách và gửi thẻ tin tới tất cả follower.
+async function fetchAllFollowers() {
   const followers = [];
   let offset = 0;
   const count = 50;
@@ -26,6 +28,11 @@ async function syncFollowers() {
     if (batch.length < count) break;
     offset += count;
   }
+  return followers;
+}
+
+async function syncFollowers() {
+  const followers = await fetchAllFollowers();
   const { getUserProfile } = require("../utils/zaloApi");
 
   const profiles = [];
@@ -216,6 +223,7 @@ async function sendBroadcast({ userIds, message, attachments = {}, adminNote, se
 
 module.exports = {
   getCachedFollowers,
+  fetchAllFollowers,
   syncFollowers,
   getGroups,
   addGroup,

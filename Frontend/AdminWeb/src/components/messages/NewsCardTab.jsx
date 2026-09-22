@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
-  Search, Loader2, Send, FlaskConical, Newspaper, AlertTriangle, Info,
+  Search, Loader2, Send, FlaskConical, Newspaper, Users,
   ChevronLeft, ChevronRight, ExternalLink,
 } from 'lucide-react'
 import { toast } from 'sonner'
@@ -11,31 +11,6 @@ import { Input } from '@/components/ui/input'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { cn, formatDate, formatDateShort } from '@/lib/utils'
 import ZaloCardPreview from './ZaloCardPreview'
-
-// Nhóm người nhận theo khung gửi TIN TƯ VẤN của Zalo — phân loại ở Backend
-// (services/zaloActivityService.js). Mặc định chỉ tick nhóm miễn phí.
-const BUCKETS = [
-  { key: 'free', label: 'Tương tác trong 48 giờ', note: 'Miễn phí', tone: 'emerald' },
-  { key: 'paid', label: 'Tương tác 48 giờ – 7 ngày', note: 'Có thể bị tính phí (~55đ/tin) — gồm cả người đã nhận đủ 8 tin miễn phí', tone: 'amber' },
-  { key: 'unknown', label: 'Chưa rõ lần tương tác', note: 'Chưa ghi nhận tương tác từ khi bắt đầu theo dõi — có thể thất bại hoặc bị tính phí', tone: 'slate' },
-  { key: 'expired', label: 'Quá 7 ngày / đã bỏ quan tâm', note: 'Zalo sẽ từ chối gửi', tone: 'red' },
-]
-
-const TONE = {
-  emerald: 'border-emerald-200 bg-emerald-50/60',
-  amber: 'border-amber-200 bg-amber-50/60',
-  slate: 'border-slate-200 bg-slate-50',
-  red: 'border-red-200 bg-red-50/60',
-}
-
-const TONE_TEXT = {
-  emerald: 'text-emerald-700',
-  amber: 'text-amber-700',
-  slate: 'text-slate-600',
-  red: 'text-red-600',
-}
-
-const PAID_PRICE = 55 // đồng/tin — bảng giá tin tư vấn ngoài 48h (tham khảo)
 
 const STATUS_LABEL = {
   sending: { text: 'Đang gửi', className: 'bg-sky-50 text-sky-700' },
@@ -205,26 +180,21 @@ function NewsCardHistory() {
 }
 
 // ── Tab chính ─────────────────────────────────────────────────────────────────
+// Gửi thẻ tin tới TẤT CẢ người quan tâm OA — Backend tự lấy danh sách từ Zalo
+// lúc gửi (services/newsCardService.js), trang này không chọn người nhận.
 export default function NewsCardTab() {
   const qc = useQueryClient()
   const [selected, setSelected] = useState(null)
-  const [buckets, setBuckets] = useState({ free: true, paid: false, unknown: false, expired: false })
-  const [groupIds, setGroupIds] = useState(() => new Set())
   const [jobId, setJobId] = useState(null)
   const [job, setJob] = useState(null)
   const pollRef = useRef(null)
 
-  const { data: audience, isLoading: audienceLoading } = useQuery({
-    queryKey: ['news-card-audience'],
-    queryFn: () => api.get('/api/broadcast/news-cards/audience').then((r) => r.data),
+  // Chỉ để hiển thị số tham khảo — danh sách đã đồng bộ ở tab "Followers & Nhóm".
+  const { data: followersData } = useQuery({
+    queryKey: ['broadcast-followers'],
+    queryFn: () => api.get('/api/broadcast/followers').then((r) => r.data),
   })
-
-  const userIds = useMemo(
-    () => (audience?.people ?? []).filter((p) => buckets[p.bucket]).map((p) => p.userId),
-    [audience, buckets]
-  )
-  const paidCount = buckets.paid ? audience?.counts?.paid ?? 0 : 0
-  const total = userIds.length + groupIds.size
+  const knownFollowers = followersData?.followers?.length ?? 0
   const sending = Boolean(jobId) && !job?.done && !job?.lost
 
   const testMut = useMutation({
@@ -254,7 +224,6 @@ export default function NewsCardTab() {
           toast.success(`Gửi xong: ${data.sent} thành công${data.failed ? `, ${data.failed} lỗi` : ''}`)
           qc.invalidateQueries({ queryKey: ['news-card-news'] })
           qc.invalidateQueries({ queryKey: ['news-card-history'] })
-          qc.invalidateQueries({ queryKey: ['news-card-audience'] })
         }
       } catch {
         // Job hết hạn/Backend khởi động lại — số liệu vẫn được lưu trong lịch sử gửi.
@@ -266,38 +235,18 @@ export default function NewsCardTab() {
     return () => clearInterval(pollRef.current)
   }, [jobId, qc])
 
-  function toggleGroup(id) {
-    setGroupIds((prev) => {
-      const next = new Set(prev)
-      next.has(id) ? next.delete(id) : next.add(id)
-      return next
-    })
-  }
-
   function handleSend() {
     if (!selected) return
-    const lines = [
-      `Gửi thẻ tin "${selected.title}"`,
-      `tới ${userIds.length} người${groupIds.size ? ` và ${groupIds.size} nhóm Zalo` : ''}?`,
-    ]
-    if (paidCount) lines.push(`\n${paidCount} tin có thể bị tính phí (≈ ${(paidCount * PAID_PRICE).toLocaleString('vi-VN')}đ).`)
+    const lines = [`Gửi thẻ tin "${selected.title}" tới tất cả người quan tâm OA?`]
     if (selected.lastSend) lines.push(`\nLưu ý: tin này đã gửi ngày ${formatDateShort(selected.lastSend.at)}.`)
     if (!window.confirm(lines.join(' '))) return
-    sendMut.mutate({ newsId: selected._id, userIds, groupIds: [...groupIds] })
+    sendMut.mutate({ newsId: selected._id })
   }
 
   const progress = job?.total ? Math.round(((job.sent + job.failed) / job.total) * 100) : 0
 
   return (
     <div className="space-y-4">
-      <div className="flex gap-2.5 rounded-xl border border-blue-100 bg-blue-50/60 px-4 py-3 text-sm text-blue-900">
-        <Info className="mt-0.5 h-4 w-4 shrink-0 text-blue-500" />
-        <p>
-          Thẻ tin được gửi dạng <b>tin tư vấn</b> tới từng người (không phải broadcast). Zalo chỉ cho gửi tới người đã
-          tương tác với OA trong <b>7 ngày</b>: miễn phí trong <b>48 giờ</b>, sau đó có thể tính phí.
-        </p>
-      </div>
-
       <div className="grid gap-4 lg:grid-cols-5">
         <NewsPicker selected={selected} onSelect={setSelected} />
 
@@ -331,79 +280,23 @@ export default function NewsCardTab() {
             </CardContent>
           </Card>
 
-          {/* 3. Người nhận + gửi */}
+          {/* 3. Gửi */}
           <Card>
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">3. Người nhận</CardTitle>
+              <CardTitle className="text-base">3. Gửi</CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              {audienceLoading ? (
-                <div className="flex h-24 items-center justify-center"><Loader2 className="h-5 w-5 animate-spin text-blue-500" /></div>
-              ) : (
-                <>
-                  {!audience?.trackingSince ? (
-                    <div className="flex gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800">
-                      <AlertTriangle className="mt-0.5 h-4 w-4 shrink-0" />
-                      <p>
-                        Chưa nhận được sự kiện nào từ webhook Zalo nên chưa biết ai đang trong khung gửi tin — mọi người
-                        đang ở nhóm "Chưa rõ". Cấu hình Webhook OA theo docs/SETUP_CHECKLIST.md.
-                      </p>
-                    </div>
-                  ) : (
-                    <p className="text-xs text-slate-400">Theo dõi tương tác từ {formatDate(audience.trackingSince)}</p>
-                  )}
-                  {audience?.followerCount === 0 && (
-                    <p className="text-xs text-slate-500">
-                      Chưa có danh sách follower — vào tab "Followers & Nhóm" để đồng bộ từ Zalo.
-                    </p>
-                  )}
-
-                  <div className="space-y-2">
-                    {BUCKETS.map((b) => (
-                      <label key={b.key} className={cn('flex cursor-pointer items-start gap-3 rounded-xl border px-3 py-2.5', TONE[b.tone])}>
-                        <input
-                          type="checkbox"
-                          className="mt-1 accent-blue-600"
-                          checked={buckets[b.key]}
-                          onChange={(e) => setBuckets((prev) => ({ ...prev, [b.key]: e.target.checked }))}
-                        />
-                        <div className="min-w-0 flex-1">
-                          <div className="flex items-center justify-between gap-2">
-                            <span className="text-sm font-semibold text-slate-700">{b.label}</span>
-                            <span className={cn('text-sm font-bold', TONE_TEXT[b.tone])}>{audience?.counts?.[b.key] ?? 0}</span>
-                          </div>
-                          <p className={cn('text-xs', TONE_TEXT[b.tone])}>{b.note}</p>
-                        </div>
-                      </label>
-                    ))}
-                  </div>
-
-                  {audience?.groups?.length > 0 && (
-                    <div className="space-y-1.5">
-                      <p className="text-xs font-semibold uppercase tracking-wider text-slate-400">Nhóm Zalo (tuỳ chọn)</p>
-                      <div className="flex flex-wrap gap-2">
-                        {audience.groups.map((g) => (
-                          <label key={g.id} className="flex cursor-pointer items-center gap-1.5 rounded-lg border border-slate-200 px-2.5 py-1.5 text-xs">
-                            <input type="checkbox" className="accent-blue-600" checked={groupIds.has(g.id)} onChange={() => toggleGroup(g.id)} />
-                            {g.name || g.id}
-                          </label>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-
-              <div className="rounded-xl bg-slate-50 px-3 py-2.5 text-sm text-slate-600">
-                Gửi tới <b>{userIds.length}</b> người{groupIds.size > 0 && <> + <b>{groupIds.size}</b> nhóm</>}
-                {paidCount > 0 && (
-                  <span className="text-amber-700"> · ~{paidCount} tin có thể bị tính phí (≈ {(paidCount * PAID_PRICE).toLocaleString('vi-VN')}đ)</span>
-                )}
+              <div className="flex items-start gap-2.5 rounded-xl bg-slate-50 px-3 py-2.5 text-sm text-slate-600">
+                <Users className="mt-0.5 h-4 w-4 shrink-0 text-blue-500" />
+                <p>
+                  Gửi tới <b>tất cả người quan tâm OA</b> — danh sách lấy trực tiếp từ Zalo lúc bấm gửi
+                  {knownFollowers > 0 && <> (lần đồng bộ gần nhất: <b>{knownFollowers}</b> người)</>}.
+                </p>
               </div>
 
-              <Button className="w-full" onClick={handleSend} disabled={!selected || total === 0 || sending || sendMut.isPending}>
+              <Button className="w-full" onClick={handleSend} disabled={!selected || sending || sendMut.isPending}>
                 {sending || sendMut.isPending ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Send className="mr-2 h-4 w-4" />}
-                Gửi thẻ tin
+                Gửi cho tất cả người quan tâm OA
               </Button>
 
               {job && (
@@ -421,11 +314,16 @@ export default function NewsCardTab() {
                     <p className="text-xs text-slate-500">Không theo dõi được tiến độ nữa — số liệu cuối cùng xem ở "Lịch sử gửi thẻ tin" bên dưới.</p>
                   )}
                   {job.errors?.length > 0 && (
-                    <ul className="space-y-0.5 text-xs text-red-600">
-                      {job.errors.map((e) => (
-                        <li key={e.code}>Mã {e.code}: {e.message} — {e.count} người</li>
-                      ))}
-                    </ul>
+                    <>
+                      <ul className="space-y-0.5 text-xs text-red-600">
+                        {job.errors.map((e) => (
+                          <li key={e.code}>Mã {e.code}: {e.message} — {e.count} người</li>
+                        ))}
+                      </ul>
+                      <p className="text-[11px] text-slate-400">
+                        Zalo có thể từ chối người đã lâu không tương tác với OA (quy định tin tư vấn).
+                      </p>
+                    </>
                   )}
                 </div>
               )}

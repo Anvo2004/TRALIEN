@@ -1,5 +1,4 @@
 const { getAccessToken, refreshAccessToken } = require("./zaloToken");
-const { recordMessageSent } = require("../services/zaloActivityService");
 
 const OA_BASE = "https://openapi.zalo.me/v2.0/oa";
 
@@ -20,13 +19,6 @@ async function zaloPost(path, body, { retried = false } = {}) {
   if (data.error === -216 && !retried) {
     await refreshAccessToken();
     return zaloPost(path, body, { retried: true });
-  }
-
-  // Đếm tin tư vấn đã gửi thành công cho từng người (hạn mức miễn phí trong 48h
-  // — xem services/zaloActivityService.js). Đặt ở đây để bắt mọi luồng gửi.
-  const userId = body?.recipient?.user_id;
-  if (path === "/message" && userId && data.error === 0) {
-    recordMessageSent(userId).catch((err) => console.error("[zaloApi] Đếm tin đã gửi lỗi:", err.message));
   }
   return data;
 }

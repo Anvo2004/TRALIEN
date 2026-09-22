@@ -7,7 +7,6 @@ const AdminUser = require("../models/AdminUser");
 const { requireRole } = require("../middleware/auth");
 const broadcastService = require("../services/broadcastService");
 const newsCardService = require("../services/newsCardService");
-const { classifyFollowers } = require("../services/zaloActivityService");
 const { uploadImageToZalo, uploadFileToZalo } = require("../utils/zaloApi");
 const config = require("../config");
 
@@ -199,19 +198,11 @@ router.get("/logs", async (req, res) => {
   res.json({ logs });
 });
 
-// ===== Thẻ tin: gửi 1 tin tức dạng thẻ (ảnh + tiêu đề + mô tả) qua tin tư vấn =====
-// Xem services/newsCardService.js và services/zaloActivityService.js.
+// ===== Thẻ tin: gửi 1 tin tức dạng thẻ (ảnh + tiêu đề + mô tả) tới tất cả người
+// quan tâm OA qua tin tư vấn — xem services/newsCardService.js =====
 
 router.get("/news-cards/news", async (req, res) => {
   res.json(await newsCardService.listNews({ q: req.query.q || "", page: req.query.page }));
-});
-
-// Follower + người vừa tương tác, chia nhóm theo khung gửi tin tư vấn của Zalo.
-router.get("/news-cards/audience", async (req, res) => {
-  const followers = await broadcastService.getCachedFollowers();
-  const { people, counts, trackingSince } = await classifyFollowers(followers);
-  const groups = await broadcastService.getGroups();
-  res.json({ people, counts, trackingSince, groups, followerCount: followers.length });
 });
 
 // Gửi thử cho chính cán bộ đang đăng nhập (Zalo User ID gắn trong Tài khoản Admin).
@@ -233,13 +224,11 @@ router.post("/news-cards/test", async (req, res) => {
   }
 });
 
+// Gửi tới TẤT CẢ người quan tâm OA (danh sách lấy thẳng từ Zalo lúc gửi).
 router.post("/news-cards", async (req, res) => {
-  const { newsId, userIds = [], groupIds = [] } = req.body;
+  const { newsId } = req.body;
   if (!newsId) return res.status(400).json({ error: "Thiếu tin cần gửi" });
-  if (!Array.isArray(userIds) || !Array.isArray(groupIds)) {
-    return res.status(400).json({ error: "Danh sách người nhận không hợp lệ" });
-  }
-  res.json(await newsCardService.sendNewsCard({ newsId, userIds, groupIds, sentBy: req.user.id }));
+  res.json(await newsCardService.sendNewsCard({ newsId, sentBy: req.user.id }));
 });
 
 router.get("/news-cards/history", async (req, res) => {
