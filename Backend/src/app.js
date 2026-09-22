@@ -33,10 +33,12 @@ app.get("/", (req, res) => res.send(`
 <!DOCTYPE html>
 <html>
 <head>
-    <!-- TODO: thẻ xác minh site Zalo riêng cho domain Trà Liên (Zalo OA/Mini App
-         Console → Xác minh miền) — token của Thăng Điền không dùng lại được,
-         gắn với domain cụ thể. Xem docs/SETUP_CHECKLIST.md. -->
-    <!-- <meta name="zalo-platform-site-verification" content="TODO" /> -->
+    <!-- Xác thực quyền sở hữu domain tralienapi.dxvtech.vn cho app OA "Công dân
+         số xã Trà Liên" (2026-09-22) — bắt buộc để redirect_uri hoạt động khi
+         cấp lại access_token/refresh_token qua oauth.zaloapp.com/v4/oa/permission.
+         Không xoá/đổi content, Zalo dò lại thẻ này định kỳ để giữ trạng thái
+         "đã xác thực". -->
+    <meta name="zalo-platform-site-verification" content="SjoHSRRr7cX3m9zsWEyuRWlkgdJdc70ZC3Sv" />
     <title>TraLien API</title>
 </head>
 <body>API is running</body>
