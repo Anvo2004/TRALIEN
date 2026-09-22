@@ -116,12 +116,16 @@ module.exports = {
 
   // ===== Tự động đăng tin cào lên Zalo OA (Nội dung dạng Bài viết) =====
   // Dùng CHUNG token OA của zaloToken.js (KHÔNG tạo token store riêng — tránh
-  // 2 nơi refresh đá nhau làm hỏng token production). "Chỉ tạo bài", KHÔNG
-  // broadcast. Tắt mặc định; bật bằng ZALO_ARTICLE_ENABLED=true trên VPS sau
-  // khi đã chạy backfill để không dồn tin cũ lên OA.
+  // 2 nơi refresh đá nhau làm hỏng token production). Tắt mặc định; bật bằng
+  // ZALO_ARTICLE_ENABLED=true trên VPS sau khi đã chạy backfill để không dồn
+  // tin cũ lên OA.
   zaloArticle: {
     enabled: (process.env.ZALO_ARTICLE_ENABLED || "false").toLowerCase() === "true",
     // Ảnh cover mặc định khi tin không có ảnh (Zalo Article bắt buộc có cover)
     defaultCover: process.env.ZALO_ARTICLE_DEFAULT_COVER || "",
+    // Cờ RIÊNG cho bước broadcast (gửi bài đã tạo tới toàn bộ follower) — tách
+    // khỏi "enabled" (chỉ tạo bài) vì cần quyền Zalo khác + rủi ro cao hơn hẳn
+    // (không thể thu hồi sau khi gửi). Bật bằng ZALO_BROADCAST_ENABLED=true.
+    broadcastEnabled: (process.env.ZALO_BROADCAST_ENABLED || "false").toLowerCase() === "true",
   },
 };

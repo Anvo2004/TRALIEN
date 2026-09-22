@@ -59,28 +59,50 @@ Backend chạy đầy đủ tính năng và lên production. Đánh dấu `[x]` 
       **Chưa có**: `ZALO_OA_SECRET_KEY` (khoá xác thực chữ ký webhook, lấy tại
       oa.zalo.me → Cài đặt → Bảo mật — không bắt buộc, thiếu thì webhook vẫn
       nhận bình thường, chỉ bỏ qua bước xác thực chữ ký).
-- [ ] Thẻ xác minh site `zalo-platform-site-verification` trong
-      `Backend/src/app.js` — hiện đã bị xoá theo domain cũ, cần thẻ mới của
-      domain Trà Liên khi đăng ký miền cho OA/Mini App.
+- [x] Thẻ xác minh site `zalo-platform-site-verification` trong
+      `Backend/src/app.js` — đã điền thật (2026-09-22), xác thực thành công
+      domain `tralienapi.dxvtech.vn` trên Zalo Developers Console (cần thiết
+      để `redirect_uri` hoạt động khi cấp lại access_token/refresh_token).
+- [x] **Sự cố production 2026-09-22 — refresh_token Zalo chết, đã khắc phục**:
+      phát hiện `[zaloToken] proactive refresh failed: ... -14014 Invalid
+      refresh token` lặp lại liên tục trên VPS (không rõ từ khi nào — có thể
+      đã âm thầm làm hỏng đăng bài/báo tin phản ánh/thông báo 1022 một thời
+      gian trước khi phát hiện). Đã khắc phục bằng luồng cấp quyền lại thủ
+      công: (1) xác thực domain `tralienapi.dxvtech.vn` (mục trên), (2) OA
+      admin truy cập `https://oauth.zaloapp.com/v4/oa/permission?app_id=...
+      &redirect_uri=https://tralienapi.dxvtech.vn/` → lấy `code` từ URL
+      redirect, (3) đổi `code` lấy access_token/refresh_token mới qua
+      `POST https://oauth.zaloapp.com/v4/oa/access_token`, (4) lưu vào DB
+      Setting (`tralien_zalo_access_token`/`refresh_token`) + restart backend.
+      **Lưu ý cho lần sau**: KHÔNG chạy script test gọi Zalo API từ máy local
+      khi backend production đang chạy cùng lúc — 2 tiến trình cùng đọc
+      refresh_token cũ từ DB rồi cùng thử refresh sẽ đá nhau (refresh_token
+      chỉ dùng được 1 lần, Zalo xoay token mỗi lần đổi) và tự xoá sạch cache
+      trong DB (`redisSet(..., "")` khi gặp lỗi -14014) — đây là nguyên nhân
+      trực tiếp khiến sự cố bị phát hiện (không phải nguyên nhân gốc, token
+      đã chết từ trước, nhưng test cục bộ đã dọn sạch cache DB đang hỏng sẵn).
 - [x] **Tự động đăng tin lên Zalo OA (Article API)**: đã bật
       `ZALO_ARTICLE_ENABLED=true` (2026-09-15, sau khi chạy backfill đánh dấu
       skip 304 tin cũ) — tin cào mới sẽ tự tạo thành "Bài viết" trên OA (ẩn,
       chưa gửi cho ai), đúng mẫu tự động của TIENICHOAZALO_THUONGDUC. Đã test
       thật 1 bài, tạo thành công (`articleId: cace2c2c1268fb36a279`).
-- [ ] **Broadcast bài viết tới người quan tâm (gửi tự động) — CHƯA làm, để
-      sau theo yêu cầu xã**: test thật báo lỗi `-201`. Nguyên nhân: (1) app
-      hiện chỉ có quyền **Article API** (ảnh chụp Zalo Developers Console
-      2026-09-15 xác nhận: Tạo/Sửa/Xoá/Lấy bài đều "Đã được duyệt", không có
-      dòng Broadcast) — quyền gửi nằm ở nhóm khác: **Official Account API →
-      Gửi tin và thông báo qua OA → Broadcast bài viết**, cần xin duyệt riêng
-      trên Zalo Developers Console; (2) dù có quyền, Zalo giới hạn rất thấp
-      theo gói OA (gói Cơ bản/miễn phí ~1 lượt/tháng, OA đã xác thực ~4
-      lượt/tháng, chính sách gói mới áp dụng từ 1/6/2026) — không đủ cho
-      "gửi mỗi lần có tin mới". Khi làm lại: hàm `broadcastArticle()` đã có
-      sẵn ở `Backend/src/utils/zaloArticle.js` (đối chiếu đúng theo
-      TIENICHOAZALO_THUONGDUC, chỉ chưa được gọi) — nên chỉ dùng cho cảnh báo
-      thật sự khẩn cấp, có đếm số lần/tháng để không vượt quota, không dùng
-      cho tin tức thường ngày.
+- [ ] **Broadcast bài viết tới người quan tâm (gửi tự động) — CODE ĐÃ XONG,
+      đang tắt vì thiếu quyền/gói dịch vụ Broadcast**: đã nối
+      `broadcastArticle()` vào luồng tự động trong `zaloNewsService.js`
+      (`broadcastPendingArticles()` — gộp tối đa 5 bài/lượt, tự giãn cách 35
+      phút/lượt qua Setting `tralien_zalo_last_broadcast_at`), bật/tắt qua
+      `ZALO_BROADCAST_ENABLED` (đang **false**). Test thật 2026-09-22 (sau khi
+      đã fix token) vẫn báo lỗi `-201 Params is invalid` — đã đối chiếu payload
+      giống hệt code TIENICHOAZALO_THUONGDUC (đã chạy thật thành công bên đó)
+      nên KHÔNG phải lỗi định dạng — xác nhận app vẫn thiếu quyền Broadcast
+      thật sự. Ảnh chụp Zalo Developers Console 2026-09-22 cho thấy nhóm
+      "Gửi tin nhắn" (individual/CS message) và "Article API" đều đã duyệt đủ,
+      nhưng KHÔNG có dòng "Broadcast" riêng trong danh sách hiển thị — nghi
+      ngờ Broadcast gắn với mục **"Mua sản phẩm dịch vụ OA"** (gói dịch vụ trả
+      phí/kích hoạt riêng, không phải xin quyền API thông thường), **đang chờ
+      xã kiểm tra mục này**. Khi xác nhận có quyền: chỉ cần đặt
+      `ZALO_BROADCAST_ENABLED=true` trong `.env` (VPS) + restart backend, code
+      không cần sửa gì thêm.
 
 ## 4. Tích hợp thành phố (quyết định dùng chung hay tài khoản riêng)
 

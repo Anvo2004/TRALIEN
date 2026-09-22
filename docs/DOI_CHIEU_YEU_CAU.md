@@ -16,7 +16,7 @@ code. ✅ = chạy thật, có bằng chứng · 🟡 = có nhưng chưa đầy 
 | Thông báo (chủ trương/chính sách) | ✅ | `GET /api/public/thong-bao` hoạt động, trang AdminWeb quản lý được |
 | Văn hoá & Du lịch (nội dung thật thay mẫu Thăng Điền) | ✅ | Đã thay bằng nội dung thật về đồng bào Cor, cồng chiêng, lễ hội Sắc Xuân Làng Co, di tích văn hoá Co, điểm du lịch Dội Bà Bình — đọc từ chính trang TTĐT xã |
 | Cảnh báo thiên tai | 🟡 | Trang tĩnh có sẵn (kỹ năng PCTT, bản đồ ngập) nhưng chưa có luồng "tạo 1 cảnh báo mới → tự động đẩy" |
-| **"Tự động đến người dân đã quan tâm OA Zalo"** | 🟡 **Vẫn chưa tự động thật sự** | Zalo OA đã kết nối thật (xem mục 2) và **có khả năng gửi thật** (`sendBroadcast`), nhưng vẫn cần **admin bấm gửi tay** ở AdminWeb — chưa có đoạn nối "tin/cảnh báo mới → tự động broadcast toàn bộ follower". Đây là việc còn thiếu duy nhất trong mục 1, đã nêu 2 lần, vẫn chưa triển khai vì chưa được yêu cầu làm cụ thể. |
+| **"Tự động đến người dân đã quan tâm OA Zalo"** | 🟡 **Code xong, đang chờ quyền Zalo** | Đã nối `broadcastArticle()` vào luồng tự động (`zaloNewsService.js`: tạo bài → gộp tối đa 5 bài/lượt → broadcast, tự giãn cách 35 phút/lượt theo đúng quy định Zalo), bật/tắt qua `ZALO_BROADCAST_ENABLED`. **Test thật 2026-09-22: vẫn lỗi `-201 Params is invalid`** dù token đã fix xong và payload đối chiếu giống hệt code tham khảo Thượng Đức (đã chạy thật) — xác nhận đây là thiếu quyền/gói dịch vụ Broadcast thật sự từ phía Zalo, không phải lỗi code. Đang chờ xã kiểm tra mục "Mua sản phẩm dịch vụ OA" trên Zalo Developers Console (nghi ngờ Broadcast gắn với gói OA trả phí, không phải xin quyền API thường). Đang **tắt** (`ZALO_BROADCAST_ENABLED=false`) tới khi xác nhận quyền. |
 
 ## 2. Tiếp nhận phản ánh, kiến nghị và góp ý của người dân — ✅ ĐÃ CHẠY THẬT 100% ĐẦU-CUỐI
 
@@ -60,7 +60,7 @@ code. ✅ = chạy thật, có bằng chứng · 🟡 = có nhưng chưa đầy 
 
 | # | Yêu cầu | % hoàn thành thực tế |
 |---|---|---|
-| 1 | Đăng tin/cảnh báo tự động | ~80% — nội dung tự động đầy đủ, chỉ thiếu khâu tự-broadcast |
+| 1 | Đăng tin/cảnh báo tự động | ~90% — code tự-broadcast đã xong, chỉ chờ xã xác nhận quyền/gói Broadcast từ Zalo |
 | 2 | Phản ánh - góp ý | **~95%** — đã chạy thật đầu-cuối trên hệ thống 1022 thật |
 | 3 | Nhóm liên kết dịch vụ | **100%** theo đúng phạm vi đã chốt với xã |
 | 4 | Chatbot | 90% code, 0% vận hành (thiếu 1 API key) |
