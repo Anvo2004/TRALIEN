@@ -283,11 +283,12 @@ function inAutoHours(date = new Date()) {
   return h >= AUTO_HOURS.from && h < AUTO_HOURS.to;
 }
 
-// Sẵn sàng gửi khi bài OA đầy đủ đã tạo xong (thẻ mở bài OA); không tạo bài OA
-// hoặc chờ quá lâu (tạo bài lỗi) thì gửi luôn với trang tin gốc.
+// Sẵn sàng gửi khi bài OA đã tạo xong — thẻ mở bài OA nếu bài đầy đủ, không
+// thì trang tin gốc (vd. tin chỉ có PDF — cảnh báo bão — gửi ngay, không phải
+// chờ). Không tạo bài OA hoặc chờ quá lâu (tạo bài lỗi) thì gửi với trang gốc.
 function isReadyToSend(news, now = Date.now()) {
   if (!config.zaloArticle.enabled) return true;
-  if (opensOaArticle(news)) return true;
+  if (news.zalo?.articleId) return true;
   return now - new Date(news.createdAt).getTime() >= AUTO_WAIT_ARTICLE_MS;
 }
 

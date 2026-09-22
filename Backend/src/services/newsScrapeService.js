@@ -153,8 +153,13 @@ const DETAIL_BLOCK_TAGS = new Set([
   "p", "div", "h1", "h2", "h3", "h4", "h5", "h6", "li", "ul", "ol", "blockquote",
   "figure", "figcaption", "section", "article", "table", "thead", "tbody", "tr",
 ]);
+// Nội dung bài OA không thể hiện được: file đính kèm (tin "V/v tin bão..." chỉ có
+// PDF nhúng + nút "Tải về") và khung nhúng (iframe/video).
+const DETAIL_FILE_RE = /\.(pdf|docx?|xlsx?|pptx?|zip|rar)(?:[?#]|$)/i;
+const DETAIL_EMBED_TAGS = new Set(["iframe", "embed", "object", "video", "audio"]);
 
-// → [{ type: "text", paragraphs: [...] } | { type: "image", url }] — sapo (nếu có) là đoạn đầu.
+// → [{ type: "text", paragraphs: [...] } | { type: "image", url } | { type: "file", url }]
+// — sapo (nếu có) là đoạn đầu; "file" = tài liệu đính kèm/khung nhúng.
 function parseNewsDetail(html, pageUrl) {
   const $ = cheerio.load(html);
   const root = $(".ArticleDetailControl .ArticleContent").first().length
@@ -185,6 +190,22 @@ function parseNewsDetail(html, pageUrl) {
       if (url) {
         flush();
         blocks.push({ type: "image", url });
+      }
+      return;
+    }
+    const fileUrl =
+      node.name === "a" && DETAIL_FILE_RE.test($(node).attr("href") || "")
+        ? $(node).attr("href")
+        : DETAIL_EMBED_TAGS.has(node.name)
+          ? $(node).attr("src") || $(node).attr("data") || $(node).find("source").attr("src") || ""
+          : null;
+    if (fileUrl !== null) {
+      // Bỏ chữ của link tải ("Tải về") — thay bằng khối file; cùng 1 file (link +
+      // khung xem PDF) chỉ giữ 1 lần.
+      const url = fileUrl ? toAbsoluteUrl(fileUrl, pageUrl) : "";
+      if (url && !blocks.some((b) => b.type === "file" && b.url === url)) {
+        flush();
+        blocks.push({ type: "file", url });
       }
       return;
     }

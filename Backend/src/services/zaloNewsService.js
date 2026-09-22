@@ -29,7 +29,7 @@ const BROADCAST_BATCH_SIZE = 5; // giới hạn cứng của Zalo: tối đa 5 b
 const MIN_BROADCAST_GAP_MS = 35 * 60 * 1000; // Zalo yêu cầu >= 30 phút/lượt, chừa biên an toàn
 const LAST_BROADCAST_KEY = "tralien_zalo_last_broadcast_at";
 
-const MAX_BODY_IMAGES = 10; // mỗi ảnh Zalo phải tải về host lại — giới hạn để bài không quá nặng
+const MAX_BODY_IMAGES = 20; // mỗi ảnh Zalo phải tải về host lại — nhiều hơn thì bài OA không đủ, thẻ mở trang gốc
 
 function toArticleItem(news) {
   const summary = news.summary || news.title;
@@ -63,6 +63,8 @@ function toArticleBody(detail, news, { withImages = true } = {}) {
       if (!withImages || images >= MAX_BODY_IMAGES) continue;
       images += 1;
       body.push({ type: "image", url: block.url, caption: "" });
+    } else if (block.type === "file") {
+      pushText([`Tài liệu đính kèm: ${block.url}`]);
     } else {
       pushText(block.paragraphs);
     }
@@ -72,13 +74,20 @@ function toArticleBody(detail, news, { withImages = true } = {}) {
 }
 
 // Các bản nội dung thử lần lượt khi tạo bài: đầy đủ (chữ + ảnh) → chỉ chữ → tóm tắt.
+// complete: bài OA thể hiện được TOÀN BỘ tin — có chữ, không có tài liệu đính
+// kèm/khung nhúng (vd. tin chỉ là PDF), không quá MAX_BODY_IMAGES ảnh. Không
+// complete thì thẻ tin mở trang tin gốc (zalo.fullContent=false).
 function articleVariants(detail, news) {
   const hasText = detail.some((b) => b.type === "text");
-  const hasImage = detail.some((b) => b.type === "image");
+  const imageCount = detail.filter((b) => b.type === "image").length;
+  const hasFile = detail.some((b) => b.type === "file");
+  const complete = hasText && !hasFile && imageCount <= MAX_BODY_IMAGES;
   const variants = [];
-  if (hasText) variants.push({ level: "full", body: toArticleBody(detail, news) });
-  if (hasText && hasImage) variants.push({ level: "text", body: toArticleBody(detail, news, { withImages: false }) });
-  variants.push({ level: "summary", body: null });
+  if (hasText) variants.push({ level: "full", body: toArticleBody(detail, news), complete });
+  if (hasText && imageCount) {
+    variants.push({ level: "text", body: toArticleBody(detail, news, { withImages: false }), complete: false });
+  }
+  variants.push({ level: "summary", body: null, complete: false });
   return variants;
 }
 
@@ -109,10 +118,12 @@ async function postOne(news) {
     const variants = articleVariants(detail, news);
     let token;
     let level;
+    let complete = false;
     for (const v of variants) {
       try {
         token = await createArticle({ ...item, body: v.body });
         level = v.level;
+        complete = v.complete;
         break;
       } catch (err) {
         if (!err.zaloRejected || v === variants[variants.length - 1]) throw err;
@@ -134,14 +145,14 @@ async function postOne(news) {
         $set: {
           "zalo.articleId": articleId,
           "zalo.linkView": linkView,
-          "zalo.fullContent": level !== "summary",
+          "zalo.fullContent": complete,
           "zalo.postedAt": new Date(),
           "zalo.lastError": "",
         },
       }
     );
     console.log(
-      `[ZaloArticle] Đã tạo bài OA (${level}) cho tin nid=${news.nid} (id=${articleId}): ${item.title.slice(0, 50)}`
+      `[ZaloArticle] Đã tạo bài OA (${level}${complete ? ", đầy đủ" : ", thẻ mở trang gốc"}) cho tin nid=${news.nid} (id=${articleId}): ${item.title.slice(0, 50)}`
     );
     return { ok: true, newsId: news._id, articleId };
   } catch (err) {
