@@ -233,6 +233,15 @@ router.post("/news-cards", async (req, res) => {
   res.json({ jobId });
 });
 
+// Tạo lại bài viết OA cho 1 tin (sửa chính bài cũ, KHÔNG gửi cho ai) — dùng khi
+// bài thiếu nội dung do Zalo lỗi lúc tạo. Trả jobId, theo dõi qua /status/:jobId.
+router.post("/news-cards/rebuild", async (req, res) => {
+  const { newsId } = req.body;
+  if (!newsId) return res.status(400).json({ error: "Thiếu tin cần tạo lại bài" });
+  const { jobId } = await newsCardService.rebuildArticle(newsId);
+  res.json({ jobId });
+});
+
 // Tự động gửi thẻ cho tin mới — { enabled, since }.
 router.get("/news-cards/auto", async (req, res) => {
   res.json(await newsCardService.getAutoConfig());

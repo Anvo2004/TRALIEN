@@ -1,6 +1,6 @@
 const config = require("../config");
 const News = require("../models/News");
-const { createArticle, verifyArticle, getArticleDetail, broadcastArticle } = require("../utils/zaloArticle");
+const { createArticle, updateArticle, verifyArticle, getArticleDetail, broadcastArticle } = require("../utils/zaloArticle");
 const { renderPdfPages } = require("../utils/pdfPages");
 const { redisGet, redisSet } = require("../utils/redis");
 const { fetchNewsDetail } = require("./newsScrapeService");
@@ -37,9 +37,14 @@ const LAST_BROADCAST_KEY = "tralien_zalo_last_broadcast_at";
 // lại; quá số này thì bài không đủ nội dung (fullContent=false).
 const MAX_BODY_IMAGES = 20;
 // Phiên bản cách dựng nội dung bài OA. Bài chưa đầy đủ dựng bằng bản cũ hơn (chỉ
-// tóm tắt, tin PDF chỉ có link...) được dựng lại 1 lần khi gửi thẻ tin
-// (ensureArticle). 2 = văn bản PDF thành ảnh từng trang trong bài.
-const ARTICLE_BODY_VERSION = 2;
+// tóm tắt, tin PDF chỉ có link...) được dựng lại khi gửi thẻ tin (ensureArticle).
+// 2 = văn bản PDF thành ảnh từng trang trong bài. 3 = dựng lại các bài bị đánh
+// dấu "2" oan trong sự cố token OA 2026-10-05 (Zalo từ chối nội dung nhưng vẫn
+// ghi mốc, nên bài tóm tắt kẹt vĩnh viễn).
+const ARTICLE_BODY_VERSION = 3;
+const MAX_BODY_RETRIES = 3; // số lần dựng lại tối đa khi Zalo cứ từ chối bản đầy đủ
+const PENDING_MAX_AGE_MS = 24 * 60 * 60 * 1000; // token bài chờ verify còn dùng được trong 24h
+const PENDING_WAIT_MS = 2 * 60 * 60 * 1000; // trong 2h đầu chỉ chờ Zalo xử lý xong, không tạo bài khác
 const PDF_RE = /\.pdf(?:[?#]|$)/i;
 
 function toArticleItem(news) {
@@ -138,14 +143,70 @@ function articleVariants(detail, news) {
 }
 
 // Bài OA hiện có dùng được cho thẻ tin: đầy đủ nội dung, hoặc đã dựng bằng cách
-// hiện tại (dựng lại cũng không đầy đủ hơn — vd. tin quá nhiều ảnh, file docx).
+// hiện tại (dựng lại cũng không đầy đủ hơn — vd. tin quá nhiều ảnh, file docx),
+// hoặc đã dựng lại quá nhiều lần mà vẫn không đầy đủ.
 function hasUsableArticle(news) {
   const z = news.zalo || {};
-  return Boolean(z.articleId && (z.fullContent || (z.bodyVersion || 0) >= ARTICLE_BODY_VERSION));
+  return Boolean(
+    z.articleId &&
+      (z.fullContent || (z.bodyVersion || 0) >= ARTICLE_BODY_VERSION || (z.bodyRetries || 0) >= MAX_BODY_RETRIES)
+  );
 }
 
-// Tạo 1 bài OA mới cho tin, nội dung đầy đủ nhất Zalo nhận. Lỗi thì ném ra.
-async function createFullArticle(news) {
+// Ghi kết quả 1 lượt tạo/sửa bài (đã có id thật) vào News.
+async function saveArticle(news, articleId, meta) {
+  // link_view để "thẻ tin" (newsCardService.js) mở thẳng bài OA — lỗi thì bỏ
+  // qua, lúc gửi thẻ sẽ tự lấy lại.
+  let linkView = "";
+  try {
+    linkView = (await getArticleDetail(articleId)).link_view || "";
+  } catch (err) {
+    console.warn(`[ZaloArticle] Chưa lấy được link_view bài ${articleId}: ${err.message}`);
+  }
+  await News.updateOne(
+    { _id: news._id },
+    {
+      $set: {
+        "zalo.articleId": articleId,
+        "zalo.linkView": linkView,
+        "zalo.fullContent": Boolean(meta.complete),
+        "zalo.bodyVersion": meta.bodyVersion || 0,
+        "zalo.lastReject": meta.reject || "",
+        "zalo.postedAt": new Date(),
+        "zalo.lastError": "",
+        "zalo.pending": { token: "", at: null, meta: null },
+      },
+      // Bản tốt nhất bị Zalo từ chối → đếm lần dựng lại, tránh dựng lại mãi.
+      ...(meta.best ? {} : { $inc: { "zalo.bodyRetries": 1 } }),
+    }
+  );
+  return { articleId, linkView, fullContent: Boolean(meta.complete), bodyVersion: meta.bodyVersion || 0 };
+}
+
+// Tạo bài OA cho tin, hoặc SỬA bài đã có cho đầy đủ hơn (article/update giữ
+// nguyên id → thẻ tin đã gửi cho dân cũng hiện nội dung mới, OA không bị thêm
+// bài trùng). Lỗi thì ném ra.
+async function buildArticle(news) {
+  // Bài lượt trước Zalo đã nhận nhưng xử lý chưa xong (verify quá hạn) → verify
+  // tiếp, KHÔNG tạo bài mới (mỗi lần tạo lại là 1 bài rác trên OA).
+  const pending = news.zalo?.pending;
+  const pendingAge = pending?.token ? Date.now() - new Date(pending.at || 0).getTime() : Infinity;
+  if (pendingAge < PENDING_MAX_AGE_MS) {
+    try {
+      const articleId = await verifyArticle(pending.token, { retries: 3, delayMs: 3000 });
+      console.log(`[ZaloArticle] Bài chờ Zalo xử lý của tin nid=${news.nid} đã xong (id=${articleId})`);
+      return await saveArticle(news, articleId, pending.meta || { bodyVersion: news.zalo?.bodyVersion || 0 });
+    } catch (err) {
+      console.warn(`[ZaloArticle] Bài chờ xử lý của tin nid=${news.nid} vẫn chưa xong: ${err.message}`);
+      // Zalo có thể xử lý bài (nhiều ảnh) lâu hơn nhiều phút — chờ hẳn, KHÔNG tạo
+      // bài mới, nếu không mỗi lượt quét lại đẻ thêm 1 bài trùng trên OA (ngày
+      // 2026-10-05 đã sinh 7 bài trùng cho 1 tin). Quá lâu thì mới dựng lại.
+      if (pendingAge < PENDING_WAIT_MS) {
+        throw new Error("Zalo đang xử lý bài viết của tin này, chờ lượt sau");
+      }
+    }
+  }
+
   const item = toArticleItem(news);
   // Không có ảnh và chưa cấu hình cover mặc định → không đăng được (Zalo bắt buộc cover).
   if (!item.coverPhotoUrl) throw new Error("Thiếu ảnh cover");
@@ -160,56 +221,73 @@ async function createFullArticle(news) {
       console.warn(`[ZaloArticle] Không tải được nội dung đầy đủ tin nid=${news.nid}: ${err.message}`);
     }
   }
-  // Dựng lại bài cũ mà không có nội dung đầy đủ → tạo thêm bài tóm tắt là vô ích, giữ bài cũ.
+  // Dựng lại bài cũ mà không có nội dung đầy đủ → sửa thành bản tóm tắt là vô ích, giữ bài cũ.
   if (!detail && news.zalo?.articleId) throw new Error("Không tải được nội dung đầy đủ để dựng lại bài OA");
 
-  // Chỉ lùi xuống bản gọn hơn khi Zalo TỪ CHỐI nội dung (lỗi tạo bài); lỗi
-  // mạng/verify thì ném ra để cơ chế thử lại (zalo.attempts) xử lý như cũ.
   const variants = articleVariants(detail || [], news);
-  let token;
-  let level;
-  let complete = false;
-  for (const v of variants) {
-    try {
-      token = await createArticle({ ...item, body: v.body });
-      level = v.level;
-      complete = v.complete;
-      break;
-    } catch (err) {
-      if (!err.zaloRejected || v === variants[variants.length - 1]) throw err;
-      console.warn(`[ZaloArticle] Zalo từ chối bản "${v.level}" của tin nid=${news.nid}, thử bản gọn hơn: ${err.message}`);
+  let existingId = news.zalo?.articleId || "";
+
+  // Gửi lần lượt các bản nội dung, lùi xuống bản gọn hơn KHI VÀ CHỈ KHI Zalo từ
+  // chối nội dung; lỗi mạng thì ném ra để cơ chế thử lại (zalo.attempts) xử lý.
+  const submit = async (send) => {
+    let reject = "";
+    for (const v of variants) {
+      try {
+        return { token: await send(v.body), chosen: v, reject };
+      } catch (err) {
+        if (!err.zaloRejected || v === variants[variants.length - 1]) throw err;
+        // Lý do Zalo bỏ bản tốt nhất — lưu lại để xem ở AdminWeb, khỏi phải đọc log VPS.
+        reject = reject || `Zalo từ chối bản "${v.level}": ${err.message}`;
+        console.warn(`[ZaloArticle] Zalo từ chối bản "${v.level}" của tin nid=${news.nid}, thử bản gọn hơn: ${err.message}`);
+      }
     }
-  }
-  const articleId = await verifyArticle(token);
-  // link_view để "thẻ tin" (newsCardService.js) mở thẳng bài OA — lỗi thì bỏ
-  // qua, lúc gửi thẻ sẽ tự lấy lại.
-  let linkView = "";
-  try {
-    linkView = (await getArticleDetail(articleId)).link_view || "";
-  } catch (err) {
-    console.warn(`[ZaloArticle] Chưa lấy được link_view bài ${articleId}: ${err.message}`);
-  }
-  const zalo = {
-    articleId,
-    linkView,
-    fullContent: complete,
-    bodyVersion: detail ? ARTICLE_BODY_VERSION : news.zalo?.bodyVersion || 0,
   };
-  await News.updateOne(
-    { _id: news._id },
-    {
-      $set: {
-        "zalo.articleId": zalo.articleId,
-        "zalo.linkView": zalo.linkView,
-        "zalo.fullContent": zalo.fullContent,
-        "zalo.bodyVersion": zalo.bodyVersion,
-        "zalo.postedAt": new Date(),
-        "zalo.lastError": "",
-      },
+
+  let result;
+  if (existingId) {
+    try {
+      result = await submit((body) => updateArticle(existingId, { ...item, body }));
+    } catch (err) {
+      // Không sửa được (vd. OA chưa có quyền sửa bài) → tạo bài mới như trước.
+      console.warn(`[ZaloArticle] Không sửa được bài ${existingId} của tin nid=${news.nid} (${err.message}) — tạo bài mới`);
+      existingId = "";
     }
-  );
+  }
+  if (!result) result = await submit((body) => createArticle({ ...item, body }));
+  const { token, chosen, reject } = result;
+
+  const best = chosen === variants[0];
+  const meta = {
+    level: chosen.level,
+    complete: chosen.complete,
+    best,
+    // Chỉ coi là "đã dựng theo cách hiện tại" khi Zalo nhận ĐÚNG bản tốt nhất.
+    // Bị từ chối (vd. Zalo lỗi nhất thời như 2026-10-05) thì giữ mốc cũ để lần
+    // gửi thẻ sau dựng lại — trước đây đánh dấu luôn nên bài tóm tắt kẹt vĩnh viễn.
+    bodyVersion: detail && best ? ARTICLE_BODY_VERSION : news.zalo?.bodyVersion || 0,
+    reject,
+  };
+
+  let articleId;
+  try {
+    articleId = await verifyArticle(token);
+  } catch (err) {
+    // Zalo vẫn đang xử lý → nhớ token để lượt sau verify tiếp thay vì tạo bài mới.
+    await News.updateOne(
+      { _id: news._id },
+      { $set: { "zalo.pending": { token, at: new Date(), meta } } }
+    ).catch(() => {});
+    throw err;
+  }
+
+  // Sửa bài: GIỮ id cũ (thẻ tin đã gửi trỏ vào đó). Zalo trả id khác là bất
+  // thường — ghi log để biết, nhưng không đổi id đang dùng.
+  if (existingId && articleId && articleId !== existingId) {
+    console.warn(`[ZaloArticle] Sửa bài ${existingId} nhưng Zalo trả id ${articleId} — giữ id cũ`);
+  }
+  const zalo = await saveArticle(news, existingId || articleId, meta);
   console.log(
-    `[ZaloArticle] Đã tạo bài OA (${level}${complete ? ", đầy đủ" : ", chưa đầy đủ"}) cho tin nid=${news.nid} (id=${articleId}): ${item.title.slice(0, 50)}`
+    `[ZaloArticle] Đã ${existingId ? "cập nhật" : "tạo"} bài OA (${meta.level}${meta.complete ? ", đầy đủ" : ", chưa đầy đủ"}) cho tin nid=${news.nid} (id=${zalo.articleId}): ${item.title.slice(0, 50)}`
   );
   return zalo;
 }
@@ -219,13 +297,13 @@ async function createFullArticle(news) {
 // và đọc lại DB trước khi tạo để không tạo 2 bài cho 1 tin.
 const building = new Map(); // newsId → Promise<zalo>
 
-function buildArticleOnce(news) {
+function buildArticleOnce(news, { force = false } = {}) {
   const key = String(news._id);
   if (!building.has(key)) {
     const task = (async () => {
       const fresh = (await News.findById(news._id).lean()) || news;
-      if (hasUsableArticle(fresh)) return fresh.zalo;
-      return createFullArticle(fresh);
+      if (!force && hasUsableArticle(fresh)) return fresh.zalo;
+      return buildArticle(fresh);
     })()
       .catch(async (err) => {
         await News.updateOne(
@@ -250,14 +328,20 @@ async function postOne(news) {
   }
 }
 
+// Dựng lại bài cho 1 tin dù bài hiện tại đã "dùng được" (nút "Tạo lại bài OA" ở
+// AdminWeb) — lỗi thì ném ra để cán bộ thấy lý do.
+function rebuildArticle(news) {
+  return buildArticleOnce(news, { force: true });
+}
+
 // Thẻ tin luôn mở bài OA: bảo đảm tin có bài dùng được → { articleId, linkView, ... }.
-// Chưa có bài, hoặc bài cũ chưa đầy đủ → tạo bài mới ngay (bài cũ giữ nguyên
-// trên OA — thẻ/broadcast đã gửi trước đây vẫn trỏ tới). Tạo lỗi mà có bài cũ
-// thì dùng tạm bài cũ; không có bài nào thì ném lỗi.
-async function ensureArticle(news) {
-  if (hasUsableArticle(news)) return news.zalo;
+// Chưa có bài → tạo; bài cũ chưa đầy đủ → sửa chính bài đó cho đầy đủ (giữ id).
+// Lỗi mà vẫn có bài cũ thì dùng tạm bài cũ; không có bài nào thì ném lỗi.
+// force=true: dựng lại kể cả khi bài hiện tại đã "dùng được" (nút Tạo lại bài OA).
+async function ensureArticle(news, { force = false } = {}) {
+  if (!force && hasUsableArticle(news)) return news.zalo;
   try {
-    return await buildArticleOnce(news);
+    return await buildArticleOnce(news, { force });
   } catch (err) {
     if (!news.zalo?.articleId) throw err;
     console.warn(`[ZaloArticle] Không dựng lại được bài OA tin nid=${news.nid}, dùng bài cũ: ${err.message}`);
@@ -363,4 +447,5 @@ module.exports = {
   attachPdfPages,
   hasUsableArticle,
   ensureArticle,
+  rebuildArticle,
 };

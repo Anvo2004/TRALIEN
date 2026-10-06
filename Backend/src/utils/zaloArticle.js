@@ -3,6 +3,7 @@ const { getAccessToken, refreshAccessToken } = require("./zaloToken");
 // ============================================================
 // Zalo OA Open API — "Nội dung dạng Bài viết" (article).
 //   Tạo:      POST https://openapi.zalo.me/v2.0/article/create  → trả "token" (xử lý bất đồng bộ)
+//   Sửa:      POST https://openapi.zalo.me/v2.0/article/update  → payload như create + "id"
 //   Verify:   POST https://openapi.zalo.me/v2.0/article/verify   → lấy id thật (poll vài lần)
 //   Broadcast:POST https://openapi.zalo.me/v2.0/oa/message       → gửi tới TOÀN BỘ người quan
 //             tâm OA (recipient.target rỗng = không lọc), tối đa 5 bài/lần gọi. Zalo cần ~30
@@ -17,6 +18,7 @@ const { getAccessToken, refreshAccessToken } = require("./zaloToken");
 // ============================================================
 
 const CREATE_URL = "https://openapi.zalo.me/v2.0/article/create";
+const UPDATE_URL = "https://openapi.zalo.me/v2.0/article/update";
 const VERIFY_URL = "https://openapi.zalo.me/v2.0/article/verify";
 const DETAIL_URL = "https://openapi.zalo.me/v2.0/article/getdetail";
 const BROADCAST_URL = "https://openapi.zalo.me/v2.0/oa/message";
@@ -77,12 +79,12 @@ async function getArticleDetail(id) {
 // body: danh sách khối Zalo đã dựng sẵn — { type: "text", content: "<p>…</p>" } |
 // { type: "image", url, caption } (cùng định dạng HOATIEN đang tạo bài thật; ảnh
 // là URL công khai, Zalo tự tải về host lại). Không truyền thì dùng bodyText.
-async function createArticle({ title, author, description, coverPhotoUrl, bodyText, body }) {
+function articlePayload({ title, author, description, coverPhotoUrl, bodyText, body }) {
   if (!coverPhotoUrl) throw new Error("Bài viết Zalo bắt buộc có ảnh cover (coverPhotoUrl)");
 
   // Zalo công bố title 150 / description 300 nhưng thực tế từ chối chuỗi đúng bằng
   // giới hạn (Thượng Đức đã xác nhận qua log lỗi thật) → lùi biên an toàn 140/250.
-  const payload = {
+  return {
     type: "normal",
     title: truncate(title, 140),
     author: truncate(author || "UBND xã Trà Liên", 50),
@@ -92,18 +94,32 @@ async function createArticle({ title, author, description, coverPhotoUrl, bodyTe
     status: "show",
     comment: "show",
   };
+}
 
-  const data = await articlePost(CREATE_URL, payload);
+function articleToken(data, what) {
   if (data.error !== 0 || !data.data || !data.data.token) {
-    const err = new Error(`Tạo bài viết Zalo thất bại: ${JSON.stringify(data)}`);
+    const err = new Error(`${what} bài viết Zalo thất bại: ${JSON.stringify(data)}`);
     err.zaloRejected = true; // Zalo trả lỗi cho nội dung — khác lỗi mạng/timeout
     throw err;
   }
   return data.data.token;
 }
 
-// Zalo xử lý bất đồng bộ → poll verify vài lần để lấy id thật.
-async function verifyArticle(token, { retries = 8, delayMs = 3000 } = {}) {
+async function createArticle(item) {
+  return articleToken(await articlePost(CREATE_URL, articlePayload(item)), "Tạo");
+}
+
+// Sửa nội dung bài ĐÃ CÓ (giữ nguyên id → thẻ tin đã gửi cho dân cũng hiện nội
+// dung mới, và OA không bị thêm bài trùng). Payload giống create, thêm `id`;
+// cũng trả token để verify. Dùng khi dựng lại bài chưa đầy đủ — xem
+// zaloNewsService.buildArticle.
+async function updateArticle(id, item) {
+  return articleToken(await articlePost(UPDATE_URL, { id, ...articlePayload(item) }), "Cập nhật");
+}
+
+// Zalo xử lý bất đồng bộ → poll verify đến ~1 phút (bài có nhiều ảnh, hoặc Zalo
+// đang chậm, có thể lâu hơn 20 giây).
+async function verifyArticle(token, { retries = 12, delayMs = 5000 } = {}) {
   for (let attempt = 1; attempt <= retries; attempt++) {
     const data = await articlePost(VERIFY_URL, { token });
     if (data.error === 0 && data.data && data.data.id) return data.data.id;
@@ -140,4 +156,4 @@ async function broadcastArticle(articleIds) {
   return data.data.message_id;
 }
 
-module.exports = { createArticle, verifyArticle, getArticleDetail, broadcastArticle };
+module.exports = { createArticle, updateArticle, verifyArticle, getArticleDetail, broadcastArticle };

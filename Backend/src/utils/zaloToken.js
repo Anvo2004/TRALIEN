@@ -98,10 +98,11 @@ async function doRefreshAccessToken() {
   });
   const data = await res.json();
   if (!data.access_token) {
-    if (data.error === -14014) {
-      await redisSet(KEYS.accessToken, "");
-      await redisSet(KEYS.refreshToken, "");
-    }
+    // KHÔNG xoá token đã lưu khi Zalo báo -14014 ("Invalid refresh token"): ngày
+    // 2026-10-05 Zalo trả lỗi này suốt ~10 tiếng rồi lại chấp nhận ĐÚNG refresh
+    // token đó (không hề restart) → lỗi phía Zalo, token vẫn còn hiệu lực. Xoá đi
+    // thì lần khởi động lại sau sẽ nạp từ .env — nơi ZALO_OA_ACCESS_TOKEN đang
+    // rỗng — làm chết toàn bộ tích hợp OA. Giữ nguyên để tự hồi phục khi Zalo ổn.
     throw new Error("Zalo refresh_token exchange failed: " + JSON.stringify(data));
   }
   cache = {

@@ -128,6 +128,20 @@ Backend chạy đầy đủ tính năng và lên production. Đánh dấu `[x]` 
       - **Bài OA đầy đủ nội dung**: gồm TOÀN BỘ tin (sapo + đoạn văn + ảnh,
         lấy từ trang chi tiết — `newsScrapeService.parseNewsDetail`), tối đa 20
         ảnh/bài; lùi về chỉ chữ/tóm tắt nếu Zalo từ chối (`zalo.fullContent`).
+      - **Sự cố 2026-10-05 (đã sửa 2026-10-06)**: token OA hỏng (`Invalid refresh
+        token` trong log PM2) làm Zalo trả `-201 create media fail. Too many
+        failed attempts` khi tạo bài, và `article/verify` không bao giờ xong.
+        Hậu quả: tin nid=349665 chỉ còn **bài tóm tắt**, 2 tin khác không có bài
+        nào (mỗi lần thử lại tạo thêm 1 bài rác trên OA). Cách phòng từ nay:
+        bài chỉ được đánh dấu "đã dựng xong" khi Zalo nhận ĐÚNG bản đầy đủ nhất
+        (`zalo.bodyVersion`, tối đa `MAX_BODY_RETRIES` lần dựng lại); bài Zalo
+        đang xử lý dở được nhớ token (`zalo.pending`) để verify tiếp thay vì tạo
+        bài mới; lý do Zalo từ chối lưu ở `zalo.lastReject` và hiện ngay trên
+        AdminWeb; tin hết lượt tự gửi vẫn được thử lại sau 12 giờ.
+      - **Nút "Tạo lại bài OA"** (tab Gửi thẻ tin, sau khi chọn tin): dựng lại nội
+        dung bài bằng `article/update` — **sửa chính bài cũ, giữ nguyên id**, nên
+        thẻ tin đã gửi cho dân cũng hiện nội dung mới; không gửi thêm tin nào cho
+        ai. Zalo không cho sửa thì tự tạo bài mới như trước.
       - **Tin chỉ có văn bản PDF** (vd. "V/v tin bão..."): từng trang PDF được
         chuyển thành ảnh (`Backend/src/utils/pdfPages.js`, pdfjs-dist +
         @napi-rs/canvas — **cần Node ≥ 20 trên VPS**), lưu ở

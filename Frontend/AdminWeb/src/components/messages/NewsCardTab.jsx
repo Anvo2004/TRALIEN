@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import {
   Search, Loader2, Send, FlaskConical, Newspaper, Users,
-  ChevronLeft, ChevronRight, ExternalLink, Zap,
+  ChevronLeft, ChevronRight, ExternalLink, Zap, RefreshCw,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { api } from '@/lib/api'
@@ -275,9 +275,20 @@ export default function NewsCardTab() {
     mutationFn: (body) => api.post('/api/broadcast/news-cards', body).then((r) => r.data),
     onSuccess: (data) => {
       setJobId(data.jobId)
-      setJob({ stage: 'preparing', total: 0, sent: 0, failed: 0, done: false, errors: [] })
+      setJob({ kind: 'send', stage: 'preparing', total: 0, sent: 0, failed: 0, done: false, errors: [] })
     },
     onError: (e) => toast.error(e.response?.data?.error || 'Không gửi được thẻ tin'),
+  })
+
+  // Tạo lại bài viết OA cho tin đang chọn, KHÔNG gửi cho ai — Backend sửa chính
+  // bài cũ (article/update) nên thẻ đã gửi trước đó cũng hiện nội dung mới.
+  const rebuildMut = useMutation({
+    mutationFn: (newsId) => api.post('/api/broadcast/news-cards/rebuild', { newsId }).then((r) => r.data),
+    onSuccess: (data) => {
+      setJobId(data.jobId)
+      setJob({ kind: 'rebuild', stage: 'preparing', total: 0, sent: 0, failed: 0, done: false, errors: [] })
+    },
+    onError: (e) => toast.error(e.response?.data?.error || 'Không tạo lại được bài OA'),
   })
 
   // Theo dõi tiến độ — dùng chung route trạng thái job với tab "Gửi tin nhắn".
@@ -289,8 +300,13 @@ export default function NewsCardTab() {
         setJob(data)
         if (data.done) {
           clearInterval(pollRef.current)
-          if (data.error) toast.error(`Không gửi được thẻ tin: ${data.error}`)
-          else toast.success(`Gửi xong: ${data.sent} thành công${data.failed ? `, ${data.failed} lỗi` : ''}`)
+          if (data.error) {
+            toast.error(`${data.kind === 'rebuild' ? 'Không tạo lại được bài OA' : 'Không gửi được thẻ tin'}: ${data.error}`)
+          } else if (data.kind === 'rebuild') {
+            toast.success(data.fullContent ? 'Đã cập nhật bài viết OA (đầy đủ nội dung)' : 'Đã cập nhật bài viết OA')
+          } else {
+            toast.success(`Gửi xong: ${data.sent} thành công${data.failed ? `, ${data.failed} lỗi` : ''}`)
+          }
           if (data.stage === 'done') {
             setSelected((s) => (s && s._id === data.newsId ? { ...s, article: 'ready' } : s))
           }
@@ -341,10 +357,27 @@ export default function NewsCardTab() {
                         văn bản PDF được chuyển thành ảnh từng trang trong bài).</>
                     )}
                   </p>
-                  <Button variant="outline" size="sm" onClick={() => testMut.mutate(selected._id)} disabled={testMut.isPending}>
-                    {testMut.isPending ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <FlaskConical className="mr-1.5 h-3.5 w-3.5" />}
-                    {testMut.isPending && selected.article !== 'ready' ? 'Đang tạo bài OA và gửi thử…' : 'Gửi thử cho tôi'}
-                  </Button>
+                  {selected.articleNote && (
+                    <p className="rounded-lg bg-amber-50 px-3 py-2 text-xs text-amber-800">
+                      Lần dựng bài gần nhất chưa lấy được nội dung đầy đủ: {selected.articleNote}
+                    </p>
+                  )}
+                  <div className="flex flex-wrap gap-2">
+                    <Button variant="outline" size="sm" onClick={() => testMut.mutate(selected._id)} disabled={testMut.isPending || sending}>
+                      {testMut.isPending ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <FlaskConical className="mr-1.5 h-3.5 w-3.5" />}
+                      {testMut.isPending && selected.article !== 'ready' ? 'Đang tạo bài OA và gửi thử…' : 'Gửi thử cho tôi'}
+                    </Button>
+                    {/* Sửa lại chính bài OA cũ (không gửi cho ai) — thẻ đã gửi trước đó cũng hiện nội dung mới. */}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => rebuildMut.mutate(selected._id)}
+                      disabled={rebuildMut.isPending || sending || testMut.isPending}
+                    >
+                      {rebuildMut.isPending ? <Loader2 className="mr-1.5 h-3.5 w-3.5 animate-spin" /> : <RefreshCw className="mr-1.5 h-3.5 w-3.5" />}
+                      Tạo lại bài OA
+                    </Button>
+                  </div>
                 </>
               ) : (
                 <p className="py-10 text-center text-sm text-slate-400">Chọn 1 tin ở bên trái để xem thẻ</p>
@@ -374,7 +407,23 @@ export default function NewsCardTab() {
               {job && (
                 <div className="space-y-2 rounded-xl border border-slate-100 p-3">
                   {job.error ? (
-                    <p className="text-sm text-red-600">Không gửi được: {job.error}</p>
+                    <p className="text-sm text-red-600">
+                      {job.kind === 'rebuild' ? 'Không tạo lại được bài OA' : 'Không gửi được'}: {job.error}
+                    </p>
+                  ) : job.kind === 'rebuild' ? (
+                    job.done ? (
+                      <p className="text-sm text-emerald-700">
+                        Đã cập nhật bài viết OA{job.fullContent ? ' (đầy đủ nội dung)' : ''}.
+                        {job.note && (
+                          <span className="mt-1 block text-xs text-amber-700">Zalo vẫn bỏ phần nội dung đầy đủ: {job.note}</span>
+                        )}
+                      </p>
+                    ) : (
+                      <>
+                        <p className="text-xs text-slate-500">Đang tạo lại bài viết OA (không gửi cho ai)…</p>
+                        <div className="h-2 animate-pulse rounded-full bg-blue-200" />
+                      </>
+                    )
                   ) : job.stage === 'preparing' && !job.lost ? (
                     <>
                       <p className="text-xs text-slate-500">Đang chuẩn bị bài viết OA và danh sách người nhận…</p>

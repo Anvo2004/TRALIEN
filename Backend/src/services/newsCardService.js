@@ -6,7 +6,8 @@ const { sendZaloCard } = require("../utils/zaloApi");
 const { getArticleDetail } = require("../utils/zaloArticle");
 const { redisGet, redisSet } = require("../utils/redis");
 const { createJob, getJobStatus, fetchAllFollowers } = require("./broadcastService");
-const { ensureArticle, hasUsableArticle } = require("./zaloNewsService");
+const zaloNewsService = require("./zaloNewsService");
+const { ensureArticle, hasUsableArticle } = zaloNewsService;
 
 // ============================================================
 // "Thẻ tin": gửi 1 tin tức (News) tới TẤT CẢ người quan tâm OA, từng người một,
@@ -41,6 +42,11 @@ const AUTO_KEY = "tralien_news_card_auto"; // Setting: { enabled, since }
 const AUTO_INTERVAL_MS = 10 * 60 * 1000; // quét tin mới mỗi 10 phút
 const AUTO_MAX_PER_RUN = 2; // mỗi lượt tối đa 2 tin — nhiều tin mới thì giãn ra các lượt sau
 const AUTO_MAX_ATTEMPTS = 5;
+// Hết lượt thử vẫn thử lại sau AUTO_RETRY_AFTER_MS: sự cố phía Zalo (vd. token OA
+// hỏng 2026-10-05 làm mọi lượt tạo bài thất bại) hết thì tin tự được gửi, không
+// phải bấm tay. Quá AUTO_HARD_MAX lượt mới thôi hẳn.
+const AUTO_RETRY_AFTER_MS = 12 * 60 * 60 * 1000;
+const AUTO_HARD_MAX = 15;
 const AUTO_HOURS = { from: 7, to: 20 }; // chỉ tự gửi 7h00–19h59 giờ Việt Nam
 
 const NO_IMAGE_MSG = "Tin này không có ảnh và chưa cấu hình ZALO_ARTICLE_DEFAULT_COVER — thẻ tin cần ảnh";
@@ -120,7 +126,9 @@ async function listNews({ q = "", page = 1 } = {}) {
       .sort({ nid: -1 })
       .skip((current - 1) * NEWS_PAGE_SIZE)
       .limit(NEWS_PAGE_SIZE)
-      .select("nid title summary date tag imageUrl link zalo.articleId zalo.fullContent zalo.bodyVersion")
+      .select(
+        "nid title summary date tag imageUrl link zalo.articleId zalo.fullContent zalo.bodyVersion zalo.bodyRetries zalo.lastReject zalo.lastError"
+      )
       .lean(),
     News.countDocuments(filter),
   ]);
@@ -144,6 +152,8 @@ async function listNews({ q = "", page = 1 } = {}) {
         imageUrl: n.imageUrl,
         link: n.link,
         article: hasUsableArticle(n) ? "ready" : n.zalo?.articleId ? "rebuild" : "none",
+        // Vì sao bài chưa đầy đủ / chưa tạo được — cán bộ xem ngay trên AdminWeb.
+        articleNote: n.zalo?.fullContent ? "" : n.zalo?.lastReject || n.zalo?.lastError || "",
         lastSend: last ? { at: last.at, sent: last.sent, times: last.times } : null,
       };
     }),
@@ -165,6 +175,43 @@ async function sendTestCard(newsId, zaloUserId) {
 // newsId đang chuẩn bị/gửi — chặn gửi trùng (vd. cán bộ bấm gửi đúng lúc bộ tự động gửi tin đó).
 const activeSends = new Set();
 
+// Dựng lại bài viết OA cho 1 tin mà KHÔNG gửi gì (nút "Tạo lại bài OA"): dùng khi
+// bài cũ thiếu nội dung do Zalo lỗi lúc tạo. article/update giữ nguyên id nên thẻ
+// đã gửi trước đó cũng hiện nội dung mới. Chạy nền như lượt gửi (tải trang chi
+// tiết + Zalo xử lý bài có thể lâu hơn thời gian chờ của nginx).
+async function rebuildArticle(newsId) {
+  const news = await loadNews(newsId);
+  if (!cardImage(news)) throw httpError(400, NO_IMAGE_MSG);
+  const key = String(news._id);
+  if (activeSends.has(key)) throw httpError(409, "Tin này đang được xử lý — chờ lượt hiện tại xong");
+  activeSends.add(key);
+
+  const jobId = createJob(0, JOB_TTL_MS);
+  const job = getJobStatus(jobId);
+  job.newsId = key;
+  job.kind = "rebuild";
+  job.stage = "preparing";
+
+  const finished = (async () => {
+    await zaloNewsService.rebuildArticle(news);
+    const fresh = await News.findById(news._id).lean();
+    job.fullContent = Boolean(fresh?.zalo?.fullContent);
+    job.note = fresh?.zalo?.lastReject || "";
+    job.stage = "done";
+    job.done = true;
+  })()
+    .catch((err) => {
+      job.error = err.message;
+      job.done = true;
+      console.error(`[NewsCard] Tạo lại bài OA tin nid=${news.nid} lỗi: ${err.message}`);
+      throw err;
+    })
+    .finally(() => activeSends.delete(key));
+  finished.catch(() => {}); // lỗi đã báo qua job
+
+  return { jobId, finished };
+}
+
 // Gửi tới toàn bộ người quan tâm OA ở nền. Trả jobId ngay; tiến độ đọc qua
 // broadcastService.getJobStatus (route có sẵn GET /api/broadcast/status/:jobId):
 // stage "preparing" (tạo bài OA + lấy danh sách người nhận — có thể mất vài
@@ -181,6 +228,7 @@ async function sendNewsCard({ newsId, sentBy = null, auto = false }) {
   const jobId = createJob(0, JOB_TTL_MS);
   const job = getJobStatus(jobId);
   job.newsId = key;
+  job.kind = "send";
   job.stage = "preparing";
   job.errors = [];
 
@@ -312,15 +360,21 @@ function inAutoHours(date = new Date()) {
   return h >= AUTO_HOURS.from && h < AUTO_HOURS.to;
 }
 
-// Tin mới (tạo sau mốc bật), chưa từng gửi thẻ (kể cả gửi tay), chưa broadcast
-// bài OA (tránh báo 2 lần nếu sau này bật ZALO_BROADCAST_ENABLED), chưa quá số lần thử.
+// Tin mới (tạo sau mốc bật), chưa từng gửi thẻ (kể cả gửi tay), không bị đánh dấu
+// bỏ qua (zalo.skip — như bộ đăng bài OA), chưa broadcast bài OA (tránh báo 2 lần
+// nếu sau này bật ZALO_BROADCAST_ENABLED), chưa quá số lần thử.
 async function findAutoCandidates(since) {
   const sentNewsIds = await NewsCardSend.distinct("newsId");
   return News.find({
     _id: { $nin: sentNewsIds },
     createdAt: { $gte: since },
+    "zalo.skip": { $ne: true },
     "zalo.broadcastedAt": null,
-    "zalo.cardAttempts": { $not: { $gte: AUTO_MAX_ATTEMPTS } },
+    "zalo.cardAttempts": { $not: { $gte: AUTO_HARD_MAX } },
+    $or: [
+      { "zalo.cardAttempts": { $not: { $gte: AUTO_MAX_ATTEMPTS } } },
+      { "zalo.cardAttemptAt": { $lt: new Date(Date.now() - AUTO_RETRY_AFTER_MS) } },
+    ],
   })
     .sort({ nid: 1 })
     .limit(20)
@@ -347,7 +401,10 @@ async function runAutoSend() {
       } catch (err) {
         await News.updateOne(
           { _id: news._id },
-          { $inc: { "zalo.cardAttempts": 1 }, $set: { "zalo.cardError": err.message || "unknown" } }
+          {
+            $inc: { "zalo.cardAttempts": 1 },
+            $set: { "zalo.cardError": err.message || "unknown", "zalo.cardAttemptAt": new Date() },
+          }
         ).catch(() => {});
         console.error(`[NewsCard] Tự động gửi tin nid=${news.nid} lỗi: ${err.message}`);
       }
@@ -376,6 +433,7 @@ module.exports = {
   listNews,
   sendTestCard,
   sendNewsCard,
+  rebuildArticle,
   listHistory,
   getAutoConfig,
   setAutoConfig,
