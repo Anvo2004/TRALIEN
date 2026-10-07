@@ -1,13 +1,13 @@
 const crypto = require("crypto");
 const fs = require("fs/promises");
 const path = require("path");
-const config = require("../config");
+const { publicBase, dirOf, urlOf } = require("./publicMedia");
 
 // ============================================================
 // Văn bản PDF → ảnh JPEG từng trang, lưu ở public/images/tin/ (phục vụ qua
 // /images, xem app.js) để đưa vào bài viết Zalo OA dạng khối ảnh — tin chỉ có
 // văn bản PDF (vd. "V/v tin bão...") vẫn đọc được đầy đủ ngay trong bài OA
-// (xem zaloNewsService.attachPdfPages).
+// (xem zaloNewsService.prepareDetail).
 //
 // Render bằng pdfjs-dist (bản legacy cho Node, cần Node >= 20) + @napi-rs/canvas
 // — pdfjs 4.x cần đúng dòng @napi-rs/canvas 0.1.x (bản 1.x lệch kiểu Path2D,
@@ -17,7 +17,7 @@ const config = require("../config");
 // tải được ảnh), hoặc tải/đọc file lỗi.
 // ============================================================
 
-const OUT_DIR = path.join(__dirname, "..", "..", "public", "images", "tin");
+const GROUP = "pdf";
 const PAGE_WIDTH = 1200; // px — đủ nét để đọc chữ văn bản trên điện thoại
 const MAX_PAGE_HEIGHT = 4000; // trang dài bất thường thì thu theo chiều cao
 const JPEG_QUALITY = 80; // ~150–300 KB/trang A4
@@ -37,13 +37,6 @@ function loadLibs() {
     })();
   }
   return libsPromise;
-}
-
-// Gốc URL công khai của Backend — Zalo tải ảnh từ Internet nên localhost/http không dùng được.
-function publicBase() {
-  const base = (config.publicUrl || "").replace(/\/+$/, "");
-  if (!/^https:\/\//i.test(base) || /^https:\/\/(localhost|127\.|0\.0\.0\.0)/i.test(base)) return "";
-  return base;
 }
 
 async function download(url) {
@@ -68,16 +61,15 @@ async function readInfo(dir) {
 // Cùng 1 file chỉ render 1 lần (thư mục theo hash URL) — tạo lại bài OA sau
 // này dùng lại ảnh cũ. Ảnh giữ lâu dài, không dọn: bài OA đã tạo trỏ tới chúng.
 async function renderPdfPages(pdfUrl, { maxPages = 20 } = {}) {
-  const base = publicBase();
-  if (!base) {
-    console.warn(`[PdfPages] PUBLIC_URL (${config.publicUrl}) không phải https công khai — bỏ qua chuyển PDF thành ảnh`);
+  if (!publicBase()) {
+    console.warn("[PdfPages] PUBLIC_URL không phải domain https công khai — bỏ qua chuyển PDF thành ảnh");
     return null;
   }
   if (maxPages < 1) return null;
 
   const key = crypto.createHash("sha1").update(pdfUrl).digest("hex").slice(0, 16);
-  const dir = path.join(OUT_DIR, key);
-  const pageUrls = (n) => Array.from({ length: n }, (_, i) => `${base}/images/tin/${key}/trang-${i + 1}.jpg`);
+  const dir = path.join(dirOf(GROUP), key);
+  const pageUrls = (n) => Array.from({ length: n }, (_, i) => urlOf(GROUP, `${key}/trang-${i + 1}.jpg`));
 
   const cached = await readInfo(dir);
   if (cached && cached.rendered >= Math.min(maxPages, cached.totalPages)) {

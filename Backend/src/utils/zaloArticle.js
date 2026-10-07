@@ -120,12 +120,24 @@ async function updateArticle(id, item) {
 // Zalo xử lý bất đồng bộ → poll verify đến ~1 phút (bài có nhiều ảnh, hoặc Zalo
 // đang chậm, có thể lâu hơn 20 giây).
 async function verifyArticle(token, { retries = 12, delayMs = 5000 } = {}) {
+  let last = null;
   for (let attempt = 1; attempt <= retries; attempt++) {
     const data = await articlePost(VERIFY_URL, { token });
     if (data.error === 0 && data.data && data.data.id) return data.data.id;
+    last = data;
+    // -214 "Media is being processed" = đang xử lý, chờ tiếp. Lỗi khác (vd. -200
+    // "Upload media failed" khi ảnh quá nặng) là hỏng hẳn: chờ thêm cũng vô ích,
+    // bài sẽ KHÔNG BAO GIỜ xong (2026-10-05 đã mất 7 lần tạo lại vì chờ mù).
+    if (data.error !== -214) {
+      const err = new Error(`Zalo xử lý bài viết thất bại: ${JSON.stringify(data)}`);
+      err.zaloRejected = true;
+      throw err;
+    }
     if (attempt < retries) await sleep(delayMs);
   }
-  throw new Error("Không lấy được id bài viết sau nhiều lần verify (Zalo xử lý chậm hơn bình thường)");
+  throw new Error(
+    `Không lấy được id bài viết sau nhiều lần verify (Zalo xử lý chậm hơn bình thường): ${JSON.stringify(last)}`
+  );
 }
 
 // Gửi (broadcast) tối đa 5 bài đã tạo tới TOÀN BỘ người quan tâm OA.

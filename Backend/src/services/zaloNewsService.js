@@ -2,6 +2,7 @@ const config = require("../config");
 const News = require("../models/News");
 const { createArticle, updateArticle, verifyArticle, getArticleDetail, broadcastArticle } = require("../utils/zaloArticle");
 const { renderPdfPages } = require("../utils/pdfPages");
+const { zaloFriendlyImage } = require("../utils/imageHost");
 const { redisGet, redisSet } = require("../utils/redis");
 const { fetchNewsDetail } = require("./newsScrapeService");
 
@@ -64,7 +65,7 @@ function escapeHtml(s) {
 
 // Khối nội dung trang chi tiết (newsScrapeService.parseNewsDetail) → body bài viết
 // Zalo, cùng định dạng HOATIEN đang tạo bài thật: đoạn văn thành <p>, ảnh giữ
-// nguyên URL gốc, văn bản PDF đã chuyển ảnh (attachPdfPages) thành các khối ảnh
+// nguyên URL gốc, văn bản PDF đã chuyển ảnh (prepareDetail) thành các khối ảnh
 // "Trang i/N". withImages=false: chỉ giữ chữ (bản dự phòng khi Zalo từ chối ảnh).
 function toArticleBody(detail, news, { withImages = true } = {}) {
   const body = [];
@@ -83,7 +84,7 @@ function toArticleBody(detail, news, { withImages = true } = {}) {
       images += 1;
       body.push({ type: "image", url: block.url, caption: "" });
     } else if (block.type === "file") {
-      // Số trang đã nằm trong hạn mức ảnh (attachPdfPages trừ sẵn ảnh của tin).
+      // Số trang đã nằm trong hạn mức ảnh (prepareDetail trừ sẵn ảnh của tin).
       const pages = withImages ? block.pages || [] : [];
       pages.forEach((url, i) => {
         body.push({ type: "image", url, caption: block.totalPages > 1 ? `Trang ${i + 1}/${block.totalPages}` : "" });
@@ -100,13 +101,20 @@ function toArticleBody(detail, news, { withImages = true } = {}) {
   return body;
 }
 
-// Văn bản PDF trong tin → ảnh từng trang (utils/pdfPages.js), trong hạn mức
-// MAX_BODY_IMAGES chung với ảnh của tin. Không chuyển được thì khối giữ nguyên
-// (bài hiện link tài liệu).
-async function attachPdfPages(detail) {
+// Chuẩn bị nội dung trang chi tiết cho bài OA:
+// - ảnh quá nặng → bản thu nhỏ do Backend phục vụ (utils/imageHost.js), vì Zalo
+//   không xử lý nổi ảnh nặng và bài sẽ kẹt mãi;
+// - văn bản PDF → ảnh từng trang (utils/pdfPages.js), trong hạn mức
+//   MAX_BODY_IMAGES chung với ảnh của tin. Không chuyển được thì khối giữ
+//   nguyên (bài hiện link tài liệu).
+async function prepareDetail(detail) {
   let budget = MAX_BODY_IMAGES - detail.filter((b) => b.type === "image").length;
   const out = [];
   for (const block of detail) {
+    if (block.type === "image") {
+      out.push({ ...block, url: await zaloFriendlyImage(block.url) });
+      continue;
+    }
     if (block.type === "file" && PDF_RE.test(block.url) && budget > 0) {
       const rendered = await renderPdfPages(block.url, { maxPages: budget });
       if (rendered && rendered.pages.length) {
@@ -210,13 +218,14 @@ async function buildArticle(news) {
   const item = toArticleItem(news);
   // Không có ảnh và chưa cấu hình cover mặc định → không đăng được (Zalo bắt buộc cover).
   if (!item.coverPhotoUrl) throw new Error("Thiếu ảnh cover");
+  item.coverPhotoUrl = await zaloFriendlyImage(item.coverPhotoUrl);
 
   // Nội dung đầy đủ lấy từ trang chi tiết — tải lỗi thì vẫn đăng bản tóm tắt như
   // trước, và KHÔNG ghi bodyVersion để lần gửi thẻ sau thử dựng lại.
   let detail = null;
   if (news.link) {
     try {
-      detail = await attachPdfPages(await fetchNewsDetail(news.link));
+      detail = await prepareDetail(await fetchNewsDetail(news.link));
     } catch (err) {
       console.warn(`[ZaloArticle] Không tải được nội dung đầy đủ tin nid=${news.nid}: ${err.message}`);
     }
@@ -273,10 +282,10 @@ async function buildArticle(news) {
     articleId = await verifyArticle(token);
   } catch (err) {
     // Zalo vẫn đang xử lý → nhớ token để lượt sau verify tiếp thay vì tạo bài mới.
-    await News.updateOne(
-      { _id: news._id },
-      { $set: { "zalo.pending": { token, at: new Date(), meta } } }
-    ).catch(() => {});
+    // Zalo báo hỏng hẳn (err.zaloRejected, vd. ảnh quá nặng) thì không nhớ làm gì.
+    if (!err.zaloRejected) {
+      await News.updateOne({ _id: news._id }, { $set: { "zalo.pending": { token, at: new Date(), meta } } }).catch(() => {});
+    }
     throw err;
   }
 
@@ -444,7 +453,7 @@ module.exports = {
   startAutoPost,
   postOne,
   articleVariants,
-  attachPdfPages,
+  prepareDetail,
   hasUsableArticle,
   ensureArticle,
   rebuildArticle,

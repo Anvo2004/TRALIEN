@@ -128,16 +128,27 @@ Backend chạy đầy đủ tính năng và lên production. Đánh dấu `[x]` 
       - **Bài OA đầy đủ nội dung**: gồm TOÀN BỘ tin (sapo + đoạn văn + ảnh,
         lấy từ trang chi tiết — `newsScrapeService.parseNewsDetail`), tối đa 20
         ảnh/bài; lùi về chỉ chữ/tóm tắt nếu Zalo từ chối (`zalo.fullContent`).
-      - **Sự cố 2026-10-05 (đã sửa 2026-10-06)**: token OA hỏng (`Invalid refresh
-        token` trong log PM2) làm Zalo trả `-201 create media fail. Too many
-        failed attempts` khi tạo bài, và `article/verify` không bao giờ xong.
-        Hậu quả: tin nid=349665 chỉ còn **bài tóm tắt**, 2 tin khác không có bài
-        nào (mỗi lần thử lại tạo thêm 1 bài rác trên OA). Cách phòng từ nay:
-        bài chỉ được đánh dấu "đã dựng xong" khi Zalo nhận ĐÚNG bản đầy đủ nhất
-        (`zalo.bodyVersion`, tối đa `MAX_BODY_RETRIES` lần dựng lại); bài Zalo
-        đang xử lý dở được nhớ token (`zalo.pending`) để verify tiếp thay vì tạo
-        bài mới; lý do Zalo từ chối lưu ở `zalo.lastReject` và hiện ngay trên
-        AdminWeb; tin hết lượt tự gửi vẫn được thử lại sau 12 giờ.
+      - **Sự cố 2026-10-05 (đã sửa 2026-10-06)**: `article/verify` lâu hơn 24
+        giây → hệ thống tưởng thất bại, tạo lại 7 lần (**7 bài trùng trên OA**,
+        đã xoá tay 6 bài) → chạm ngưỡng chống lạm dụng của Zalo (`-201 create
+        media fail. Too many failed attempts`) → tin kế tiếp (nid=349665) chỉ
+        tạo được **bài tóm tắt**, lại bị đánh dấu "đã dựng xong" nên không bao
+        giờ thử lại. Cùng lúc Zalo trả `-14014 Invalid refresh token` suốt ~10
+        tiếng rồi lại chấp nhận ĐÚNG token đó (không restart) — lỗi phía Zalo,
+        token của xã vẫn hiệu lực, việc gửi tin vẫn chạy bình thường.
+        Cách phòng từ nay: bài chỉ được đánh dấu "đã dựng xong" khi Zalo nhận
+        ĐÚNG bản đầy đủ nhất (`zalo.bodyVersion`, tối đa `MAX_BODY_RETRIES` lần
+        dựng lại); bài Zalo đang xử lý dở được nhớ token (`zalo.pending`) và chờ
+        tới 2 giờ thay vì tạo bài mới; `verify` dừng ngay khi Zalo báo lỗi khác
+        `-214` (đang xử lý); lý do Zalo từ chối lưu ở `zalo.lastReject` và hiện
+        trên AdminWeb; tin hết lượt tự gửi vẫn được thử lại sau 12 giờ;
+        `zaloToken` KHÔNG xoá token đã lưu khi gặp `-14014`.
+      - **Ảnh quá nặng làm bài kẹt vĩnh viễn**: kiểm chứng 2026-10-06 trên OA
+        thật — ảnh bìa PNG 2,33 MB (tin nid=349214) làm `verify` trả `-200
+        Upload media failed` mãi, bài không bao giờ đăng xong; cùng lúc ảnh
+        0,24 MB xong sau 10 giây. Từ nay ảnh > 1,2 MB được tải về, thu nhỏ
+        thành JPEG (`Backend/src/utils/imageHost.js`) và phục vụ lại từ
+        `public/images/tin/anh` trước khi đưa cho Zalo.
       - **Nút "Tạo lại bài OA"** (tab Gửi thẻ tin, sau khi chọn tin): dựng lại nội
         dung bài bằng `article/update` — **sửa chính bài cũ, giữ nguyên id**, nên
         thẻ tin đã gửi cho dân cũng hiện nội dung mới; không gửi thêm tin nào cho
