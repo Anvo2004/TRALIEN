@@ -37,11 +37,27 @@ function uploadToCloudinary(buffer, folder) {
 
 const PUBLIC_IMAGES_DIR = path.join(__dirname, "..", "..", "public", "images");
 
+// Đuôi file phải khớp nội dung thật: express.static đoán Content-Type theo
+// đuôi, mà trước đây mọi ảnh đều ghi .jpg — icon PNG (cần nền trong suốt) vì
+// thế bị trả về kèm "Content-Type: image/jpeg". Ảnh JPEG vẫn ra .jpg như cũ.
+function extensionOf(buffer) {
+  const head = buffer.subarray(0, 4).toString("hex");
+  if (head === "89504e47") return "png";
+  if (head === "47494638") return "gif";
+  if (
+    buffer.subarray(0, 4).toString("ascii") === "RIFF" &&
+    buffer.subarray(8, 12).toString("ascii") === "WEBP"
+  ) {
+    return "webp";
+  }
+  return "jpg";
+}
+
 async function uploadToLocalDisk(buffer, folder) {
   const dir = path.join(PUBLIC_IMAGES_DIR, folder);
   await fs.promises.mkdir(dir, { recursive: true });
 
-  const filename = `${Date.now()}-${crypto.randomBytes(6).toString("hex")}.jpg`;
+  const filename = `${Date.now()}-${crypto.randomBytes(6).toString("hex")}.${extensionOf(buffer)}`;
   await fs.promises.writeFile(path.join(dir, filename), buffer);
 
   const publicPath = `/images/${folder}/${filename}`;
