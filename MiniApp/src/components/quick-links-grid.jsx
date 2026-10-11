@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import API_BASE_URL from "../data/api-config.js";
 import { openExternal } from "../utils/open-external.js";
-import Icon from "./icon.jsx";
+import AppIcon from "./app-icon.jsx";
 
 const QuickLinksGrid = () => {
   const navigate = useNavigate();
@@ -26,9 +26,7 @@ const QuickLinksGrid = () => {
             item.href ? openExternal(item.href) : navigate(item.path)
           }
         >
-          <span className={`tile tile-${item.color || "n"}`}>
-            <Icon name={item.icon} className="i24" />
-          </span>
+          <AppIcon iconUrl={item.iconUrl} name={item.icon} color={item.color || "n"} />
           <span className="quick-links__label">{item.label}</span>
         </button>
       ))}

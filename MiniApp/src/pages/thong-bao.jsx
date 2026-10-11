@@ -248,9 +248,9 @@ const ThongBaoPage = () => {
                       <div className="trocap-result-card__head">
                         <div
                           className="trocap-result-card__icon"
-                          style={{ background: cat.color }}
+                          style={{ background: cat.soft }}
                         >
-                          {cat.icon}
+                          <img src={cat.img} alt="" className="icon3d icon3d--xs" />
                         </div>
                         <div className="trocap-result-card__title">{cat.label}</div>
                         <span

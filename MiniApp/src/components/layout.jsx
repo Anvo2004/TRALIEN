@@ -1,15 +1,23 @@
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import Icon from "./icon.jsx";
+import tabHome from "../static/icons/tab-home.png";
+import tabServices from "../static/icons/tab-services.png";
+import tabContact from "../static/icons/tab-contact.png";
+
+// Tab bar dùng icon 3D (Icons8) thay icon tuyến đơn sắc. Ở 26px chi tiết 3D
+// dễ bị rối, nên để sau cờ này: đổi về false là quay lại icon vector cũ ngay,
+// không phải sửa thêm chỗ nào khác.
+const USE_3D_TABS = true;
 
 // "Hiến kế" tạm ẩn khỏi điều hướng — trang /hien-ke chưa có backend lưu dữ
 // liệu thật (bấm gửi chỉ alert() rồi mất), để dân bấm vào sẽ tưởng đã gửi
 // thành công nhưng không ai nhận được. Route/trang vẫn còn trong code, chỉ bỏ
 // lối vào cho tới khi nối API thật.
 const TABS = [
-  { key: "/", label: "Trang chủ", icon: "home" },
-  { key: "/dich-vu", label: "Dịch vụ", icon: "grid_view" },
-  { key: "/lien-he", label: "Liên hệ", icon: "call" },
+  { key: "/", label: "Trang chủ", icon: "home", img: tabHome },
+  { key: "/dich-vu", label: "Dịch vụ", icon: "grid_view", img: tabServices },
+  { key: "/lien-he", label: "Liên hệ", icon: "call", img: tabContact },
 ];
 
 // Nav tự viết thay zmp-ui BottomNavigation — cần kiểu "icon active nằm trong
@@ -22,7 +30,7 @@ const Layout = ({ children }) => {
   return (
     <div className="layout">
       <div className="layout__content">{children}</div>
-      <nav className="bottom-nav">
+      <nav className={`bottom-nav${USE_3D_TABS ? " bottom-nav--3d" : ""}`}>
         {TABS.map((tab) => {
           const active = location.pathname === tab.key;
           return (
@@ -33,7 +41,11 @@ const Layout = ({ children }) => {
               onClick={() => navigate(tab.key)}
             >
               <span className="bottom-nav__icon">
-                <Icon name={tab.icon} className="i23" />
+                {USE_3D_TABS ? (
+                  <img src={tab.img} alt="" className="icon3d icon3d--tab" />
+                ) : (
+                  <Icon name={tab.icon} className="i23" />
+                )}
               </span>
               <span className="bottom-nav__label">{tab.label}</span>
             </button>

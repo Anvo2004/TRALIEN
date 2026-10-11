@@ -259,6 +259,15 @@ const ContactPage = () => {
           </a>
         </div>
       </div>
+
+      <button
+        type="button"
+        className="about-link"
+        onClick={() => navigate("/thong-tin-ung-dung")}
+      >
+        Thông tin ứng dụng
+        <Icon name="chevron_right" className="i18 grey" />
+      </button>
     </Page>
   );
 };

@@ -7,6 +7,7 @@ import { Card } from '@/components/ui/card'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import IconPicker from '@/components/IconPicker'
 import { toast } from 'sonner'
 
 const SECTIONS = [
@@ -16,7 +17,7 @@ const SECTIONS = [
 ]
 
 const EMPTY_FORM = {
-  section: 'quick_link', icon: '', color: '', label: '', type: '',
+  section: 'quick_link', icon: '', iconUrl: '', color: '', label: '', type: '',
   description: '', badge: '', path: '', href: '', order: 0,
 }
 
@@ -64,7 +65,7 @@ export default function AppLinksPage() {
   function startEdit(item) {
     setEditingId(item._id)
     setForm({
-      section: item.section, icon: item.icon || '', color: item.color || '',
+      section: item.section, icon: item.icon || '', iconUrl: item.iconUrl || '', color: item.color || '',
       label: item.label || '', type: item.type || '', description: item.description || '',
       badge: item.badge || '', path: item.path || '', href: item.href || '', order: item.order ?? 0,
     })
@@ -137,12 +138,17 @@ export default function AppLinksPage() {
               <Label className="text-xs">Tên hiển thị *</Label>
               <Input value={form.label} onChange={(e) => setForm((f) => ({ ...f, label: e.target.value }))} required />
             </div>
-            <div className="space-y-1">
-              <Label className="text-xs">Icon (tên trong icon-paths.js)</Label>
-              <Input value={form.icon} onChange={(e) => setForm((f) => ({ ...f, icon: e.target.value }))} placeholder="VD: groups, map, description..." />
+            <div className="space-y-1 md:col-span-2">
+              <Label className="text-xs">Icon hiển thị</Label>
+              <IconPicker value={form.iconUrl} onChange={(url) => setForm((f) => ({ ...f, iconUrl: url }))} />
             </div>
             <div className="space-y-1">
-              <Label className="text-xs">Màu (hậu tố tile-...)</Label>
+              <Label className="text-xs">Icon vector dự phòng (tên trong icon-paths.js)</Label>
+              <Input value={form.icon} onChange={(e) => setForm((f) => ({ ...f, icon: e.target.value }))} placeholder="VD: groups, map, description..." />
+              <p className="text-[11px] text-muted-foreground">Chỉ dùng khi mục này chưa chọn ảnh ở trên.</p>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">Màu ô nền icon vector (hậu tố tile-...)</Label>
               <Input value={form.color} onChange={(e) => setForm((f) => ({ ...f, color: e.target.value }))} placeholder="b, g, c, v, p, a, o, n" />
             </div>
             <div className="space-y-1">
@@ -221,7 +227,13 @@ export default function AppLinksPage() {
                     <div className="font-medium">{it.label}</div>
                     {it.description && <div className="text-xs text-muted-foreground">{it.description}</div>}
                   </td>
-                  <td className="px-4 py-3 text-xs text-slate-500">{it.icon || '—'}</td>
+                  <td className="px-4 py-3">
+                    {it.iconUrl ? (
+                      <img src={it.iconUrl} alt="" className="h-8 w-8 object-contain" />
+                    ) : (
+                      <span className="text-xs text-slate-500">{it.icon || '—'}</span>
+                    )}
+                  </td>
                   <td className="px-4 py-3 text-xs text-slate-500 hidden md:table-cell">
                     {it.path || it.href || '—'}
                   </td>

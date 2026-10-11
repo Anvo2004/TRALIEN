@@ -96,6 +96,37 @@ body {
   color: #c3c9db;
 }
 
+/* Icon 3D dạng ảnh (AppLink.iconUrl hoặc ảnh đóng gói trong src/static/icons).
+   Khác .tile ở chỗ không có ô nền: icon nổi thẳng trên nền thẻ trắng, đúng
+   mẫu thiết kế. Mục nào chưa có ảnh thì components/app-icon.jsx tự lùi về
+   .tile + icon vector bên dưới. */
+.icon3d {
+  width: 52px;
+  height: 52px;
+  object-fit: contain;
+  flex-shrink: 0;
+
+  &--md {
+    width: 44px;
+    height: 44px;
+  }
+
+  &--sm {
+    width: 36px;
+    height: 36px;
+  }
+
+  &--xs {
+    width: 28px;
+    height: 28px;
+  }
+
+  &--tab {
+    width: 26px;
+    height: 26px;
+  }
+}
+
 /* Ô icon màu — component icon dùng chung cho quick-links, service-list,
    portal-list, office-card, connect-grid, notice-card, oa-card (đúng theo
    mẫu thiết kế, tránh lặp code icon vuông bo góc ở từng nơi) */
@@ -247,6 +278,139 @@ body {
 
   &__item.is-active &__label {
     font-weight: 700;
+  }
+}
+
+/* Màn "Thông tin ứng dụng" (ghi công nguồn icon theo giấy phép Icons8) +
+   lối vào từ cuối trang Liên hệ */
+.about-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  width: calc(100% - 32px);
+  margin: 4px 16px 24px;
+  padding: 12px;
+  border: none;
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.7);
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7390;
+}
+
+.about-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  padding: 24px 16px;
+  border-radius: 24px;
+  background: #fff;
+  box-shadow: 0 10px 26px -16px rgba(12, 19, 48, 0.25);
+
+  &__logo {
+    width: 64px;
+    height: 64px;
+    object-fit: contain;
+    margin-bottom: 4px;
+  }
+
+  &__name {
+    font-size: 17px;
+    font-weight: 700;
+    color: #0c1330;
+  }
+
+  &__desc {
+    font-size: 13px;
+    color: #6b7390;
+    text-align: center;
+    line-height: 1.5;
+  }
+
+  &__version {
+    font-size: 12px;
+    color: #9aa1b8;
+    margin-top: 2px;
+  }
+}
+
+.about-block {
+  margin-top: 16px;
+  border-radius: 20px;
+  background: #fff;
+  box-shadow: 0 10px 26px -16px rgba(12, 19, 48, 0.25);
+  overflow: hidden;
+
+  &__title {
+    padding: 14px 16px 8px;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    color: #9aa1b8;
+  }
+}
+
+.about-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  width: 100%;
+  padding: 13px 16px;
+  border: none;
+  border-top: 1px solid #f0f2f8;
+  background: none;
+  font-family: inherit;
+  text-align: left;
+
+  &__label {
+    font-size: 13px;
+    color: #404863;
+  }
+
+  &__value {
+    font-size: 13px;
+    font-weight: 600;
+    color: $accent;
+  }
+}
+
+.about-note {
+  margin: 16px 4px 0;
+  font-size: 12.5px;
+  line-height: 1.6;
+  color: #9aa1b8;
+}
+
+/* Biến thể tab bar dùng icon 3D: bỏ viên gradient sau icon (ảnh màu nằm trên
+   nền gradient sẽ bẩn), thay bằng xám mờ cho tab không hoạt động. */
+.bottom-nav--3d {
+  .bottom-nav__icon {
+    height: 30px;
+    background: none;
+  }
+
+  .bottom-nav__item.is-active .bottom-nav__icon {
+    background: none;
+  }
+
+  .icon3d--tab {
+    filter: grayscale(1);
+    opacity: 0.5;
+    transition: filter 0.25s ease, opacity 0.25s ease;
+  }
+
+  .bottom-nav__item.is-active {
+    color: $accent;
+  }
+
+  .bottom-nav__item.is-active .icon3d--tab {
+    filter: none;
+    opacity: 1;
   }
 }
 
@@ -667,7 +831,7 @@ body {
   box-shadow: 0 10px 26px -16px rgba(12, 19, 48, 0.25);
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  row-gap: 16px;
+  row-gap: 18px;
 
   &__item {
     display: flex;
@@ -685,6 +849,21 @@ body {
     }
   }
 
+  /* Màn "Kỹ năng PCTT" vẫn dùng emoji (dữ liệu sinh tự động từ
+     Backend/scripts/build-pctt-skills-data.js, không sửa tay). Class này trước
+     đây không tồn tại nên emoji hiện bằng cỡ chữ thường, lệch hẳn so với các
+     lưới khác. */
+  &__icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 52px;
+    font-size: 30px;
+    line-height: 1;
+  }
+
+  /* min-height thay cho height cố định: nhãn dài ("Phòng chống thiên tai")
+     trước đây bị cắt mất dòng thứ hai. */
   &__label {
     width: 100%;
     font-size: 10px;
@@ -692,7 +871,7 @@ body {
     text-align: center;
     color: #404863;
     line-height: 1.25;
-    height: 24px;
+    min-height: 25px;
   }
 }
 

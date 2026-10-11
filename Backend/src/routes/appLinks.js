@@ -21,7 +21,7 @@ router.get("/", async (req, res) => {
 });
 
 router.post("/", requireRole(...WRITE_ROLES), async (req, res) => {
-  const { section, icon, color, label, type, description, badge, path, href, order } = req.body;
+  const { section, icon, iconUrl, color, label, type, description, badge, path, href, order } = req.body;
 
   if (!label) {
     return res.status(400).json({ error: "Thiếu tên hiển thị" });
@@ -33,6 +33,7 @@ router.post("/", requireRole(...WRITE_ROLES), async (req, res) => {
   const item = await AppLink.create({
     section,
     icon,
+    iconUrl,
     color,
     label,
     type: type || "",
@@ -48,7 +49,7 @@ router.post("/", requireRole(...WRITE_ROLES), async (req, res) => {
 });
 
 router.put("/:id", requireRole(...WRITE_ROLES), async (req, res) => {
-  const { section, icon, color, label, type, description, badge, path, href, order } = req.body;
+  const { section, icon, iconUrl, color, label, type, description, badge, path, href, order } = req.body;
 
   if (section && !SECTIONS.includes(section)) {
     return res.status(400).json({ error: "section không hợp lệ" });
@@ -59,6 +60,7 @@ router.put("/:id", requireRole(...WRITE_ROLES), async (req, res) => {
     {
       ...(section ? { section } : {}),
       icon,
+      iconUrl,
       color,
       label,
       type: type || "",

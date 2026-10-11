@@ -3,3 +3,6 @@ www
 .zmp
 *.log
 .env
+
+# Icon Icons8 tai luc build (xem scripts/fetch-icons.mjs) - khong commit vao repo public
+src/static/icons/*.png

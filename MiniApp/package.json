@@ -7,7 +7,9 @@
     "build": "vite build",
     "serve": "vite preview --host 0.0.0.0 --strictPort --port ${PORT:-3011}",
     "deploy:dev": "zmp-cli deploy --existing",
-    "deploy:testing": "zmp-cli deploy --existing --testing"
+    "deploy:testing": "zmp-cli deploy --existing --testing",
+    "prestart": "node scripts/fetch-icons.mjs",
+    "prebuild": "node scripts/fetch-icons.mjs"
   },
   "dependencies": {
     "react": "^18.2.0",

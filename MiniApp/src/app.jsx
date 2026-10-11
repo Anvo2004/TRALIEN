@@ -24,6 +24,7 @@ import DanSoPage from "./pages/dan-so.jsx";
 import ThonXomPage from "./pages/thon-xom.jsx";
 import VanHoaPage from "./pages/van-hoa.jsx";
 import DuLichPage from "./pages/du-lich.jsx";
+import ThongTinUngDungPage from "./pages/thong-tin-ung-dung.jsx";
 
 const MyApp = () => {
   return (
@@ -63,6 +64,7 @@ const MyApp = () => {
             <Route path="/thon-xom" element={<ThonXomPage />} />
             <Route path="/van-hoa" element={<VanHoaPage />} />
             <Route path="/du-lich" element={<DuLichPage />} />
+            <Route path="/thong-tin-ung-dung" element={<ThongTinUngDungPage />} />
           </AnimationRoutes>
         </Layout>
       </ZMPRouter>

@@ -1,10 +1,18 @@
 // Phân loại nhóm đối tượng trợ cấp — dùng chung cho chip lọc + card kết quả
 // (khớp với enum loaiTroCap trong Backend/src/models/TroCapSchedule.js)
+//
+// Icon là ảnh 3D đóng gói sẵn trong bundle (không qua AdminWeb như AppLink vì
+// 4 nhóm này cố định theo enum của Backend) — xem src/static/icons/README.md.
+import imgCoCong from "../static/icons/trocap-co-cong.png";
+import imgBaoTro from "../static/icons/trocap-bao-tro.png";
+import imgHoNgheo from "../static/icons/trocap-ho-ngheo.png";
+import imgTreEm from "../static/icons/trocap-tre-em.png";
+
 export const TRO_CAP_CATEGORIES = {
   cong: {
     label: "Người có công với cách mạng",
     shortLabel: "Người có công",
-    icon: "🎖️",
+    img: imgCoCong,
     color: "#f59e0b",
     soft: "#fff7ed",
     ink: "#c2410c",
@@ -12,7 +20,7 @@ export const TRO_CAP_CATEGORIES = {
   baotro: {
     label: "Bảo trợ xã hội hàng tháng",
     shortLabel: "Bảo trợ XH",
-    icon: "🤝",
+    img: imgBaoTro,
     color: "#3b82f6",
     soft: "#eff6ff",
     ink: "#1d4ed8",
@@ -20,7 +28,7 @@ export const TRO_CAP_CATEGORIES = {
   ngheo: {
     label: "Hỗ trợ hộ nghèo, cận nghèo",
     shortLabel: "Hộ nghèo",
-    icon: "🏠",
+    img: imgHoNgheo,
     color: "#10b981",
     soft: "#ecfdf5",
     ink: "#047857",
@@ -28,7 +36,7 @@ export const TRO_CAP_CATEGORIES = {
   treem: {
     label: "Trợ cấp trẻ em & chính sách khác",
     shortLabel: "Trẻ em",
-    icon: "👶",
+    img: imgTreEm,
     color: "#f43f5e",
     soft: "#fff1f2",
     ink: "#be123c",

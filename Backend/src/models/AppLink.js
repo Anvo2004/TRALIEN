@@ -9,7 +9,8 @@ const mongoose = require("mongoose");
 //   - portal:     danh sách "Cổng dịch vụ công" ở cuối trang /dich-vu
 const appLinkSchema = new mongoose.Schema({
   section: { type: String, enum: ["quick_link", "service", "portal"], required: true },
-  icon: { type: String, default: "" }, // tên icon trong MiniApp/src/data/icon-paths.js
+  icon: { type: String, default: "" }, // tên icon trong MiniApp/src/data/icon-paths.js (dự phòng khi chưa có ảnh)
+  iconUrl: { type: String, default: "" }, // ảnh icon 3D đã upload; có giá trị thì MiniApp ưu tiên dùng thay cho `icon`
   color: { type: String, default: "" }, // hậu tố lớp .tile-<color>, thuần hiển thị
   label: { type: String, required: true }, // tên hiển thị
   type: { type: String, enum: ["online", "offline", ""], default: "" }, // chỉ dùng cho section=service

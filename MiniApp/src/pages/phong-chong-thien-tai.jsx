@@ -39,7 +39,7 @@ const PhongChongThienTaiPage = () => {
               className="quick-links__item"
               onClick={() => handleClick(item)}
             >
-              <span className="quick-links__icon">{item.icon}</span>
+              <img src={item.img} alt="" className="icon3d" />
               <span className="quick-links__label">{item.label}</span>
             </button>
           ))}

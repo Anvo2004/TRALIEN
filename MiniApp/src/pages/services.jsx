@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Page, Header } from "zmp-ui";
 import Icon from "../components/icon.jsx";
+import AppIcon from "../components/app-icon.jsx";
 import { SERVICE_CATEGORIES } from "../data/services.js";
 import API_BASE_URL from "../data/api-config.js";
 import { openExternal } from "../utils/open-external.js";
@@ -104,9 +105,13 @@ const ServicesPage = () => {
               className="service-list__item"
               onClick={service.path ? () => navigate(service.path) : undefined}
             >
-              <span className={`tile tile-${service.color || "b"}`}>
-                <Icon name={service.icon} className="i22" />
-              </span>
+              <AppIcon
+                iconUrl={service.iconUrl}
+                name={service.icon}
+                color={service.color || "b"}
+                imgClass="icon3d--md"
+                vectorClass="i22"
+              />
               <h3 className="service-list__title">{service.label}</h3>
               <span
                 className={`service-list__badge service-list__badge--${service.type}`}
@@ -138,9 +143,14 @@ const ServicesPage = () => {
             }
             disabled={!link.path && !link.href}
           >
-            <span className={`tile sm tile-${link.color || "b"}`}>
-              <Icon name={link.icon} className="i20" />
-            </span>
+            <AppIcon
+              iconUrl={link.iconUrl}
+              name={link.icon}
+              color={link.color || "b"}
+              imgClass="icon3d--sm"
+              tileClass="sm"
+              vectorClass="i20"
+            />
             <span className="prow__body">
               <span className="prow__title">
                 {link.label}
