@@ -23,6 +23,7 @@ const FILES = {
   "tab-home.png": ["home", 96],
   "tab-services.png": ["toolbox", 96],
   "tab-contact.png": ["phone", 96],
+  "tab-citizen.png": ["user-male-circle", 96],
   "pctt-sos.png": ["sos", 128],
   "pctt-danh-ba.png": ["phone", 128],
   "pctt-ky-nang.png": ["graduation-cap", 128],

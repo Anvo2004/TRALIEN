@@ -26,6 +26,8 @@ app.use("/media", express.static(config.mediaDir));
 // Ảnh/video tải lên để gửi qua Zalo OA (route broadcast lưu vào public/images).
 // express.static hỗ trợ Range request nên video mp4 phát/tua được khi mở link.
 app.use("/images", express.static(path.join(__dirname, "..", "public", "images")));
+// Logo/ảnh thương hiệu dùng làm thumbnail khi chia sẻ Mini App (openShareSheet cần URL tuyệt đối).
+app.use("/brand", express.static(path.join(__dirname, "..", "public", "brand")));
 
 app.get("/health", (req, res) => res.json({ error: 0, message: "ok" }));
 app.post("/health", (req, res) => res.json({ error: 0, message: "ok" }));

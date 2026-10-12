@@ -16,6 +16,7 @@ import TroCapPage from '@/pages/TroCapPage'
 import LichYTePage from '@/pages/LichYTePage'
 import ThuTucHanhChinhPage from '@/pages/ThuTucHanhChinhPage'
 import AppLinksPage from '@/pages/AppLinksPage'
+import CongDanPage from '@/pages/CongDanPage'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -40,6 +41,7 @@ export default function App() {
                 <Route path="/lich-y-te" element={<LichYTePage />} />
                 <Route path="/thu-tuc-hanh-chinh" element={<ThuTucHanhChinhPage />} />
                 <Route path="/app-links" element={<AppLinksPage />} />
+                <Route path="/cong-dan" element={<CongDanPage />} />
                 <Route path="/users" element={<UsersPage />} />
                 <Route path="/users/new" element={<UserFormPage />} />
                 <Route path="/users/:id/edit" element={<UserFormPage />} />

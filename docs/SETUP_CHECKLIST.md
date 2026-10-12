@@ -59,6 +59,13 @@ Backend chạy đầy đủ tính năng và lên production. Đánh dấu `[x]` 
       **Chưa có**: `ZALO_OA_SECRET_KEY` (khoá xác thực chữ ký webhook, lấy tại
       oa.zalo.me → Cài đặt → Bảo mật — không bắt buộc, thiếu thì webhook vẫn
       nhận bình thường, chỉ bỏ qua bước xác thực chữ ký).
+- [ ] **Tab Công dân & Tích điểm** (xem [`TAB_CONG_DAN.md`](./TAB_CONG_DAN.md))
+      cần thêm 2 thứ, thiếu thì tính năng tự giảm chứ không hỏng:
+      - `ZALO_OA_ID` (ID số của OA Trà Liên) trong `Backend/.env` — trống thì
+        ẩn hàng "Quan tâm Zalo OA" trong tab Công dân.
+      - Quyền **"Số điện thoại"** trong Zalo Mini App Console → Quản lý quyền.
+        Chưa bật thì hộp thoại xin SĐT bị Zalo từ chối, app bỏ qua im lặng và
+        hồ sơ công dân không có số (cán bộ vẫn xem/ sửa được phần còn lại).
 - [x] Thẻ xác minh site `zalo-platform-site-verification` trong
       `Backend/src/app.js` — đã điền thật (2026-09-22), xác thực thành công
       domain `tralienapi.dxvtech.vn` trên Zalo Developers Console (cần thiết

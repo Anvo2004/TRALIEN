@@ -25,6 +25,13 @@ import ThonXomPage from "./pages/thon-xom.jsx";
 import VanHoaPage from "./pages/van-hoa.jsx";
 import DuLichPage from "./pages/du-lich.jsx";
 import ThongTinUngDungPage from "./pages/thong-tin-ung-dung.jsx";
+import CongDanPage from "./pages/cong-dan.jsx";
+import TichDiemPage from "./pages/tich-diem.jsx";
+import { captureReferral } from "./data/citizen.js";
+
+// Mini App mở từ link chia sẻ "/?ref=MÃ" — nhớ mã ngay lúc khởi động, trước khi
+// router nuốt tham số, để áp dụng khi người dùng đăng ký ở tab Công dân.
+captureReferral();
 
 const MyApp = () => {
   return (
@@ -65,6 +72,8 @@ const MyApp = () => {
             <Route path="/van-hoa" element={<VanHoaPage />} />
             <Route path="/du-lich" element={<DuLichPage />} />
             <Route path="/thong-tin-ung-dung" element={<ThongTinUngDungPage />} />
+            <Route path="/cong-dan" element={<CongDanPage />} />
+            <Route path="/tich-diem" element={<TichDiemPage />} />
           </AnimationRoutes>
         </Layout>
       </ZMPRouter>

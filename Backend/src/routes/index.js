@@ -19,6 +19,8 @@ const appIconsRoutes = require("./appIcons");
 const vanBanRoutes = require("./vanBan");
 const villageRoutes = require("./villages");
 const siteContentRoutes = require("./siteContent");
+const publicCitizenRoutes = require("./publicCitizen");
+const citizenRoutes = require("./citizens");
 const statsRoutes = require("./stats");
 const userRoutes = require("./users");
 const zaloMembersRoutes = require("./zaloMembers");
@@ -29,6 +31,8 @@ const router = express.Router();
 router.use("/public", publicFeedbackRoutes);
 router.use("/public", publicLookupRoutes);
 router.use("/public/assistant", assistantRoutes);
+// Tab Công dân & Tích điểm — định danh bằng access token Zalo (requireZaloUser), không qua JWT admin.
+router.use("/public/citizen", publicCitizenRoutes);
 router.use("/auth", authRoutes);
 // Zalo gọi vào endpoint này (sự kiện rút lại đồng ý/xoá dữ liệu...) — không qua JWT admin.
 router.use("/zalo", zaloWebhookRoutes);
@@ -50,6 +54,7 @@ router.use("/app-links", appLinksRoutes);
 router.use("/app-icons", appIconsRoutes);
 router.use("/van-ban", vanBanRoutes);
 router.use("/thon-xom", villageRoutes);
+router.use("/citizens", citizenRoutes);
 router.use("/", siteContentRoutes);
 
 module.exports = router;

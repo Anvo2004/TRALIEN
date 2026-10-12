@@ -26,6 +26,9 @@ module.exports = {
     // webhook (X-ZEvent-Signature), KHÁC với ZALO_APP_SECRET. Để trống thì
     // webhook vẫn nhận request bình thường, chỉ bỏ qua bước xác thực chữ ký.
     oaSecretKey: process.env.ZALO_OA_SECRET_KEY || "",
+    // ID Official Account — MiniApp dùng cho nút Quan tâm/Bỏ quan tâm OA ở tab
+    // Công dân. Trống thì ẩn nút (xem docs/SETUP_CHECKLIST.md).
+    oaId: process.env.ZALO_OA_ID || "",
   },
 
   corsOrigin: process.env.CORS_ORIGIN || "*",

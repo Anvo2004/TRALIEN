@@ -58,6 +58,7 @@ const ICON_SET = [
   { slug: "drama", label: "Văn hóa - nghệ thuật", group: "Văn hóa" },
   { slug: "mountain", label: "Du lịch - núi", group: "Văn hóa" },
   { slug: "toolbox", label: "Hộp công cụ", group: "Điều hướng" },
+  { slug: "user-male-circle", label: "Công dân số", group: "Điều hướng" },
 ];
 
 // label trong AppLink -> slug icon. Khớp bằng label vì đó là thứ cán bộ nhìn
@@ -82,6 +83,7 @@ const LINK_MAP = {
     "Cổng dữ liệu": "database",
     "Tra cứu hồ sơ": "search",
     "DaNang AI": "bot",
+    "Công dân số": "user-male-circle",
   },
   service: {
     "Phản ánh - Kiến nghị": "megaphone",

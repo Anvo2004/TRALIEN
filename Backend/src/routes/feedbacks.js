@@ -6,6 +6,7 @@ const { requireRole } = require("../middleware/auth");
 const { sendZaloText } = require("../utils/zaloApi");
 const { feedbackCode } = require("../services/feedbackNotifyService");
 const cgy1022StatusService = require("../services/cgy1022StatusService");
+const citizenService = require("../services/citizenService");
 
 const router = express.Router();
 
@@ -145,6 +146,11 @@ router.post("/:id/approve", requireRole(...LEADER_ROLES), async (req, res) => {
   feedback.status = "resolved";
   feedback.sentAt = new Date();
   await feedback.save();
+
+  // Phản ánh được phản hồi → cộng điểm công dân (một lần/phản ánh, sổ cái chống trùng).
+  citizenService
+    .awardFeedbackResolved(feedback)
+    .catch((err) => console.error("[feedbacks] cộng điểm công dân thất bại:", err.message));
 
   sendZaloText(
     feedback.userId,
