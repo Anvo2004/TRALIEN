@@ -19,8 +19,14 @@ MongoDB (`AppLink.iconUrl`), đổi qua AdminWeb → **Icon & liên kết MiniAp
 mỗi mục có nút chọn ảnh từ thư viện hoặc tải ảnh PNG/WEBP mới (tối đa 1MB,
 nền trong suốt). Đổi xong có hiệu lực ngay, **không cần build lại MiniApp**.
 
-Bộ icon khởi tạo nạp bằng `node Backend/scripts/seed-app-icons.js --apply-links`
-(chạy trên VPS, nơi có kết nối MongoDB thật; thêm `--dry-run` để xem trước).
+Hai script nạp icon hàng loạt (chạy trên VPS, nơi có MongoDB thật; cả hai đều
+có `--dry-run` để xem trước):
+
+- `node Backend/scripts/import-icon-pack.js` — bộ icon **riêng của xã** trong
+  [`assets/icons-tien-ich-nhanh/`](../assets/icons-tien-ich-nhanh/) (19 icon
+  của lưới Tiện ích nhanh, có file SVG gốc để sửa sau này).
+- `node Backend/scripts/seed-app-icons.js --apply-links` — bộ Icons8 cho trang
+  Dịch vụ, Cổng dịch vụ công và các mục chưa có icon riêng.
 
 Ba chỗ icon nằm trong bundle nên **phải build lại MiniApp** khi đổi: thanh tab
 dưới cùng, màn "Phòng chống thiên tai" và nhóm trợ cấp — xem

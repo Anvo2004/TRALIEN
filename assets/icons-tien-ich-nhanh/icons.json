@@ -1,0 +1,173 @@
+[
+  {
+    "id": 1,
+    "file": "01-dan-so",
+    "label": "Dân số",
+    "tile": [
+      "#F1F7FF",
+      "#D2E3FF"
+    ]
+  },
+  {
+    "id": 2,
+    "file": "02-thon-xom",
+    "label": "Thôn xóm",
+    "tile": [
+      "#EEFCF4",
+      "#C6EFDA"
+    ]
+  },
+  {
+    "id": 3,
+    "file": "03-ban-do",
+    "label": "Bản đồ",
+    "tile": [
+      "#EBFAFF",
+      "#C6EBFA"
+    ]
+  },
+  {
+    "id": 4,
+    "file": "04-dich-vu-cong",
+    "label": "Dịch vụ công",
+    "tile": [
+      "#F1F7FF",
+      "#D2E3FF"
+    ]
+  },
+  {
+    "id": 5,
+    "file": "05-danh-muc-tthc",
+    "label": "Danh mục TTHC",
+    "tile": [
+      "#EBFAFF",
+      "#C6EBFA"
+    ]
+  },
+  {
+    "id": 6,
+    "file": "06-van-hoa",
+    "label": "Văn hóa",
+    "tile": [
+      "#F6F1FF",
+      "#DBCEFF"
+    ]
+  },
+  {
+    "id": 7,
+    "file": "07-du-lich",
+    "label": "Du lịch",
+    "tile": [
+      "#EEFCF4",
+      "#C6EFDA"
+    ]
+  },
+  {
+    "id": 8,
+    "file": "08-phong-chong-thien-tai",
+    "label": "Phòng chống thiên tai",
+    "tile": [
+      "#F1F7FF",
+      "#D2E3FF"
+    ]
+  },
+  {
+    "id": 9,
+    "file": "09-lich-y-te",
+    "label": "Lịch y tế",
+    "tile": [
+      "#FFF1F0",
+      "#FFD2CF"
+    ]
+  },
+  {
+    "id": 10,
+    "file": "10-gop-y",
+    "label": "Góp ý",
+    "tile": [
+      "#F6F1FF",
+      "#DBCEFF"
+    ]
+  },
+  {
+    "id": 11,
+    "file": "11-phan-anh-cua-toi",
+    "label": "Phản ánh của tôi",
+    "tile": [
+      "#FFF8E7",
+      "#FFE5AE"
+    ]
+  },
+  {
+    "id": 12,
+    "file": "12-lien-he",
+    "label": "Liên hệ",
+    "tile": [
+      "#EEFCF4",
+      "#C6EFDA"
+    ]
+  },
+  {
+    "id": 13,
+    "file": "13-tao-qr-bai-viet",
+    "label": "Tạo QR bài viết",
+    "tile": [
+      "#F6F1FF",
+      "#DBCEFF"
+    ]
+  },
+  {
+    "id": 14,
+    "file": "14-binh-dan-so-hoc",
+    "label": "Bình dân số học",
+    "tile": [
+      "#EEFCF4",
+      "#C6EFDA"
+    ]
+  },
+  {
+    "id": 15,
+    "file": "15-khao-sat-hai-long",
+    "label": "Khảo sát hài lòng",
+    "tile": [
+      "#EBFAFF",
+      "#C6EBFA"
+    ]
+  },
+  {
+    "id": 16,
+    "file": "16-cong-du-lieu",
+    "label": "Cổng dữ liệu",
+    "tile": [
+      "#F1F7FF",
+      "#D2E3FF"
+    ]
+  },
+  {
+    "id": 17,
+    "file": "17-tra-cuu-ho-so",
+    "label": "Tra cứu hồ sơ",
+    "tile": [
+      "#EBFAFF",
+      "#C6EBFA"
+    ]
+  },
+  {
+    "id": 18,
+    "file": "18-danang-ai",
+    "label": "DaNang AI",
+    "tile": [
+      "#F6F1FF",
+      "#DBCEFF"
+    ]
+  },
+  {
+    "id": 19,
+    "file": "19-cong-dan-so",
+    "label": "Công dân số",
+    "tile": [
+      "#F1F7FF",
+      "#D2E3FF"
+    ]
+  }
+]

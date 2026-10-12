@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Công dân số">
+<defs>
+<linearGradient id="gb" x1="0.25" y1="0" x2="0.65" y2="1"><stop offset="0" stop-color="#9FD0FF"/><stop offset="0.5" stop-color="#4C97FF"/><stop offset="1" stop-color="#2358D8"/></linearGradient>
+<linearGradient id="gbl" x1="0.25" y1="0" x2="0.65" y2="1"><stop offset="0" stop-color="#D4EAFF"/><stop offset="1" stop-color="#84BDFF"/></linearGradient>
+<linearGradient id="gc" x1="0.25" y1="0" x2="0.65" y2="1"><stop offset="0" stop-color="#A9EFFF"/><stop offset="0.5" stop-color="#36BDF2"/><stop offset="1" stop-color="#1481C9"/></linearGradient>
+<linearGradient id="gcl" x1="0.25" y1="0" x2="0.65" y2="1"><stop offset="0" stop-color="#D6F9FF"/><stop offset="1" stop-color="#7FDDF7"/></linearGradient>
+<linearGradient id="gg" x1="0.25" y1="0" x2="0.65" y2="1"><stop offset="0" stop-color="#9DF3CB"/><stop offset="0.5" stop-color="#22C68C"/><stop offset="1" stop-color="#0C8D66"/></linearGradient>
+<linearGradient id="ggd" x1="0.25" y1="0" x2="0.65" y2="1"><stop offset="0" stop-color="#5FDDB0"/><stop offset="1" stop-color="#0A7B58"/></linearGradient>
+<linearGradient id="ga" x1="0.25" y1="0" x2="0.65" y2="1"><stop offset="0" stop-color="#FFE794"/><stop offset="0.5" stop-color="#FFBA33"/><stop offset="1" stop-color="#F58A12"/></linearGradient>
+<linearGradient id="gy" x1="0.25" y1="0" x2="0.65" y2="1"><stop offset="0" stop-color="#FFF3A0"/><stop offset="0.55" stop-color="#FFD23F"/><stop offset="1" stop-color="#F7A81B"/></linearGradient>
+<linearGradient id="gr" x1="0.25" y1="0" x2="0.65" y2="1"><stop offset="0" stop-color="#FFAFA6"/><stop offset="0.5" stop-color="#FF5C60"/><stop offset="1" stop-color="#D52B3F"/></linearGradient>
+<linearGradient id="gv" x1="0.25" y1="0" x2="0.65" y2="1"><stop offset="0" stop-color="#DEC9FF"/><stop offset="0.5" stop-color="#9470FF"/><stop offset="1" stop-color="#5D3CD8"/></linearGradient>
+<linearGradient id="gw" x1="0.25" y1="0" x2="0.65" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="0.6" stop-color="#F1F5FC"/><stop offset="1" stop-color="#CBD7EC"/></linearGradient>
+<linearGradient id="gwh" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#FFFFFF"/><stop offset="0.55" stop-color="#E6EDF9"/><stop offset="1" stop-color="#BFCDE6"/></linearGradient>
+<linearGradient id="gs" x1="0.25" y1="0" x2="0.65" y2="1"><stop offset="0" stop-color="#C7D0E1"/><stop offset="0.5" stop-color="#8A96B0"/><stop offset="1" stop-color="#55617F"/></linearGradient>
+<linearGradient id="gk" x1="0.2" y1="0" x2="0.7" y2="1"><stop offset="0" stop-color="#34498A"/><stop offset="1" stop-color="#16224F"/></linearGradient>
+<linearGradient id="gcd" x1="0.25" y1="0" x2="0.6" y2="1"><stop offset="0" stop-color="#FAFCFF"/><stop offset="0.5" stop-color="#C2CDE4"/><stop offset="1" stop-color="#8797BF"/></linearGradient>
+<filter id="bl" x="-40%" y="-150%" width="180%" height="400%"><feGaussianBlur stdDeviation="1.7"/></filter>
+<linearGradient id="tile" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#F1F7FF"/><stop offset="1" stop-color="#D2E3FF"/></linearGradient><linearGradient id="gloss" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff" stop-opacity=".85"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+</defs>
+<rect width="64" height="64" rx="20" fill="url(#tile)"/>
+<rect x="1" y="1" width="62" height="24" rx="19" fill="url(#gloss)" opacity=".55"/>
+<rect x=".5" y=".5" width="63" height="63" rx="19.5" fill="none" stroke="#fff" stroke-opacity=".9"/>
+<defs><clipPath id="clA"><circle cx="32" cy="31" r="17"/></clipPath></defs>
+<ellipse cx="32" cy="54" rx="16" ry="2.6" fill="#1B2B66" opacity=".22" filter="url(#bl)"/>
+<circle cx="32" cy="33.4" r="17" fill="#1B49B5"/>
+<circle cx="32" cy="31" r="17" fill="url(#gb)"/>
+<g clip-path="url(#clA)">
+<circle cx="32" cy="26" r="5.8" fill="url(#gw)"/>
+<ellipse cx="32" cy="47" rx="13" ry="12" fill="url(#gw)"/>
+</g>
+<path d="M20.5 24 A13 13 0 0 1 28 17.5" stroke="#fff" stroke-opacity=".55" stroke-width="2" stroke-linecap="round" fill="none"/>
+<path d="M0 -8.5 L7.5 -5.5 V1 C7.5 5.5 3.5 8 0 9.5 C-3.5 8 -7.5 5.5 -7.5 1 V-5.5 Z" transform="translate(46 41.5)" fill="url(#gg)" stroke="#fff" stroke-width="1.6" stroke-linejoin="round"/>
+<path d="M42.6 41.8 L45 44.2 L49.6 38.8" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>
