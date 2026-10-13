@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64" role="img" aria-label="Văn bản - Chính sách">
+<defs>
+<linearGradient id="gb" x1="0.25" y1="0" x2="0.65" y2="1"><stop offset="0" stop-color="#9FD0FF"/><stop offset="0.5" stop-color="#4C97FF"/><stop offset="1" stop-color="#2358D8"/></linearGradient>
+<linearGradient id="gbl" x1="0.25" y1="0" x2="0.65" y2="1"><stop offset="0" stop-color="#D4EAFF"/><stop offset="1" stop-color="#84BDFF"/></linearGradient>
+<linearGradient id="gc" x1="0.25" y1="0" x2="0.65" y2="1"><stop offset="0" stop-color="#A9EFFF"/><stop offset="0.5" stop-color="#36BDF2"/><stop offset="1" stop-color="#1481C9"/></linearGradient>
+<linearGradient id="gg" x1="0.25" y1="0" x2="0.65" y2="1"><stop offset="0" stop-color="#9DF3CB"/><stop offset="0.5" stop-color="#22C68C"/><stop offset="1" stop-color="#0C8D66"/></linearGradient>
+<linearGradient id="ga" x1="0.25" y1="0" x2="0.65" y2="1"><stop offset="0" stop-color="#FFE794"/><stop offset="0.5" stop-color="#FFBA33"/><stop offset="1" stop-color="#F58A12"/></linearGradient>
+<linearGradient id="gy" x1="0.25" y1="0" x2="0.65" y2="1"><stop offset="0" stop-color="#FFF3A0"/><stop offset="0.55" stop-color="#FFD23F"/><stop offset="1" stop-color="#F7A81B"/></linearGradient>
+<linearGradient id="gr" x1="0.25" y1="0" x2="0.65" y2="1"><stop offset="0" stop-color="#FFAFA6"/><stop offset="0.5" stop-color="#FF5C60"/><stop offset="1" stop-color="#D52B3F"/></linearGradient>
+<linearGradient id="gv" x1="0.25" y1="0" x2="0.65" y2="1"><stop offset="0" stop-color="#DEC9FF"/><stop offset="0.5" stop-color="#9470FF"/><stop offset="1" stop-color="#5D3CD8"/></linearGradient>
+<linearGradient id="gw" x1="0.25" y1="0" x2="0.65" y2="1"><stop offset="0" stop-color="#FFFFFF"/><stop offset="0.6" stop-color="#F1F5FC"/><stop offset="1" stop-color="#CBD7EC"/></linearGradient>
+<linearGradient id="gs" x1="0.25" y1="0" x2="0.65" y2="1"><stop offset="0" stop-color="#C7D0E1"/><stop offset="0.5" stop-color="#8A96B0"/><stop offset="1" stop-color="#55617F"/></linearGradient>
+<filter id="bl" x="-40%" y="-150%" width="180%" height="400%"><feGaussianBlur stdDeviation="1.7"/></filter>
+</defs>
+<ellipse cx="32" cy="56" rx="15" ry="2.4" fill="#1B2A52" opacity=".22" filter="url(#bl)"/>
+<g transform="translate(0 2.4)"><path d="M16 7 h22 l12 12 v38 a3 3 0 0 1 -3 3 H16 a3 3 0 0 1 -3-3 V10 a3 3 0 0 1 3-3 Z" fill="#A9B8D4"/></g>
+<path d="M16 7 h22 l12 12 v38 a3 3 0 0 1 -3 3 H16 a3 3 0 0 1 -3-3 V10 a3 3 0 0 1 3-3 Z" fill="url(#gw)" stroke="url(#gw)" stroke-width="2" stroke-linejoin="round"/>
+<path d="M38 7 v9 a3 3 0 0 0 3 3 h9" fill="#CBD7EC"/>
+<path d="M21 26 h18 M21 33 h18 M21 40 h11" stroke="#6E86B8" stroke-opacity=".85" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+<circle cx="44" cy="46" r="10" fill="#B21F33"/><circle cx="44" cy="44.8" r="10" fill="url(#gr)"/>
+<circle cx="44" cy="44.8" r="5.6" fill="none" stroke="#fff" stroke-opacity=".8" stroke-width="2"/>
+<path d="M17 12 a3 3 0 0 1 3 -2" stroke="#fff" stroke-opacity=".9" stroke-width="2" stroke-linecap="round" fill="none"/>
+</svg>

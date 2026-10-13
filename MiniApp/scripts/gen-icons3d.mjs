@@ -113,6 +113,43 @@ const ICONS = {
     extras: `<path d="M32 21 l3.4 6.9 7.6 1.1 -5.5 5.3 1.3 7.5 -6.8-3.5 -6.8 3.5 1.3-7.5 -5.5-5.3 7.6-1.1 Z" fill="#fff" opacity=".95"/>
 <path d="M17 19 l10-3.5" stroke="#fff" stroke-opacity=".55" stroke-width="2.4" stroke-linecap="round" fill="none"/>`,
   },
+  "power": {
+    label: "Lịch cắt điện",
+    shade: "gy",
+    body: `<path d="M37 6 L17 35 h11 l-3 23 L48 27 H34 Z"/>`,
+    extras: `<path d="M33 11 L22 28" stroke="#fff" stroke-opacity=".7" stroke-width="2.6" stroke-linecap="round" fill="none"/>`,
+  },
+  "money": {
+    label: "Thông báo trợ cấp",
+    shade: "gg",
+    body: `<rect x="8" y="18" width="40" height="25" rx="5"/>`,
+    extras: `<ellipse cx="28" cy="30.5" rx="7" ry="6" fill="#fff" opacity=".9"/>
+<path d="M12 23 h3 M41 38 h3" stroke="#fff" stroke-opacity=".75" stroke-width="2.4" stroke-linecap="round" fill="none"/>
+<circle cx="46" cy="40" r="11" fill="#C96D06"/><circle cx="46" cy="38.6" r="11" fill="url(#gy)"/>
+<circle cx="46" cy="38.6" r="7" fill="none" stroke="#fff" stroke-opacity=".75" stroke-width="2"/>
+<path d="M11 22 a4 4 0 0 1 4 -2" stroke="#fff" stroke-opacity=".6" stroke-width="2" stroke-linecap="round" fill="none"/>`,
+  },
+  "id-card": {
+    label: "VNeID",
+    shade: "gb",
+    body: `<rect x="7" y="14" width="50" height="34" rx="7"/>`,
+    extras: `<circle cx="23" cy="27" r="6" fill="#fff" opacity=".95"/>
+<path d="M14 40 c1.8-5.2 5-7.4 9-7.4 s7.2 2.2 9 7.4 Z" fill="#fff" opacity=".95"/>
+<path d="M38 25 h12 M38 32 h12" stroke="#fff" stroke-opacity=".8" stroke-width="3" stroke-linecap="round" fill="none"/>
+<circle cx="47" cy="43" r="9" fill="#0A7653"/><circle cx="47" cy="41.8" r="9" fill="url(#gg)"/>
+<path d="M43 41.8 l3 3 5.5-5.5" stroke="#fff" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+<path d="M10 20 a4 4 0 0 1 4 -3" stroke="#fff" stroke-opacity=".6" stroke-width="2" stroke-linecap="round" fill="none"/>`,
+  },
+  "doc-seal": {
+    label: "Văn bản - Chính sách",
+    shade: "gw",
+    body: `<path d="M16 7 h22 l12 12 v38 a3 3 0 0 1 -3 3 H16 a3 3 0 0 1 -3-3 V10 a3 3 0 0 1 3-3 Z"/>`,
+    extras: `<path d="M38 7 v9 a3 3 0 0 0 3 3 h9" fill="#CBD7EC"/>
+<path d="M21 26 h18 M21 33 h18 M21 40 h11" stroke="#6E86B8" stroke-opacity=".85" stroke-width="2.6" stroke-linecap="round" fill="none"/>
+<circle cx="44" cy="46" r="10" fill="#B21F33"/><circle cx="44" cy="44.8" r="10" fill="url(#gr)"/>
+<circle cx="44" cy="44.8" r="5.6" fill="none" stroke="#fff" stroke-opacity=".8" stroke-width="2"/>
+<path d="M17 12 a3 3 0 0 1 3 -2" stroke="#fff" stroke-opacity=".9" stroke-width="2" stroke-linecap="round" fill="none"/>`,
+  },
   "chat": {
     label: "Zalo OA",
     shade: "gb",
