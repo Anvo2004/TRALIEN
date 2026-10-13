@@ -13,6 +13,19 @@ import Icon from "../components/icon.jsx";
 import API_BASE_URL from "../data/api-config.js";
 import SITE from "../data/site.js";
 import logo from "../static/logo-tralien.png";
+// Icon 3D: file *.png lấy từ bộ icon xã (assets/icons-tien-ich-nhanh), file
+// *.svg là bộ bổ sung dựng cùng ngôn ngữ hình cho các mục bộ kia chưa có.
+import icThonXom from "../static/icons3d/thon-xom.png";
+import icPhone from "../static/icons3d/phone.png";
+import icFeedback from "../static/icons3d/feedback.png";
+import icQr from "../static/icons3d/qr.png";
+import icCitizen from "../static/icons3d/citizen.png";
+import icShare from "../static/icons3d/share.svg";
+import icReferral from "../static/icons3d/referral.svg";
+import icPoints from "../static/icons3d/points.svg";
+import icBell from "../static/icons3d/bell.svg";
+import icPinApp from "../static/icons3d/pin-app.svg";
+import icInfo from "../static/icons3d/info.svg";
 import {
   clearPendingReferral,
   fetchProgram,
@@ -41,11 +54,9 @@ const setLocal = (k, v) => {
 
 // Hàng menu dùng lại .prow/.tile của trang Dịch vụ để đồng bộ với phần còn lại
 // của app, thay vì dựng kiểu riêng cho tab này.
-const MenuRow = ({ icon, color, title, sub, value, onClick, disabled }) => (
+const MenuRow = ({ img, title, sub, value, onClick, disabled }) => (
   <button type="button" className="prow" onClick={onClick} disabled={disabled}>
-    <span className={`tile sm tile-${color}`}>
-      <Icon name={icon} className="i20" />
-    </span>
+    <img src={img} alt="" className="icon3d icon3d--sm" />
     <span className="prow__body">
       <span className="prow__title">{title}</span>
       {sub && <span className="prow__desc">{sub}</span>}
@@ -276,18 +287,14 @@ const CitizenPage = () => {
           </div>
 
           <div className="citizen-perm">
-            <span className="tile sm tile-b">
-              <Icon name="badge" className="i20" />
-            </span>
+            <img src={icCitizen} alt="" className="icon3d icon3d--sm" />
             <div>
               <div className="citizen-perm__name">Tên và ảnh đại diện Zalo</div>
               <div className="citizen-perm__desc">Hiển thị trong hồ sơ công dân của bạn.</div>
             </div>
           </div>
           <div className="citizen-perm">
-            <span className="tile sm tile-p">
-              <Icon name="call" className="i20" />
-            </span>
+            <img src={icPhone} alt="" className="icon3d icon3d--sm" />
             <div>
               <div className="citizen-perm__name">Số điện thoại</div>
               <div className="citizen-perm__desc">
@@ -322,7 +329,7 @@ const CitizenPage = () => {
             <img className="citizen-card__avatar" src={citizen.avatar} alt="" />
           ) : (
             <span className="citizen-card__avatar citizen-card__avatar--empty">
-              <Icon name="groups" className="i24" />
+              <img src={icCitizen} alt="" className="icon3d icon3d--sm" />
             </span>
           )}
           <div className="citizen-card__id">
@@ -353,24 +360,21 @@ const CitizenPage = () => {
       <div className="citizen-sec">Cá nhân</div>
       <div className="listcard">
         <MenuRow
-          icon="holiday_village"
-          color="g"
+          img={icThonXom}
           title="Thôn/Tổ bạn sinh sống"
           sub={citizen.village ? null : "Chọn để hoàn thiện hồ sơ"}
           value={citizen.village ? citizen.village.name : null}
           onClick={openVillages}
         />
         <MenuRow
-          icon="call"
-          color="p"
+          img={icPhone}
           title="Số điện thoại"
           sub={citizen.phone ? null : "Chưa liên kết"}
           value={citizen.phone || null}
           onClick={relink}
         />
         <MenuRow
-          icon="rate_review"
-          color="o"
+          img={icFeedback}
           title="Phản ánh của bạn"
           sub="Xem các phản ánh đã gửi"
           onClick={() => navigate("/phan-anh-cua-toi")}
@@ -380,9 +384,7 @@ const CitizenPage = () => {
       <div className="citizen-sec">Giới thiệu & điểm thưởng</div>
       <div className="listcard">
         <button type="button" className="prow" onClick={copyCode}>
-          <span className="tile sm tile-v">
-            <Icon name="qr_code_2" className="i20" />
-          </span>
+          <img src={icQr} alt="" className="icon3d icon3d--sm" />
           <span className="prow__body">
             <span className="prow__title">Mã giới thiệu của tôi</span>
             <span className="prow__desc">Bạn bè nhập mã này, cả hai cùng được điểm</span>
@@ -391,23 +393,20 @@ const CitizenPage = () => {
           <Icon name="content_copy" className="i18 grey" />
         </button>
         <MenuRow
-          icon="north_east"
-          color="b"
+          img={icShare}
           title="Chia sẻ Mini App"
           sub="Mời người thân cùng sử dụng"
           onClick={share}
         />
         <MenuRow
-          icon="groups"
-          color="c"
+          img={icReferral}
           title={citizen.referredBy ? "Bạn đã nhập mã giới thiệu" : "Nhập mã giới thiệu"}
           sub={citizen.referredBy ? null : `Nhập mã của người giới thiệu, +${referrerPoints} điểm`}
           onClick={() => !citizen.referredBy && setReferralSheet(true)}
           disabled={citizen.referredBy}
         />
         <MenuRow
-          icon="star"
-          color="a"
+          img={icPoints}
           title="Tích điểm & thể lệ"
           sub="Nhật ký điểm, phân hạng, quyền lợi"
           onClick={() => navigate("/tich-diem")}
@@ -418,23 +417,20 @@ const CitizenPage = () => {
       <div className="listcard">
         {oaId && (
           <MenuRow
-            icon="campaign"
-            color="b"
+            img={icBell}
             title={citizen.followedOA ? "Đã quan tâm Zalo OA" : "Quan tâm Zalo OA"}
             sub={citizen.followedOA ? "Bấm để bỏ quan tâm" : "Nhận thông báo mới từ xã"}
             onClick={toggleFollow}
           />
         )}
         <MenuRow
-          icon="home"
-          color="n"
+          img={icPinApp}
           title="Ghim ứng dụng ra màn hình"
           sub="Thêm lối tắt vào màn hình chính"
           onClick={pin}
         />
         <MenuRow
-          icon="description"
-          color="g"
+          img={icInfo}
           title="Thông tin ứng dụng"
           sub="Phiên bản, nguồn tư liệu"
           onClick={() => navigate("/thong-tin-ung-dung")}

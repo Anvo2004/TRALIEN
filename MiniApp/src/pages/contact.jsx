@@ -2,6 +2,16 @@ import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Page, Header } from "zmp-ui";
 import Icon from "../components/icon.jsx";
+// Icon 3D: *.png từ bộ icon xã, *.svg là bộ bổ sung cùng ngôn ngữ hình.
+import icLocation from "../static/icons3d/location.svg";
+import icGlobe from "../static/icons3d/globe.svg";
+import icMail from "../static/icons3d/mail.svg";
+import icClock from "../static/icons3d/clock.svg";
+import icShield from "../static/icons3d/shield.svg";
+import icPhone from "../static/icons3d/phone.png";
+import icChat from "../static/icons3d/chat.svg";
+import icGopY from "../static/icons3d/gopy.png";
+import icAi from "../static/icons3d/ai.png";
 import API_BASE_URL from "../data/api-config.js";
 import { openExternal } from "../utils/open-external.js";
 import logo from "../static/logo-tralien.png";
@@ -99,9 +109,7 @@ const ContactPage = () => {
         </div>
 
         <div className="contact-card__row">
-          <span className="tile xs tile-p">
-            <Icon name="location_on" className="i18" />
-          </span>
+          <img src={icLocation} alt="" className="icon3d icon3d--xs" />
           <span className="contact-card__body">
             <div className="contact-card__key">Địa chỉ</div>
             <div className="contact-card__value">{c.address}</div>
@@ -109,9 +117,7 @@ const ContactPage = () => {
         </div>
 
         <div className="contact-card__row">
-          <span className="tile xs tile-b">
-            <Icon name="language" className="i18" />
-          </span>
+          <img src={icGlobe} alt="" className="icon3d icon3d--xs" />
           <span className="contact-card__body">
             <div className="contact-card__key">Website</div>
             <button
@@ -126,9 +132,7 @@ const ContactPage = () => {
         </div>
 
         <div className="contact-card__row">
-          <span className="tile xs tile-g">
-            <Icon name="mail" className="i18" />
-          </span>
+          <img src={icMail} alt="" className="icon3d icon3d--xs" />
           <span className="contact-card__body">
             <div className="contact-card__key">Email</div>
             <div className="contact-card__value">{c.email}</div>
@@ -137,9 +141,7 @@ const ContactPage = () => {
         </div>
 
         <div className="contact-card__row">
-          <span className="tile xs tile-a">
-            <Icon name="schedule" className="i18" />
-          </span>
+          <img src={icClock} alt="" className="icon3d icon3d--xs" />
           <span className="contact-card__body">
             <div className="contact-card__key">Giờ làm việc</div>
             <div className="contact-card__value contact-card__value--pre">
@@ -161,9 +163,7 @@ const ContactPage = () => {
       {c.policeStation?.address && (
         <div className="listcard">
           <div className="contact-card__row" style={{ paddingTop: 4 }}>
-            <span className="tile xs tile-b">
-              <Icon name="local_police" className="i18" />
-            </span>
+            <img src={icShield} alt="" className="icon3d icon3d--xs" />
             <span className="contact-card__body">
               <div className="contact-card__key">
                 {c.policeStation.name || "Công an xã"}
@@ -183,9 +183,7 @@ const ContactPage = () => {
               }}
               href={`tel:${c.policeStation.phone}`}
             >
-              <span className="tile xs tile-p">
-                <Icon name="call" className="i18" />
-              </span>
+              <img src={icPhone} alt="" className="icon3d icon3d--xs" />
               <span className="contact-card__body">
                 <div className="contact-card__key">Điện thoại trực ban</div>
                 <div className="contact-card__value">
@@ -205,9 +203,7 @@ const ContactPage = () => {
       </div>
       <div className="service-list">
         <div className="service-list__item">
-          <span className="tile tile-b">
-            <Icon name="forum" className="i21" />
-          </span>
+          <img src={icChat} alt="" className="icon3d icon3d--md" />
           <h3 className="service-list__title">Zalo OA</h3>
           <p className="service-list__desc">Chat trực tiếp với cán bộ xã</p>
         </div>
@@ -216,9 +212,7 @@ const ContactPage = () => {
           className="service-list__item"
           onClick={() => navigate("/phan-anh")}
         >
-          <span className="tile tile-o">
-            <Icon name="campaign" className="i21" />
-          </span>
+          <img src={icGopY} alt="" className="icon3d icon3d--md" />
           <h3 className="service-list__title">Gửi phản ánh</h3>
           <p className="service-list__desc">Kèm ảnh, vị trí hiện tại</p>
         </button>
@@ -227,9 +221,7 @@ const ContactPage = () => {
           className="service-list__item"
           onClick={() => navigate("/tro-ly-so")}
         >
-          <span className="tile tile-v">
-            <Icon name="smart_toy" className="i21" />
-          </span>
+          <img src={icAi} alt="" className="icon3d icon3d--md" />
           <h3 className="service-list__title">Hỏi đáp AI</h3>
           <p className="service-list__desc">Giải đáp thủ tục 24/7</p>
         </button>
