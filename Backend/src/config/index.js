@@ -33,6 +33,10 @@ module.exports = {
 
   corsOrigin: process.env.CORS_ORIGIN || "*",
 
+  // Tên miền ngoài .gov.vn được phép làm liên kết trong MiniApp (chủ thể là CQNN, VD báo đài
+  // địa phương) — phân tách bằng dấu phẩy. Để trống = chỉ cho .gov.vn. Xem utils/linkPolicy.js.
+  allowedLinkDomains: process.env.ALLOWED_LINK_DOMAINS || "",
+
   // URL công khai của Backend — để tạo LINK TUYỆT ĐỐI cho file gửi qua Zalo OA
   // (Zalo cần URL đầy đủ https://...; link tương đối bị bọc thành zalo.me/nf).
   publicUrl: process.env.PUBLIC_URL || "https://tralienapi.dxvtech.vn",

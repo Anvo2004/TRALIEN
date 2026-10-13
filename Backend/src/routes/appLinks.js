@@ -1,6 +1,10 @@
 const express = require("express");
 const AppLink = require("../models/AppLink");
 const { requireRole } = require("../middleware/auth");
+const { isAllowedExternalUrl } = require("../utils/linkPolicy");
+
+const HREF_ERROR =
+  "Liên kết ngoài phải là tên miền .gov.vn (quy định kiểm duyệt Zalo Mini App cho Cơ quan Nhà nước). Tên miền CQNN khác cần thêm vào ALLOWED_LINK_DOMAINS.";
 
 const router = express.Router();
 
@@ -29,6 +33,9 @@ router.post("/", requireRole(...WRITE_ROLES), async (req, res) => {
   if (!SECTIONS.includes(section)) {
     return res.status(400).json({ error: "section không hợp lệ" });
   }
+  if (href && !isAllowedExternalUrl(href)) {
+    return res.status(400).json({ error: HREF_ERROR });
+  }
 
   const item = await AppLink.create({
     section,
@@ -53,6 +60,9 @@ router.put("/:id", requireRole(...WRITE_ROLES), async (req, res) => {
 
   if (section && !SECTIONS.includes(section)) {
     return res.status(400).json({ error: "section không hợp lệ" });
+  }
+  if (href && !isAllowedExternalUrl(href)) {
+    return res.status(400).json({ error: HREF_ERROR });
   }
 
   const item = await AppLink.findByIdAndUpdate(

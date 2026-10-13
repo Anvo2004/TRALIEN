@@ -73,7 +73,7 @@ app.get("/dieu-khoan-su-dung", (req, res) => res.send(`
 </head>
 <body>
   <h1>Điều khoản sử dụng &amp; Chính sách quyền riêng tư</h1>
-  <p class="updated">Ứng dụng "Trà Liên Số" — Cập nhật lần cuối: 18/09/2026</p>
+  <p class="updated">Ứng dụng "Trà Liên Số" — Cập nhật lần cuối: 14/10/2026</p>
 
   <h2>1. Đơn vị vận hành</h2>
   <p>Zalo Mini App "Trà Liên Số" do <strong>UBND xã Trà Liên, Thành phố Đà Nẵng</strong> vận
@@ -84,9 +84,14 @@ app.get("/dieu-khoan-su-dung", (req, res) => res.send(`
   <ul>
     <li>Thông tin Zalo cơ bản (mã định danh Zalo, tên hiển thị, ảnh đại diện) khi bạn mở
       ứng dụng hoặc đăng nhập qua Zalo.</li>
-    <li>Số điện thoại liên hệ — chỉ khi bạn chủ động nhập để gửi phản ánh - kiến nghị.</li>
-    <li>Vị trí (GPS) — chỉ khi bạn chủ động bấm "Lấy vị trí tự động" ở form phản ánh.</li>
-    <li>Hình ảnh đính kèm phản ánh (nếu có).</li>
+    <li>Số điện thoại — khi bạn chủ động nhập ở form phản ánh, hoặc khi bạn đồng ý chia sẻ số
+      điện thoại Zalo lúc liên kết tài khoản ở tab "Công dân".</li>
+    <li>Vị trí (GPS) — chỉ khi bạn chủ động bấm "Lấy vị trí tự động" ở form phản ánh và đồng ý
+      chia sẻ vị trí.</li>
+    <li>Thôn/Tổ nơi bạn sinh sống (bạn tự chọn), mã giới thiệu và lịch sử điểm tích lũy của
+      chương trình "Công dân số".</li>
+    <li>Hình ảnh đính kèm phản ánh (nếu có) — do bạn chủ động chụp hoặc chọn từ thư viện ảnh của
+      thiết bị.</li>
     <li>Nội dung phản ánh, kiến nghị, mã hồ sơ bạn tự nhập để tra cứu.</li>
   </ul>
 
@@ -94,21 +99,48 @@ app.get("/dieu-khoan-su-dung", (req, res) => res.send(`
   <ul>
     <li>Tiếp nhận, xử lý và phản hồi phản ánh - kiến nghị của công dân đến UBND xã.</li>
     <li>Gửi thông báo, tin tức từ chính quyền xã qua Zalo OA cho người dùng đã quan tâm.</li>
+    <li>Quản lý hồ sơ "Công dân số": ghi nhận điểm tích lũy, xếp hạng và ghi nhận đóng góp của
+      người dân theo thể lệ công bố trong ứng dụng.</li>
     <li>Tra cứu tình trạng hồ sơ thủ tục hành chính dựa trên mã hồ sơ do người dùng cung
       cấp.</li>
   </ul>
+
+  <p>Ứng dụng không thu thập danh bạ, tin nhắn, dữ liệu tài chính hay thông tin nào khác ngoài
+  danh sách trên. Điểm "Công dân số" chỉ dùng để ghi nhận và vinh danh, không quy đổi thành tiền.</p>
 
   <h2>4. Chia sẻ dữ liệu</h2>
   <p>Chúng tôi không chia sẻ dữ liệu cá nhân của bạn cho bên thứ ba ngoài mục đích xử lý
   hành chính nêu trên, và chỉ khi cần thiết chuyển tiếp đến các hệ thống chính thức của
   Thành phố Đà Nẵng (Cổng góp ý 1022, Cổng dịch vụ công) để xử lý đúng thẩm quyền.</p>
 
-  <h2>5. Quyền của bạn</h2>
-  <p>Bạn có quyền rút lại sự đồng ý và/hoặc yêu cầu xoá dữ liệu cá nhân đã cung cấp bất kỳ
-  lúc nào bằng cách liên hệ theo thông tin bên dưới. UBND xã sẽ tiếp nhận và xử lý yêu cầu
-  trong thời gian sớm nhất, thông thường không quá 30 ngày làm việc.</p>
+  <h2>5. Liên kết đến trang bên ngoài</h2>
+  <p>Một số tiện ích mở trang của cơ quan nhà nước khác ngay trong ứng dụng, như Cổng Dịch vụ
+  công quốc gia, Bản đồ số thành phố Đà Nẵng, Cổng dịch vụ dữ liệu thành phố, VNeID, trợ lý số
+  DaNang AI của Tổng đài 1022. Ứng dụng không gửi dữ liệu cá nhân của bạn sang các trang này;
+  thông tin bạn nhập trực tiếp trên các trang đó thuộc phạm vi điều khoản và chính sách riêng
+  của đơn vị quản lý trang.</p>
 
-  <h2>6. Liên hệ</h2>
+  <h2>6. Lưu trữ và bảo mật</h2>
+  <ul>
+    <li>Dữ liệu được lưu trên hệ thống máy chủ do đơn vị vận hành quản lý, chỉ cán bộ được phân
+      quyền mới truy cập để xử lý công việc.</li>
+    <li>Phản ánh - kiến nghị được lưu theo thời hạn lưu trữ hồ sơ hành chính; hồ sơ "Công dân
+      số" được lưu cho tới khi bạn yêu cầu xoá.</li>
+    <li>Chúng tôi không bán, cho thuê hay dùng dữ liệu của bạn cho mục đích quảng cáo.</li>
+  </ul>
+
+  <h2>7. Quyền của bạn</h2>
+  <p>Bạn có quyền xem, yêu cầu chỉnh sửa, rút lại sự đồng ý và/hoặc yêu cầu xoá dữ liệu cá nhân
+  đã cung cấp bất kỳ lúc nào. Bạn có thể thu hồi quyền đã cấp cho ứng dụng (thông tin cá nhân,
+  số điện thoại, vị trí) trong phần cài đặt Mini App của Zalo, hoặc liên hệ theo thông tin bên
+  dưới. UBND xã sẽ tiếp nhận và xử lý yêu cầu trong thời gian sớm nhất, thông thường không quá
+  30 ngày làm việc.</p>
+
+  <h2>8. Thay đổi điều khoản</h2>
+  <p>Điều khoản có thể được cập nhật khi ứng dụng bổ sung tính năng. Phiên bản mới nhất luôn
+  được công bố tại trang này kèm ngày cập nhật.</p>
+
+  <h2>9. Liên hệ</h2>
   <div class="contact-box">
     <p><strong>UBND xã Trà Liên</strong></p>
     <p>Địa chỉ: Thôn Phương Đông, xã Trà Liên, TP Đà Nẵng</p>

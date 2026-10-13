@@ -17,7 +17,6 @@ import LichCupDienPage from "./pages/lich-cup-dien.jsx";
 import LichYTePage from "./pages/lich-y-te.jsx";
 import ThongBaoPage from "./pages/thong-bao.jsx";
 import PhongChongThienTaiPage from "./pages/phong-chong-thien-tai.jsx";
-import BanDoMuaNgapPage from "./pages/ban-do-mua-ngap.jsx";
 import PcttKyNangPage from "./pages/pctt-ky-nang.jsx";
 import PcttKyNangChiTietPage from "./pages/pctt-ky-nang-chi-tiet.jsx";
 import DanSoPage from "./pages/dan-so.jsx";
@@ -64,7 +63,6 @@ const MyApp = () => {
             <Route path="/lich-y-te" element={<LichYTePage />} />
             <Route path="/thong-bao" element={<ThongBaoPage />} />
             <Route path="/phong-chong-thien-tai" element={<PhongChongThienTaiPage />} />
-            <Route path="/ban-do-mua-ngap" element={<BanDoMuaNgapPage />} />
             <Route path="/pctt-ky-nang" element={<PcttKyNangPage />} />
             <Route path="/pctt-ky-nang/:id" element={<PcttKyNangChiTietPage />} />
             <Route path="/dan-so" element={<DanSoPage />} />

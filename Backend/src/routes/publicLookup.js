@@ -1,5 +1,6 @@
 const express = require("express");
 const config = require("../config");
+const { isAllowedExternalUrl } = require("../utils/linkPolicy");
 const catDienService = require("../services/catDienService");
 const vanBanService = require("../services/vanBanTraLienService");
 const hoSoService = require("../services/hoSoService");
@@ -155,7 +156,8 @@ router.get("/app-links", async (req, res) => {
   const filter = {};
   if (section) filter.section = section;
   const items = await AppLink.find(filter).sort({ order: 1, label: 1 }).lean();
-  res.json({ items });
+  // Chốt chặn thứ 2: dù dữ liệu cũ còn liên kết không hợp lệ, MiniApp cũng không nhận được.
+  res.json({ items: items.filter((it) => !it.href || isAllowedExternalUrl(it.href)) });
 });
 
 // ===== Dân số / Du lịch / Văn hóa (singleton content, sửa qua admin route) =====
