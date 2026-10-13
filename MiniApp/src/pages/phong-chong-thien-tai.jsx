@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Page, Header, Box } from "zmp-ui";
 import PCTT_ITEMS from "../data/pctt.js";
 import { openExternal } from "../utils/open-external.js";
+import HeroIcon from "../components/ns/hero-icon.jsx";
 
 const PhongChongThienTaiPage = () => {
   const navigate = useNavigate();
@@ -23,7 +24,7 @@ const PhongChongThienTaiPage = () => {
       <Header title="Phòng chống thiên tai" />
 
       <div className="lookup-hero">
-        <span className="lookup-hero__icon">🌪️</span>
+        <span className="lookup-hero__icon"><HeroIcon e="🌪️" /></span>
         <div className="lookup-hero__title">Phòng chống thiên tai</div>
         <div className="lookup-hero__desc">
           Thông tin, kỹ năng và cảnh báo phòng chống thiên tai cho người dân xã Trà Liên

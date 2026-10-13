@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import { Page, Header, Box } from "zmp-ui";
 import IDEAS, { IDEA_FIELDS, IDEA_STATS } from "../data/ideas.js";
+import HeroIcon from "../components/ns/hero-icon.jsx";
 
 const IdeasPage = () => {
   const [tab, setTab] = useState("view");
@@ -26,7 +27,7 @@ const IdeasPage = () => {
       <Header title="Hiến kế" />
 
       <div className="ideas-hero">
-        <span className="ideas-hero__icon">💡</span>
+        <span className="ideas-hero__icon"><HeroIcon e="💡" /></span>
         <div className="ideas-hero__title">Người dân hiến kế</div>
         <div className="ideas-hero__desc">
           Đóng góp ý kiến, sáng kiến xây dựng xã Trà Liên ngày càng văn

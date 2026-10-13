@@ -2,6 +2,7 @@ import React from "react";
 import { useNavigate } from "react-router-dom";
 import { Page, Header, Box } from "zmp-ui";
 import PCTT_SKILLS from "../data/pctt-skills.js";
+import HeroIcon from "../components/ns/hero-icon.jsx";
 
 const PcttKyNangPage = () => {
   const navigate = useNavigate();
@@ -11,7 +12,7 @@ const PcttKyNangPage = () => {
       <Header title="Kỹ năng PCTT" />
 
       <div className="lookup-hero">
-        <span className="lookup-hero__icon">🎓</span>
+        <span className="lookup-hero__icon"><HeroIcon e="🎓" /></span>
         <div className="lookup-hero__title">Kỹ năng PCTT</div>
         <div className="lookup-hero__desc">
           Infographic và video hướng dẫn kỹ năng phòng chống thiên tai theo từng loại hình
@@ -27,7 +28,7 @@ const PcttKyNangPage = () => {
               className="quick-links__item"
               onClick={() => navigate(`/pctt-ky-nang/${skill.id}`)}
             >
-              <span className="quick-links__icon">{skill.icon}</span>
+              <span className="quick-links__icon"><HeroIcon e={skill.icon} /></span>
               <span className="quick-links__label">{skill.label}</span>
             </button>
           ))}

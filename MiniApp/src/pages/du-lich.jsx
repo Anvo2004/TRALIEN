@@ -3,6 +3,7 @@ import { Page, Header, Box } from "zmp-ui";
 import API_BASE_URL from "../data/api-config.js";
 import CardMedia from "../components/card-media.jsx";
 import DetailSheet from "../components/detail-sheet.jsx";
+import HeroIcon from "../components/ns/hero-icon.jsx";
 
 const DuLichPage = () => {
   const [duLich, setDuLich] = useState(null);
@@ -35,7 +36,7 @@ const DuLichPage = () => {
       <Header title="Du lịch - Danh thắng" />
 
       <div className="tourism-hero">
-        <span className="tourism-hero__icon">⛰️</span>
+        <span className="tourism-hero__icon"><HeroIcon e="⛰️" /></span>
         <div className="tourism-hero__title">{DU_LICH.title}</div>
         <div className="tourism-hero__desc">{DU_LICH.subtitle}</div>
       </div>

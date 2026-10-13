@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 import { Page, Header, Box } from "zmp-ui";
 import API_BASE_URL from "../data/api-config.js";
+import HeroIcon from "../components/ns/hero-icon.jsx";
 
 function formatDate(iso) {
   if (!iso) return "—";
@@ -73,7 +74,7 @@ const TraCuuHoSoPage = () => {
       <Header title="Tra cứu hồ sơ TTHC" />
 
       <div className="lookup-hero">
-        <span className="lookup-hero__icon">📊</span>
+        <span className="lookup-hero__icon"><HeroIcon e="📊" /></span>
         <div className="lookup-hero__title">Tra cứu hồ sơ TTHC</div>
         <div className="lookup-hero__desc">
           Kiểm tra tiến độ xử lý hồ sơ thủ tục hành chính đã nộp tại xã Trà Liên

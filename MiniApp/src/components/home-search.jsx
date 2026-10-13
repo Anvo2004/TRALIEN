@@ -119,18 +119,26 @@ const HomeSearch = () => {
   }
 
   return (
-    <div className="home-hero__search" ref={boxRef}>
-      <div className="home-hero__search-input">
-        <Icon name="search" className="i18 mint" />
+    <div className="ns-search" ref={boxRef}>
+      <label className="ns-glass ns-search__box">
+        <svg className="ns-sv" viewBox="0 0 24 24" width="20" height="20" aria-hidden="true">
+          <circle cx="10.5" cy="10.5" r="6.5" />
+          <path d="M15.5 15.5L20 20" />
+        </svg>
         <input
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onFocus={() => setFocused(true)}
           placeholder="Tìm dịch vụ, thủ tục, thông báo…"
         />
-      </div>
-      <button type="button" className="home-hero__qr" aria-label="Quét mã QR" onClick={handleScanQR}>
-        <Icon name="qr_code_scanner" className="i20" />
+      </label>
+      <button type="button" className="ns-qrb" aria-label="Quét mã QR" onClick={handleScanQR}>
+        <svg className="ns-sv" viewBox="0 0 24 24" width="24" height="24" aria-hidden="true">
+          <rect x="4" y="4" width="6.5" height="6.5" rx="1.3" />
+          <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.3" />
+          <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.3" />
+          <path d="M14 14h2.5v2.5H14zM19.5 14v.01M14 19.5h2.5M19.5 17v3.5" />
+        </svg>
       </button>
 
       {focused && q && (

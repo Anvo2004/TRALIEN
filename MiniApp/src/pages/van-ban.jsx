@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { Page, Header, Box } from "zmp-ui";
 import API_BASE_URL from "../data/api-config.js";
 import { openExternal } from "../utils/open-external.js";
+import HeroIcon from "../components/ns/hero-icon.jsx";
 
 const VAN_BAN_CATEGORIES = [
   { key: "all", label: "Tất cả" },
@@ -53,7 +54,7 @@ const VanBanPage = () => {
       <Header title="Văn bản - Chính sách" />
 
       <div className="lookup-hero">
-        <span className="lookup-hero__icon">📜</span>
+        <span className="lookup-hero__icon"><HeroIcon e="📜" /></span>
         <div className="lookup-hero__title">Văn bản - Chính sách</div>
         <div className="lookup-hero__desc">
           Tra cứu văn bản, quy định, chính sách mới ban hành của xã Trà Liên

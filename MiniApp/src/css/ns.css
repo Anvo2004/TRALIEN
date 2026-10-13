@@ -1,0 +1,268 @@
+/* =====================================================================
+   Giao diện "Trà Liên Số" — port từ bản thiết kế
+   docs/TraLienSo-thiet-ke.zip (design/Main.dc.html, design/System.dc.html).
+   Mọi lớp đều có tiền tố `ns-` để KHÔNG đụng app.scss của các trang khác.
+   Cảnh lấy từ logo xã: núi rừng xanh, thác nước, nhà truyền thống trên cột,
+   bông lúa vàng. Màu: Rừng sâu #0C3B2A · Xanh rừng #1E7A4C · Xanh thác #29A8DE ·
+   Nâu gỗ #8A4A1E · Vàng lúa #EDA91C · Tím số #5A3FD0 · Nền #F2F7EF.
+   ===================================================================== */
+.ns-root{background:#F2F7EF;min-height:100vh;font-family:'Be Vietnam Pro',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:#12281D;-webkit-font-smoothing:antialiased}
+.ns-root,.ns-root *{box-sizing:border-box}
+.ns-root h1,.ns-root h2,.ns-root h3,.ns-root p{font-family:inherit}
+.ns-root button{font:inherit;color:inherit;cursor:pointer;border:0;background:none;padding:0;text-align:left;-webkit-tap-highlight-color:transparent}
+.ns-sv{fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ns-sv .ns-t{fill:currentColor;fill-opacity:.2}
+.ns-root .ns-scr{position:relative;min-height:100vh;overflow-x:hidden;animation:ns-scrIn .5s cubic-bezier(.2,.8,.2,1) both}
+.ns-root .ns-scr::-webkit-scrollbar{display:none}
+@keyframes ns-scrIn{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+@keyframes ns-rise{from{opacity:0;transform:translateY(14px) scale(.94)}to{opacity:1;transform:none}}
+@keyframes ns-drift{from{transform:translateX(-14px)}to{transform:translateX(14px)}}
+@keyframes ns-flow{to{stroke-dashoffset:-22}}
+@keyframes ns-glow{0%,100%{opacity:.6;transform:scale(1)}50%{opacity:1;transform:scale(1.14)}}
+@keyframes ns-twinkle{0%,100%{opacity:.1}50%{opacity:1}}
+@keyframes ns-shine{from{transform:translateX(-140%) skewX(-18deg)}to{transform:translateX(420%) skewX(-18deg)}}
+@keyframes ns-ping{0%{transform:scale(1);opacity:.55}100%{transform:scale(2.1);opacity:0}}
+@keyframes ns-pingbox{0%{transform:scale(1);opacity:.7}100%{transform:scale(1.12,1.35);opacity:0}}
+@keyframes ns-draw{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+.ns-root .ns-rs{animation:ns-rise .55s cubic-bezier(.2,.8,.2,1) both}
+.ns-root .ns-st>:nth-child(1){animation-delay:.02s}
+.ns-root .ns-st>:nth-child(2){animation-delay:.06s}
+.ns-root .ns-st>:nth-child(3){animation-delay:.10s}
+.ns-root .ns-st>:nth-child(4){animation-delay:.14s}
+.ns-root .ns-st>:nth-child(5){animation-delay:.08s}
+.ns-root .ns-st>:nth-child(6){animation-delay:.12s}
+.ns-root .ns-st>:nth-child(7){animation-delay:.16s}
+.ns-root .ns-st>:nth-child(8){animation-delay:.20s}
+.ns-root .ns-st>:nth-child(9){animation-delay:.14s}
+.ns-root .ns-st>:nth-child(10){animation-delay:.18s}
+.ns-root .ns-st>:nth-child(11){animation-delay:.22s}
+.ns-root .ns-st>:nth-child(12){animation-delay:.26s}
+.ns-root .ns-tn-teal{--c:#17683F;--b:#DFF1E5}
+.ns-root .ns-tn-blue{--c:#0C7C93;--b:#DCF1FA}
+.ns-root .ns-tn-gold{--c:#8F5800;--b:#FFEFC9}
+.ns-root .ns-tn-coral{--c:#A5412A;--b:#FCE6DF}
+.ns-root .ns-tn-green{--c:#8A4A1E;--b:#F6E7D6}
+.ns-root .ns-tn-violet{--c:#5A3FD0;--b:#ECE8FD}
+.ns-root .ns-ic{width:54px;height:54px;border-radius:19px;background:var(--b);color:var(--c);display:grid;place-items:center;box-shadow:inset 0 1px 0 rgba(255,255,255,.75),0 8px 16px -10px var(--c)}
+.ns-root .ns-ic.ns-sm{width:46px;height:46px;border-radius:16px}
+.ns-root .ns-ic.ns-xs{width:32px;height:32px;border-radius:11px;box-shadow:none}
+.ns-root .ns-ic .ns-sv{transition:transform .4s cubic-bezier(.3,1.6,.5,1)}
+.ns-root .ns-tile:hover .ns-ic .ns-sv,.ns-root .ns-svc:hover .ns-ic .ns-sv,.ns-root .ns-row:hover .ns-ic .ns-sv{transform:translateY(-1px) scale(1.1) rotate(-4deg)}
+.ns-root .ns-tile:active .ns-ic .ns-sv,.ns-root .ns-svc:active .ns-ic .ns-sv{transform:scale(.9)}
+.ns-root .ns-tile{display:flex;flex-direction:column;align-items:center;gap:8px;padding:4px 0;min-height:44px;transition:transform .3s cubic-bezier(.3,1.6,.5,1)}
+.ns-root .ns-tile:active{transform:scale(.93)}
+.ns-root .ns-tile .ns-lb{font-size:12px;font-weight:600;line-height:1.25;text-align:center;color:#12281D}
+.ns-root .ns-more{display:grid;grid-template-rows:0fr;transition:grid-template-rows .55s cubic-bezier(.2,.8,.2,1)}
+.ns-root .ns-more.ns-open{grid-template-rows:1fr}
+.ns-root .ns-more>.ns-in{overflow:hidden;min-height:0;visibility:hidden;transition:visibility 0s .55s}
+.ns-root .ns-more.ns-open>.ns-in{visibility:visible;transition-delay:0s}
+.ns-root .ns-more .ns-tile{opacity:0;transform:translateY(12px) scale(.9);transition:opacity .35s,transform .5s cubic-bezier(.3,1.4,.5,1)}
+.ns-root .ns-more.ns-open .ns-tile{opacity:1;transform:none}
+.ns-root .ns-more.ns-open .ns-tile:nth-child(1){transition-delay:.05s}
+.ns-root .ns-more.ns-open .ns-tile:nth-child(2){transition-delay:.09s}
+.ns-root .ns-more.ns-open .ns-tile:nth-child(3){transition-delay:.13s}
+.ns-root .ns-more.ns-open .ns-tile:nth-child(4){transition-delay:.17s}
+.ns-root .ns-more.ns-open .ns-tile:nth-child(5){transition-delay:.11s}
+.ns-root .ns-more.ns-open .ns-tile:nth-child(6){transition-delay:.15s}
+.ns-root .ns-more.ns-open .ns-tile:nth-child(7){transition-delay:.19s}
+.ns-root .ns-more.ns-open .ns-tile:nth-child(8){transition-delay:.23s}
+.ns-root .ns-more.ns-open .ns-tile:nth-child(9){transition-delay:.17s}
+.ns-root .ns-more.ns-open .ns-tile:nth-child(10){transition-delay:.21s}
+.ns-root .ns-more.ns-open .ns-tile:nth-child(11){transition-delay:.25s}
+.ns-root .ns-more.ns-open .ns-tile:nth-child(12){transition-delay:.29s}
+.ns-root .ns-more.ns-open .ns-tile:active{transform:scale(.93);transition-delay:0s}
+.ns-root .ns-chip{min-height:44px;padding:0 14px;border-radius:99px;background:#fff;color:#1E7A4C;font-weight:700;font-size:13px;display:inline-flex;align-items:center;gap:6px;box-shadow:0 6px 16px -10px rgba(12,59,42,.5);transition:transform .3s cubic-bezier(.3,1.6,.5,1)}
+.ns-root .ns-chip:active{transform:scale(.94)}
+.ns-root .ns-chev{transition:transform .45s cubic-bezier(.3,1.4,.5,1)}
+.ns-root .ns-card{background:#fff;border-radius:26px;box-shadow:0 20px 40px -26px rgba(12,59,42,.45),0 1px 4px rgba(12,59,42,.05)}
+.ns-root .ns-hero{position:relative;overflow:hidden}
+.ns-root .ns-dots{position:absolute;left:0;top:0;right:0;bottom:0;background-image:radial-gradient(rgba(255,255,255,.2) 1px,transparent 1.3px);background-size:18px 18px;-webkit-mask-image:linear-gradient(180deg,#000,transparent 75%);mask-image:linear-gradient(180deg,#000,transparent 75%)}
+.ns-root .ns-sun{position:absolute;right:38px;top:104px;width:54px;height:54px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#FFE08A,#EDA91C 60%,#E59A12);box-shadow:0 0 50px 14px rgba(237,169,28,.35);animation:ns-glow 5s ease-in-out infinite}
+.ns-root .ns-nd{position:absolute;width:5px;height:5px;border-radius:50%;background:#8AD6F7;box-shadow:0 0 10px #8AD6F7;animation:ns-twinkle 3.2s ease-in-out infinite}
+.ns-root .ns-scene{position:absolute;left:-20px;bottom:-1px;width:430px}
+.ns-root .ns-r1{animation:ns-drift 9s ease-in-out infinite alternate}
+.ns-root .ns-r2{animation:ns-drift 6.5s ease-in-out infinite alternate-reverse}
+.ns-root .ns-rv{stroke-dasharray:2 9;animation:ns-flow 1.1s linear infinite}
+.ns-root .ns-glass{background:rgba(255,255,255,.11);border:1px solid rgba(255,255,255,.2);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+.ns-root .ns-live{width:8px;height:8px;border-radius:50%;background:#3DDC97;position:relative;display:inline-block}
+.ns-root .ns-live::after{content:"";position:absolute;left:0;top:0;right:0;bottom:0;border-radius:50%;background:#3DDC97;animation:ns-ping 2s ease-out infinite}
+.ns-root .ns-qrb{width:50px;height:50px;border-radius:18px;background:#EDA91C;color:#3A2600;display:grid;place-items:center;box-shadow:0 10px 22px -8px rgba(237,169,28,.7);transition:transform .3s cubic-bezier(.3,1.6,.5,1)}
+.ns-root .ns-qrb:active{transform:scale(.9)}
+.ns-root .ns-stat{display:flex;flex-direction:column;align-items:center;gap:4px;border-left:1px solid #DDE9DC}
+.ns-root .ns-stat:first-child{border-left:0}
+.ns-root .ns-num{font-family:'Space Grotesk',sans-serif;font-size:21px;font-weight:700;letter-spacing:-.02em;color:#12281D}
+.ns-root .ns-cap{font-size:11.5px;font-weight:500;color:#55705F}
+.ns-root .ns-banner{position:relative;overflow:hidden;display:flex;align-items:center;gap:14px;width:100%;padding:16px;border-radius:24px;background:linear-gradient(120deg,#0C3B2A,#1E7A4C 60%,#2E9E66);color:#fff;transition:transform .3s cubic-bezier(.3,1.6,.5,1)}
+.ns-root .ns-banner:active{transform:scale(.97)}
+.ns-root .ns-banner .ns-sh{position:absolute;top:0;bottom:0;left:0;width:60px;background:linear-gradient(90deg,transparent,rgba(255,255,255,.28),transparent);animation:ns-shine 3.8s ease-in-out infinite}
+.ns-root .ns-news{display:flex;gap:12px;overflow-x:auto;padding:0 16px 8px;scroll-snap-type:x mandatory;scrollbar-width:none}
+.ns-root .ns-news::-webkit-scrollbar{display:none}
+.ns-root .ns-nc{flex:0 0 262px;scroll-snap-align:start;background:#fff;border-radius:24px;overflow:hidden;box-shadow:0 20px 36px -26px rgba(12,59,42,.5);transition:transform .35s cubic-bezier(.3,1.4,.5,1)}
+.ns-root .ns-nc:hover{transform:translateY(-4px)}
+.ns-root .ns-tag{position:absolute;left:12px;bottom:12px;padding:6px 11px;border-radius:99px;font-size:11.5px;font-weight:700;color:#fff}
+.ns-root .ns-oa{display:flex;align-items:center;gap:14px;padding:16px;border-radius:26px;background:#0A2530;color:#fff}
+.ns-root .ns-oab{min-height:44px;padding:0 18px;border-radius:99px;font-weight:700;font-size:13.5px;transition:transform .3s cubic-bezier(.3,1.6,.5,1),background .3s,color .3s}
+.ns-root .ns-oab:active{transform:scale(.93)}
+.ns-bar{position:fixed;left:14px;right:14px;bottom:calc(14px + var(--zaui-safe-area-inset-bottom,0px));max-width:420px;margin:0 auto;height:70px;border-radius:27px;background:rgba(255,255,255,.88);-webkit-backdrop-filter:blur(18px) saturate(1.5);backdrop-filter:blur(18px) saturate(1.5);border:1px solid rgba(255,255,255,.95);box-shadow:0 20px 40px -14px rgba(12,59,42,.5),0 2px 6px rgba(12,59,42,.08);padding:7px;z-index:10}
+.ns-tabs{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));height:100%}
+.ns-ind{position:absolute;left:0;top:0;bottom:0;width:33.3333%;transition:transform .6s cubic-bezier(.3,1.35,.45,1)}
+.ns-ind i{position:absolute;left:0;top:0;right:0;bottom:0;border-radius:21px;background:linear-gradient(160deg,#14603C,#2E9E66);box-shadow:0 10px 20px -8px rgba(30,122,76,.75)}
+.ns-ind i::after{content:"";position:absolute;top:-4px;left:50%;width:20px;height:4px;margin-left:-10px;border-radius:4px;background:#EDA91C;box-shadow:0 0 10px rgba(237,169,28,.8)}
+.ns-tab{position:relative;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;color:#55705F;font-size:11.5px;font-weight:600;border-radius:21px;transition:color .3s}
+.ns-tab .ns-sv{transition:transform .5s cubic-bezier(.3,1.6,.5,1)}
+.ns-tab .ns-sv .ns-t{fill-opacity:0;transition:fill-opacity .3s}
+.ns-tab.ns-on{color:#fff}
+.ns-tab.ns-on .ns-sv{transform:translateY(-1px) scale(1.1)}
+.ns-tab.ns-on .ns-sv .ns-t{fill-opacity:.32}
+.ns-tab:active .ns-sv{transform:scale(.86)}
+.ns-root .ns-seg{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));padding:4px;height:52px;border-radius:20px;background:#fff;box-shadow:0 12px 26px -20px rgba(12,59,42,.6)}
+.ns-root .ns-seg .ns-th{position:absolute;left:4px;top:4px;bottom:4px;width:calc((100% - 8px)/3);transition:transform .5s cubic-bezier(.3,1.35,.45,1)}
+.ns-root .ns-seg .ns-th i{position:absolute;left:0;top:0;right:0;bottom:0;border-radius:16px;background:linear-gradient(160deg,#14603C,#2E9E66);box-shadow:0 8px 16px -8px rgba(30,122,76,.8)}
+.ns-root .ns-seg button{position:relative;z-index:1;text-align:center;font-weight:700;font-size:13.5px;color:#55705F;border-radius:16px;transition:color .3s}
+.ns-root .ns-seg button.ns-on{color:#fff}
+.ns-root .ns-svc{display:flex;flex-direction:column;gap:12px;align-items:flex-start;min-height:124px;padding:14px;border-radius:24px;background:#fff;box-shadow:0 18px 32px -26px rgba(12,59,42,.55),0 1px 3px rgba(12,59,42,.05);transition:transform .35s cubic-bezier(.3,1.5,.5,1),box-shadow .3s}
+.ns-root .ns-svc:hover{transform:translateY(-3px);box-shadow:0 24px 36px -22px rgba(12,59,42,.55)}
+.ns-root .ns-svc:active{transform:scale(.96)}
+.ns-root .ns-svc .ns-nm{font-size:14px;font-weight:700;line-height:1.3;letter-spacing:-.005em}
+.ns-root .ns-svc .ns-sb{font-size:12px;font-weight:500;color:#55705F;line-height:1.35}
+.ns-root .ns-pill{display:inline-flex;align-items:center;gap:6px;padding:5px 10px;border-radius:99px;font-size:11.5px;font-weight:700;margin-top:auto}
+.ns-root .ns-pill i{width:7px;height:7px;border-radius:50%;background:currentColor}
+.ns-root .ns-pill.ns-on{background:#DCF3E6;color:#18633F}
+.ns-root .ns-pill.ns-on i{animation:ns-glow 2s ease-in-out infinite}
+.ns-root .ns-pill.ns-off{background:#FFEFC9;color:#7F4E00}
+.ns-root .ns-row{display:flex;align-items:center;gap:14px;width:100%;min-height:64px;padding:12px 16px;transition:background .25s}
+.ns-root .ns-row:hover{background:#F1F7EF}
+.ns-root .ns-row+.ns-row{border-top:1px solid #E1EBDF}
+.ns-root .ns-row .ns-nm{font-size:14.5px;font-weight:700}
+.ns-root .ns-row .ns-sb{font-size:12.5px;font-weight:500;color:#55705F}
+.ns-root .ns-beta{display:inline-block;margin-left:6px;padding:2px 8px;border-radius:99px;background:#FFEFC9;color:#7F4E00;font-size:10.5px;font-weight:700;vertical-align:middle}
+.ns-root .ns-tl{position:absolute;left:13px;top:14px;bottom:14px;width:2px;border-radius:2px;background:linear-gradient(180deg,#29A8DE,#EDA91C);transform-origin:top;animation:ns-draw 1.1s .2s cubic-bezier(.2,.8,.2,1) both}
+.ns-root .ns-step{position:relative;z-index:1;display:flex;align-items:center;gap:14px;min-height:28px;font-size:14px;font-weight:500;line-height:1.35}
+.ns-root .ns-stn{flex:0 0 28px;height:28px;border-radius:10px;background:#1E7A4C;color:#fff;display:grid;place-items:center;font:700 13px 'Space Grotesk',sans-serif}
+.ns-root .ns-call{position:relative;display:flex;align-items:center;justify-content:center;gap:10px;width:100%;height:58px;border-radius:21px;background:linear-gradient(160deg,#14603C,#2E9E66);color:#fff;font-weight:700;font-size:16px;box-shadow:0 16px 28px -12px rgba(30,122,76,.8);transition:transform .3s cubic-bezier(.3,1.6,.5,1)}
+.ns-root .ns-call:active{transform:scale(.96)}
+.ns-root .ns-call .ns-ring{position:absolute;left:0;top:0;right:0;bottom:0;border-radius:21px;border:2px solid #29A8DE;animation:ns-pingbox 2.2s ease-out infinite;pointer-events:none}
+.ns-root .ns-cr{display:flex;align-items:center;gap:14px;padding:12px 0}
+.ns-root .ns-cr+.ns-cr{border-top:1px solid #E1EBDF}
+.ns-root .ns-lab{font-size:10.5px;font-weight:700;letter-spacing:.09em;color:#55705F;text-transform:uppercase}
+.ns-root .ns-val{font-size:14.5px;font-weight:600;line-height:1.35}
+@media (prefers-reduced-motion:reduce){.ns-root *{animation:none!important;transition:none!important}}
+
+/* ---- bổ sung cho bản chạy trong ứng dụng ---- */
+.ns-bar,.ns-bar *{box-sizing:border-box}
+.ns-bar button{font:inherit;font-family:'Be Vietnam Pro',system-ui,sans-serif;color:inherit;cursor:pointer;border:0;background:none;padding:0;text-align:left;-webkit-tap-highlight-color:transparent}
+.ns-bar .ns-tab{text-align:center}
+.ns-bar .ns-ind{transition:transform .6s cubic-bezier(.3,1.35,.45,1),opacity .3s}
+.ns-page{background:#F2F7EF}
+.layout__content{padding-bottom:0}
+.zaui-page:not(.ns-page){padding-bottom:96px}
+.ns-root .ns-search{position:relative;display:flex;gap:10px;margin-top:22px}
+.ns-root .ns-search__box{flex:1;height:50px;border-radius:18px;display:flex;align-items:center;gap:10px;padding:0 16px;color:#E6F1FC;font-size:14px;font-weight:500;cursor:text}
+.ns-root .ns-search__box input{flex:1;min-width:0;height:100%;border:0;outline:0;background:transparent;color:#fff;font:inherit;font-size:14px}
+.ns-root .ns-search__box input::placeholder{color:#E6F1FC;opacity:.9}
+.ns-root .ns-search .home-search__results{z-index:30;color:#12281D}
+.ns-root a{color:inherit;text-decoration:none}
+.ns-root .ns-call{text-decoration:none}
+.ns-root .ns-cr{background:none;width:100%}
+.ns-root .ns-row[disabled]{opacity:.6}
+
+.ns-root .ns-news{scroll-padding-left:16px}
+
+/* ---- Tab Công dân & Tích điểm ---- */
+.ns-root .ns-avatar{flex:0 0 auto;width:64px;height:64px;border-radius:50%;object-fit:cover;background:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.7),0 10px 20px -8px rgba(12,59,42,.5)}
+.ns-root .ns-link{display:inline-flex;align-items:center;gap:6px;min-height:28px;padding:0;color:#1E7A4C;font-size:13px;font-weight:700}
+.ns-root .ns-rank{display:flex;align-items:center;gap:14px;width:100%;margin-top:16px;padding:14px;border-radius:20px;background:linear-gradient(135deg,#EAF3FC,#F6F9E8)}
+.ns-root .ns-rank__medal{flex:0 0 52px;height:52px;border-radius:18px;display:grid;place-items:center;background:#FFEFC9;color:#8F5800;box-shadow:inset 0 1px 0 rgba(255,255,255,.75)}
+.ns-root .ns-bar-track{display:block;height:8px;border-radius:99px;background:#DDE9DC;overflow:hidden}
+.ns-root .ns-bar-track i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#1E7A4C,#29A8DE);transition:width .8s cubic-bezier(.2,.8,.2,1)}
+.ns-root .ns-code{display:flex;align-items:center;gap:12px;padding:14px 16px}
+.ns-root .ns-code__value{font-family:'Space Grotesk',sans-serif;font-size:26px;letter-spacing:.14em;color:#0C3B2A}
+.ns-root .ns-badge{display:inline-block;margin-top:8px;padding:5px 12px;border-radius:99px;background:#EDA91C;color:#3A2600;font-size:12.5px;font-weight:700}
+.ns-root .ns-pts{font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700;color:#18633F}
+.ns-root .ns-pts.ns-neg{color:#A5412A}
+.ns-root .ns-empty{padding:40px 20px;text-align:center;color:#55705F;font-size:14px}
+.ns-root .ns-error{margin:10px 0 0;padding:10px 12px;border-radius:14px;background:#FCE6DF;color:#A5412A;font-size:13px;font-weight:600}
+.ns-root .ns-note{margin:12px 0 0;font-size:12px;line-height:1.5;color:#55705F}
+.ns-root .ns-call[disabled]{opacity:.6}
+.ns-root .ns-sec{padding:16px 18px}
+.ns-root .ns-sec h3{margin:0 0 8px;display:flex;align-items:center;gap:10px;font-size:16px;font-weight:800}
+.ns-root .ns-sec h3 i{font-style:normal;display:grid;place-items:center;min-width:28px;height:28px;border-radius:10px;background:#1E7A4C;color:#fff;font:700 12px 'Space Grotesk',sans-serif}
+.ns-root .ns-sec p{margin:0 0 10px;font-size:13.5px;line-height:1.55;color:#2B4637}
+.ns-root .ns-rule{display:flex;align-items:center;gap:12px;padding:10px 0;border-top:1px solid #E1EBDF}
+.ns-root .ns-rule b{font-size:14px}
+.ns-root .ns-rule small{font-size:12px;color:#55705F}
+.ns-root .ns-benefit{padding:10px 0;border-top:1px solid #E1EBDF;font-size:13.5px;line-height:1.5}
+.ns-root .ns-benefit ul{margin:6px 0 0;padding-left:18px;color:#2B4637}
+.ns-toast{position:fixed;left:50%;bottom:110px;transform:translateX(-50%);z-index:50;max-width:84%;padding:11px 18px;border-radius:99px;background:rgba(12,59,42,.92);color:#fff;font:600 13.5px 'Be Vietnam Pro',system-ui,sans-serif;text-align:center;box-shadow:0 14px 30px -12px rgba(12,59,42,.6)}
+.ns-sheet{padding:20px 18px 26px;font-family:'Be Vietnam Pro',system-ui,sans-serif;color:#12281D}
+.ns-sheet *{box-sizing:border-box}
+.ns-sheet__title{font-size:18px;font-weight:800;letter-spacing:-.01em}
+.ns-sheet__desc{margin:6px 0 14px;font-size:13px;line-height:1.5;color:#55705F}
+.ns-sheet__empty{padding:22px 0;text-align:center;color:#55705F;font-size:14px}
+.ns-sheet__list{display:flex;flex-direction:column;gap:8px;max-height:46vh;overflow-y:auto}
+.ns-opt{min-height:48px;padding:0 16px;border:1.5px solid #DDE9DC;border-radius:16px;background:#fff;font:600 14.5px 'Be Vietnam Pro',system-ui,sans-serif;color:#12281D;text-align:left}
+.ns-opt.ns-on{border-color:#1E7A4C;background:#EAF3FC;color:#1E7A4C}
+.ns-input{width:100%;height:52px;padding:0 16px;border:1.5px solid #DDE9DC;border-radius:16px;font:700 20px 'Space Grotesk',sans-serif;letter-spacing:.2em;text-align:center;text-transform:uppercase;outline:0}
+.ns-input:focus{border-color:#1E7A4C}
+.ns-sheet .ns-error{margin:10px 0 0;padding:10px 12px;border-radius:14px;background:#FCE6DF;color:#A5412A;font-size:13px;font-weight:600}
+.ns-sheet__actions{display:flex;gap:10px;margin-top:16px}
+.ns-btn{flex:1;height:50px;border:0;border-radius:18px;background:linear-gradient(160deg,#14603C,#2E9E66);color:#fff;font:700 15px 'Be Vietnam Pro',system-ui,sans-serif}
+.ns-btn[disabled]{opacity:.5}
+.ns-btn--ghost{background:#F2F7EF;color:#1E7A4C}
+
+/* ---- Bộ icon 3D + thành phần mới của bản thiết kế 12/10 ---- */
+@keyframes ns-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2.5px)}}
+@keyframes ns-grow{from{transform:scaleX(0)}to{transform:none}}
+.ns-ic3{flex:0 0 auto;width:60px;height:60px;border-radius:21px;background:linear-gradient(160deg,#FFFFFF 10%,#E3EEFA);display:grid;place-items:center;box-shadow:inset 0 1px 0 #fff,inset 0 -3px 6px rgba(30,122,76,.1),0 12px 18px -12px rgba(12,59,42,.55);animation:ns-bob 4.6s ease-in-out infinite}
+.ns-ic3.ns-sm{width:52px;height:52px;border-radius:18px}
+.ns-ic3 svg{width:46px;height:46px;overflow:visible;filter:drop-shadow(0 3px 3px rgba(12,59,42,.16));transition:transform .45s cubic-bezier(.3,1.6,.5,1)}
+.ns-ic3.ns-sm svg{width:40px;height:40px}
+.ns-root .ns-tile:nth-child(2n) .ns-ic3{animation-delay:-1.5s}
+.ns-root .ns-tile:nth-child(3n) .ns-ic3{animation-delay:-3s}
+.ns-root .ns-svc:nth-child(2n) .ns-ic3{animation-delay:-2s}
+.ns-root .ns-tile:active .ns-ic3 svg,.ns-root .ns-svc:active .ns-ic3 svg{transform:scale(.9)}
+.ns-root .ns-tile .ns-ic3{margin:0 auto}
+.ns-gi{flex:0 0 46px;width:46px;height:46px;border-radius:16px;display:grid;place-items:center;color:#fff;box-shadow:inset 0 2px 0 rgba(255,255,255,.45),inset 0 -4px 6px rgba(0,0,0,.16),0 10px 16px -8px var(--c)}
+.ns-gi.b{background:linear-gradient(150deg,#6CBBF4,#1E7A4C);--c:#1E7A4C}.ns-gi.g{background:linear-gradient(150deg,#B9D152,#5E7F14);--c:#5E7F14}.ns-gi.y{background:linear-gradient(150deg,#FFD66B,#E8960A);--c:#E8960A}.ns-gi.o{background:linear-gradient(150deg,#FF9E80,#D2432A);--c:#D2432A}.ns-gi.v{background:linear-gradient(150deg,#A99AF5,#5A3FD0);--c:#5A3FD0}.ns-gi.s{background:linear-gradient(150deg,#6FD3F2,#1A93CC);--c:#1A93CC}
+.ns-pt{display:inline-flex;align-items:center;gap:6px;padding:4px 10px 4px 5px;border-radius:99px;background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.3);color:#fff;font-weight:700;font-size:13px}
+.ns-pt svg{width:26px;height:26px}
+.ns-rankpill{display:inline-flex;align-items:center;gap:6px;min-height:44px;padding:0 10px 0 6px;border-radius:99px;background:linear-gradient(160deg,#FFF4D4,#FFE2A0);color:#6B4300;font-weight:800;font-size:13px;box-shadow:inset 0 1px 0 #fff,0 8px 16px -10px #E8960A;border:0;cursor:pointer;font-family:inherit}
+.ns-rankpill svg{width:30px;height:30px}
+.ns-fld{display:flex;align-items:center;gap:10px;width:100%;min-height:50px;padding:0 14px;border-radius:16px;background:#F1F7EF;border:1px solid #DDE9DC;font-size:14px;font-weight:600;color:#12281D;font-family:inherit;cursor:pointer}
+.ns-bt{display:flex;align-items:center;justify-content:center;gap:8px;min-height:50px;padding:0 20px;border-radius:18px;border:0;font-weight:700;font-size:14.5px;font-family:inherit;cursor:pointer;transition:transform .3s cubic-bezier(.3,1.6,.5,1)}
+.ns-bt:active{transform:scale(.95)}
+.ns-bt[disabled]{opacity:.5}
+.ns-bt.p{background:linear-gradient(160deg,#14603C,#2E9E66);color:#fff;box-shadow:0 12px 22px -10px rgba(30,122,76,.8)}
+.ns-bt.o{background:#fff;color:#1E7A4C;box-shadow:inset 0 0 0 1.5px #BCD5EE}
+.ns-prog{height:10px;border-radius:99px;background:rgba(255,255,255,.2);overflow:hidden}
+.ns-prog i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#FFE08A,#EDA91C);box-shadow:0 0 12px rgba(237,169,28,.7);transform-origin:left;animation:ns-grow 1.2s .2s cubic-bezier(.2,.8,.2,1) both}
+.ns-inp{width:100%;height:52px;border-radius:16px;border:1.5px solid #C9DEC9;background:#F6FAF4;padding:0 16px;font:600 15px 'Be Vietnam Pro',sans-serif;color:#12281D;outline:none;text-transform:uppercase;letter-spacing:.08em}
+.ns-inp:focus{border-color:#2E9E66;box-shadow:0 0 0 4px rgba(31,127,208,.15)}
+.ns-sheet .ns-opt{display:flex;align-items:center;justify-content:space-between;width:100%;min-height:52px;padding:0 16px;border:0;border-radius:16px;font-weight:600;font-size:14.5px;background:#F1F7EF;color:#12281D;text-align:left;font-family:inherit}
+.ns-sheet .ns-opt.ns-on{background:#DFF1E5;color:#14603C;box-shadow:inset 0 0 0 1.5px #2E9E66}
+.ns-li{display:flex;gap:10px;font-size:13.5px;line-height:1.5;color:#2B4637;margin:4px 0 4px 32px}
+.ns-li::before{content:"";flex:0 0 7px;height:7px;margin-top:7px;border-radius:50%;background:#29A8DE}
+.ns-ph{flex:0 0 64px;height:64px;border-radius:50%;background:linear-gradient(150deg,#6CBBF4,#1E7A4C);display:grid;place-items:center;color:#fff;overflow:hidden;box-shadow:inset 0 2px 0 rgba(255,255,255,.45),0 12px 20px -8px rgba(30,122,76,.8)}
+.ns-ph img{width:100%;height:100%;object-fit:cover}
+.ns-root .ns-row:hover .ns-gi .ns-sv{transform:scale(1.14) rotate(-5deg)}
+.ns-root .ns-stn.ns-round{border-radius:50%;flex:0 0 36px;width:36px;height:36px;background:#DFF1E5;color:#17683F}
+.ns-root .ns-para{margin:12px 0 0;font-size:14px;line-height:1.55;color:#2B4637}
+.ns-root .ns-rulebox{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:18px;background:#F1F7EF;margin-top:10px}
+.ns-root .ns-rulebox .ns-stn{border-radius:50%;background:#DFF1E5;color:#17683F}
+.ns-root .ns-row .ns-beta{margin:0}
+
+/* ---- Nút Phản ánh nổi giữa thanh tab ---- */
+.ns-bar{overflow:visible}
+.ns-bar .ns-tab{font-size:11px}
+.ns-bar .ns-fab{justify-content:flex-end;padding-bottom:6px;gap:2px;overflow:visible}
+.ns-fab__btn{position:absolute;top:-34px;left:50%;width:58px;height:58px;margin-left:-29px;border-radius:50%;display:grid;place-items:center;
+  background:radial-gradient(circle at 35% 30%,#FFE79A 0%,#EDA91C 55%,#E08A0B 100%);
+  box-shadow:0 0 0 5px rgba(255,255,255,.95),0 14px 24px -8px rgba(232,150,10,.75),inset 0 2px 0 rgba(255,255,255,.6);
+  animation:ns-fabPulse 2.6s ease-in-out infinite;transition:transform .35s cubic-bezier(.3,1.6,.5,1)}
+.ns-fab__btn svg{width:37px;height:37px;overflow:visible;filter:drop-shadow(0 3px 3px rgba(120,60,0,.25))}
+.ns-fab:active .ns-fab__btn{transform:scale(.9)}
+.ns-fab__lb{font-weight:800;color:#D9820A}
+.ns-fab.ns-on .ns-fab__lb{color:#B86A00}
+.ns-fab.ns-on .ns-fab__btn{transform:translateY(-2px) scale(1.05)}
+@keyframes ns-fabPulse{0%,100%{box-shadow:0 0 0 5px rgba(255,255,255,.95),0 14px 24px -8px rgba(232,150,10,.75),inset 0 2px 0 rgba(255,255,255,.6)}50%{box-shadow:0 0 0 5px rgba(255,255,255,.95),0 0 0 11px rgba(237,169,28,.25),0 14px 24px -8px rgba(232,150,10,.75),inset 0 2px 0 rgba(255,255,255,.6)}}
+@media (prefers-reduced-motion:reduce){.ns-fab__btn{animation:none}}

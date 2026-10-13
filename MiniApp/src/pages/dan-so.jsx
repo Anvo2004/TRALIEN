@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Page, Header, Box } from "zmp-ui";
 import API_BASE_URL from "../data/api-config.js";
+import HeroIcon from "../components/ns/hero-icon.jsx";
 
 function fmt(n, opts) {
   if (n === null || n === undefined) return null;
@@ -39,7 +40,7 @@ const DanSoPage = () => {
       <Header title="Thông tin dân số" />
 
       <div className="lookup-hero">
-        <span className="lookup-hero__icon">👥</span>
+        <span className="lookup-hero__icon"><HeroIcon e="👥" /></span>
         <div className="lookup-hero__title">Thông tin Dân số</div>
         <div className="lookup-hero__desc">
           Số liệu thống kê dân số xã Trà Liên

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Page, Header, Box } from "zmp-ui";
 import API_BASE_URL from "../data/api-config.js";
+import HeroIcon from "../components/ns/hero-icon.jsx";
 
 const MONTHS = Array.from({ length: 12 }, (_, i) => i + 1);
 const now = new Date();
@@ -52,7 +53,7 @@ const LichYTePage = () => {
       <Header title="Lịch y tế" />
 
       <div className="lookup-hero">
-        <span className="lookup-hero__icon">🏥</span>
+        <span className="lookup-hero__icon"><HeroIcon e="🏥" /></span>
         <div className="lookup-hero__title">Lịch y tế</div>
         <div className="lookup-hero__desc">Lịch khám bệnh, tiêm chủng trên địa bàn xã Trà Liên</div>
       </div>

@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { Page, Header, Box } from "zmp-ui";
 import { getUserInfo, chooseImage } from "zmp-sdk/apis";
 import API_BASE_URL from "../data/api-config.js";
+import { isLinked, openCitizen } from "../data/citizen.js";
 
 const PHONE_RE = /^(0|\+84)[3-9]\d{8}$/;
 const MAX_IMAGES = 5;
@@ -46,6 +47,7 @@ const ReportFormPage = () => {
   const [categories, setCategories] = useState([]);
   const [categoryId, setCategoryId] = useState("");
   const [contact, setContact] = useState("");
+  const [linkedPhone, setLinkedPhone] = useState(""); // SĐT của hồ sơ Công dân đã liên kết
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
   const [address, setAddress] = useState("");
@@ -66,6 +68,18 @@ const ReportFormPage = () => {
       .then((res) => res.json())
       .then((data) => setCategories(data.categories || []))
       .catch(() => setCategories([]));
+
+    // Đã liên kết tab Công dân → điền sẵn SĐT của hồ sơ (người dân vẫn sửa được).
+    if (isLinked()) {
+      openCitizen({})
+        .then(({ citizen }) => {
+          if (citizen?.phone) {
+            setLinkedPhone(citizen.phone);
+            setContact((cur) => cur || citizen.phone);
+          }
+        })
+        .catch(() => {});
+    }
   }, []);
 
   const handleChooseImage = async () => {
@@ -166,7 +180,7 @@ const ReportFormPage = () => {
 
   const resetForm = () => {
     setCategoryId("");
-    setContact("");
+    setContact(linkedPhone);
     setTitle("");
     setContent("");
     setAddress("");
@@ -279,8 +293,12 @@ const ReportFormPage = () => {
               value={contact}
               onChange={(e) => setContact(e.target.value)}
               placeholder="0912345678"
+              inputMode="tel"
               required
             />
+            {linkedPhone && contact === linkedPhone && (
+              <small className="report-form__hint">✓ Lấy từ tài khoản Zalo đã liên kết — bạn có thể sửa nếu cần</small>
+            )}
           </label>
 
           <label>

@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { Page, Header, Box } from "zmp-ui";
 import API_BASE_URL from "../data/api-config.js";
+import HeroIcon from "../components/ns/hero-icon.jsx";
 
 function fmt(n) {
   if (n === null || n === undefined) return null;
@@ -43,7 +44,7 @@ const ThonXomPage = () => {
       <Header title="Thôn xóm" />
 
       <div className="lookup-hero">
-        <span className="lookup-hero__icon">🏘️</span>
+        <span className="lookup-hero__icon"><HeroIcon e="🏘️" /></span>
         <div className="lookup-hero__title">Thôn xóm</div>
         <div className="lookup-hero__desc">Danh sách thôn thuộc xã Trà Liên</div>
 

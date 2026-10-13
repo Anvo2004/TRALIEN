@@ -4,6 +4,7 @@ import API_BASE_URL from "../data/api-config.js";
 import CardMedia from "../components/card-media.jsx";
 import DetailSheet from "../components/detail-sheet.jsx";
 import { openExternal } from "../utils/open-external.js";
+import HeroIcon from "../components/ns/hero-icon.jsx";
 
 const VanHoaPage = () => {
   const [vanHoa, setVanHoa] = useState(null);
@@ -38,7 +39,7 @@ const VanHoaPage = () => {
       <Header title="Văn hóa - Nghệ thuật" />
 
       <div className="culture-hero">
-        <span className="culture-hero__icon">🏯</span>
+        <span className="culture-hero__icon"><HeroIcon e="🏯" /></span>
         <div className="culture-hero__title">{VAN_HOA.title}</div>
         <div className="culture-hero__desc">{VAN_HOA.subtitle}</div>
       </div>

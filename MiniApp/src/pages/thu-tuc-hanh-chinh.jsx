@@ -3,6 +3,7 @@ import { Page, Header, Box } from "zmp-ui";
 import API_BASE_URL from "../data/api-config.js";
 import { openExternal } from "../utils/open-external.js";
 import Icon from "../components/icon.jsx";
+import HeroIcon from "../components/ns/hero-icon.jsx";
 
 const MUC_DO_LABEL = { "3": "Mức độ 3", "4": "Mức độ 4 (trực tuyến toàn trình)" };
 
@@ -37,7 +38,7 @@ const ThuTucHanhChinhPage = () => {
       <Header title="Thủ tục hành chính" />
 
       <div className="lookup-hero">
-        <span className="lookup-hero__icon">📋</span>
+        <span className="lookup-hero__icon"><HeroIcon e="📋" /></span>
         <div className="lookup-hero__title">Danh mục thủ tục hành chính</div>
         <div className="lookup-hero__desc">
           Xem trước giấy tờ cần chuẩn bị, thời gian xử lý trước khi đi làm thủ tục tại xã Trà Liên

@@ -15,21 +15,20 @@ const QuickLinksGrid = () => {
       .catch(() => setItems([]));
   }, []);
 
+  const openLink = (item) => (item.href ? openExternal(item.href) : navigate(item.path));
+
   return (
-    <div className="quick-links">
-      {items.map((item) => (
-        <button
-          key={item._id}
-          type="button"
-          className="quick-links__item"
-          onClick={() =>
-            item.href ? openExternal(item.href) : navigate(item.path)
-          }
-        >
-          <AppIcon iconUrl={item.iconUrl} name={item.icon} color={item.color || "n"} />
-          <span className="quick-links__label">{item.label}</span>
-        </button>
-      ))}
+    <div className="ns-card" style={{ margin: "0 16px", padding: "14px 6px 10px" }}>
+      <div className="ns-st" style={{ display: "grid", gridTemplateColumns: "repeat(4,minmax(0,1fr))", rowGap: 10 }}>
+        {items.map((item) => (
+          <button key={item._id} type="button" className="ns-tile" onClick={() => openLink(item)}>
+            <span className="ns-ic3">
+              <AppIcon iconUrl={item.iconUrl} name={item.icon} color={item.color || "n"} imgClass="icon3d--md" vectorClass="i24" />
+            </span>
+            <span className="ns-lb">{item.label}</span>
+          </button>
+        ))}
+      </div>
     </div>
   );
 };

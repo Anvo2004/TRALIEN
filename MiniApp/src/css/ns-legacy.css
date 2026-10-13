@@ -1,0 +1,135 @@
+/* =====================================================================
+   Lớp đồng bộ giao diện "Trà Liên Số" cho các trang tra cứu/biểu mẫu cũ
+   (Dân số, Thôn xóm, TTHC, Văn hóa, Du lịch, PCTT, Lịch y tế, Phản ánh,
+   Tra cứu hồ sơ, Văn bản, Lịch cắt điện, Thông báo, Trợ lý số, Tin tức...).
+   Không đổi cấu trúc JSX — chỉ ghi đè kiểu của các lớp dùng chung để các
+   trang này có cùng ngôn ngữ thiết kế: hero có cảnh núi rừng - thác nước,
+   thẻ bo lớn đổ bóng mềm, ô nhập/nút/tab/chip theo bộ thiết kế. Nạp SAU
+   app.scss. Tiền tố `body` để thắng độ ưu tiên của app.scss mà không cần
+   !important.
+   ===================================================================== */
+
+/* ---------- Khung chung ---------- */
+body{background:#F2F7EF;color:#12281D;font-family:'Be Vietnam Pro',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif}
+body .zaui-page{background:#F2F7EF}
+body .zaui-header,body .zaui-header-bar{background:rgba(255,255,255,.9);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+body .zaui-header .zaui-header-title,body .zaui-header-title{font-weight:800;color:#12281D}
+body .section{padding-left:16px;padding-right:16px}
+body .section__title,body .sec-title{font-weight:800;color:#12281D}
+
+/* ---------- Hero các trang tra cứu (có cảnh núi rừng - thác nước - lúa) ---------- */
+body .lookup-hero,body .culture-hero,body .tourism-hero{
+  position:relative;overflow:hidden;color:#fff;border-radius:0;
+  padding:calc(var(--zaui-safe-area-inset-top,0px) + 44px + 22px) 20px 78px;
+  background:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 70 430 80' preserveAspectRatio='none'%3E%3Cpath d='M-10 150 L70 66 L150 150Z' fill='%2314603C'/%3E%3Cpath d='M40 150 L120 52 L215 150Z' fill='%231C7A4C'/%3E%3Cpath d='M120 52 L160 150 L215 150Z' fill='%2314603C' fill-opacity='.55'/%3E%3Cpath d='M180 150 L255 34 L345 150Z' fill='%232E9E66'/%3E%3Cpath d='M255 34 L300 150 L345 150Z' fill='%231C7A4C'/%3E%3Cpath d='M215 134 L252 62M236 142 L256 90' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round' stroke-opacity='.8'/%3E%3Cpath d='M330 150 L395 70 L440 150Z' fill='%231C7A4C'/%3E%3Cpath d='M286 78 C296 90 292 110 298 130 L330 130 C326 112 332 92 324 78Z' fill='%23CFF3FF'/%3E%3Cpath d='M292 80 C300 96 296 112 302 130' fill='none' stroke='%2329A8DE' stroke-width='3' stroke-linecap='round'/%3E%3Cpath d='M308 80 C314 98 310 114 316 130' fill='none' stroke='%237FD3F2' stroke-width='2.5' stroke-linecap='round'/%3E%3Cellipse cx='312' cy='132' rx='26' ry='5' fill='%23fff' fill-opacity='.7'/%3E%3Cg fill='%23fff'%3E%3Cellipse cx='90' cy='40' rx='28' ry='6'/%3E%3Ccircle cx='80' cy='36' r='6'/%3E%3Ccircle cx='98' cy='33' r='8'/%3E%3Cellipse cx='380' cy='30' rx='22' ry='5'/%3E%3Ccircle cx='374' cy='26' r='5'/%3E%3Ccircle cx='388' cy='24' r='7'/%3E%3C/g%3E%3Cpath d='M20 112 L52 90 L84 112Z' fill='%238A3A1E'/%3E%3Crect x='28' y='112' width='48' height='10' fill='%23C98B4B'/%3E%3Cpath d='M32 122v14M44 122v14M56 122v14M68 122v14' stroke='%236B3A1C' stroke-width='3'/%3E%3Cpath d='M0 140 C80 128 160 142 240 134 C320 126 380 140 440 132 V150 H0Z' fill='%23E8A91C'/%3E%3Cpath d='M0 146 C90 138 170 148 250 142 C330 136 390 146 440 140 V150 H0Z' fill='%23C98B14'/%3E%3Cpath d='M0 149 H440 V150 H0Z' fill='%23F2F7EF'/%3E%3C/svg%3E") bottom center/100% 64px no-repeat,
+    linear-gradient(180deg,#0F5A3A 0%,#1E8A57 58%,#7BC99A 100%);
+}
+body .lookup-hero::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.2) 1px,transparent 1.3px);background-size:18px 18px;-webkit-mask-image:linear-gradient(180deg,#000,transparent 75%);mask-image:linear-gradient(180deg,#000,transparent 75%);pointer-events:none}
+body .lookup-hero > *,body .culture-hero > *,body .tourism-hero > *{position:relative}
+body .lookup-hero__title,body .culture-hero__title,body .tourism-hero__title{font-size:26px;font-weight:800;letter-spacing:-.02em;line-height:1.15;margin:6px 0 4px;color:#fff}
+body .lookup-hero__desc,body .culture-hero__desc,body .tourism-hero__desc{font-size:13px;font-weight:500;color:#DDF1E3;opacity:1;line-height:1.45}
+body .lookup-hero__icon,body .culture-hero__icon,body .tourism-hero__icon{display:inline-grid;place-items:center;font-size:0;margin:0 0 6px}
+body .lookup-hero__stats{margin-top:14px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+body .lookup-hero__stat{border-radius:18px;padding:11px 12px;background:rgba(255,255,255,.11);border:1px solid rgba(255,255,255,.2);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px)}
+body .lookup-hero__stat-value{font-family:'Space Grotesk',sans-serif;font-size:20px;font-weight:700;color:#fff}
+body .lookup-hero__stat-label{font-size:11.5px;font-weight:500;color:#DDF1E3}
+/* các trang có vùng nội dung ngay dưới hero: kéo chồng nhẹ lên cảnh */
+body .page-lookup .section,body .page-culture .section,body .page-tourism .section{padding-top:16px}
+
+/* ---------- Biểu tượng hero 3D ---------- */
+.ns-heroicon{width:54px;height:54px;border-radius:19px;display:grid;place-items:center;background:linear-gradient(160deg,#fff 10%,#E3EEFA);box-shadow:inset 0 1px 0 #fff,0 12px 20px -12px rgba(8,36,26,.6)}
+.ns-heroicon svg{width:42px;height:42px;overflow:visible;filter:drop-shadow(0 3px 3px rgba(12,59,42,.18))}
+.ns-heroicon.is-emoji{font-size:28px}
+
+/* ---------- Thẻ nội dung ---------- */
+body .hoso-card,body .vanban-card,body .tthc-card,body .dien-card,body .village-card,body .my-reports__card,
+body .trocap-card,body .pop-stats__card,body .trocap-stats__card,body .report-success__card,body .gender-split,
+body .idea-card,body .news-card--compact,body .culture-act-card,body .culture-news-card,body .tourism-hl-card,body .tourism-spot-card,
+body .service-list__item,body .listcard,body .warning-box{
+  background:#fff;border:0;border-radius:22px;
+  box-shadow:0 18px 32px -26px rgba(12,59,42,.55),0 1px 3px rgba(12,59,42,.05);
+}
+body .dien-card{border-left:0;position:relative;padding:14px 16px 14px 20px}
+body .dien-card::before{content:"";position:absolute;left:0;top:14px;bottom:14px;width:4px;border-radius:0 4px 4px 0;background:linear-gradient(180deg,#29A8DE,#EDA91C)}
+body .tthc-card,body .vanban-card,body .village-card,body .hoso-card{padding:14px 16px}
+body .warning-box{background:#FFF7E0;color:#7F4E00;box-shadow:none;border-radius:18px}
+body .tthc-card__tag,body .vanban-card__tag{border-radius:99px;font-weight:700;background:#DFF1E5;color:#17683F}
+body .tthc-card__tag--muc4{background:#DCF3E6;color:#18633F}
+body .tthc-card__link{border-radius:14px;background:#EAF3FC;color:#1E7A4C;font-weight:700}
+body .village-card__icon{border-radius:16px;background:#F6E7D6;color:#8A4A1E}
+body .pop-stats__icon,body .trocap-stats__icon{border-radius:14px;background:#DFF1E5}
+body .pop-stats__value,body .trocap-stats__value,body .stats-row__value{font-family:'Space Grotesk',sans-serif;font-weight:700;color:#12281D}
+
+/* ---------- Ô nhập, chọn, tìm kiếm ---------- */
+body .lookup-search,body .dien-filter__select,body .dien-filter input[type=date],body .my-reports__code-input,
+body .report-form input[type=text],body .report-form input[type=tel],body .report-form select,body .report-form textarea,
+body .report-form input,body .assistant__input,body .assistant input{
+  border:1.5px solid #C9DEC9;border-radius:16px;background:#F6FAF4;color:#12281D;padding:0 14px;min-height:48px;
+  font-family:inherit;font-size:14px;font-weight:600;outline:none;box-sizing:border-box;
+}
+body .report-form textarea{padding:12px 14px}
+body .lookup-search:focus,body .dien-filter__select:focus,body .my-reports__code-input:focus,
+body .report-form input:focus,body .report-form select:focus,body .report-form textarea:focus,body .assistant input:focus{
+  border-color:#2E9E66;box-shadow:0 0 0 4px rgba(31,127,208,.15);
+}
+body .dien-filter{background:#fff;border-radius:22px;padding:14px;box-shadow:0 18px 32px -26px rgba(12,59,42,.55)}
+
+/* ---------- Nút ---------- */
+body .dien-filter__submit,body .report-form__submit,body .my-reports__code-btn,body .report-success__track,
+body .tra-cuu-btn,body .hoso-search__btn,body .btn-primary{
+  border:0;border-radius:18px;min-height:50px;font-weight:700;font-size:14.5px;font-family:inherit;color:#fff;
+  background:linear-gradient(160deg,#14603C,#2E9E66);box-shadow:0 12px 22px -10px rgba(30,122,76,.8);
+}
+body .report-form__location-btn,body .report-success__again{
+  border:0;border-radius:16px;background:#fff;color:#1E7A4C;font-weight:700;font-family:inherit;box-shadow:inset 0 0 0 1.5px #BCD5EE;
+}
+body .report-form__add-image{border:2px dashed #BCD5EE;border-radius:18px;background:#F1F7EF;color:#1E7A4C}
+body .report-form__image-item{border-radius:18px;overflow:hidden}
+body .report-form__error{border-radius:14px;background:#FCE6DF;color:#A5412A;font-weight:600}
+body .report-success__banner{border-radius:24px;background:linear-gradient(160deg,#14603C,#2E9E66);color:#fff}
+
+/* ---------- Tab, chip lọc ---------- */
+body .tabs-underline{border:0;background:#fff;border-radius:20px;padding:4px;box-shadow:0 12px 26px -20px rgba(12,59,42,.6);gap:4px}
+body .tabs-underline button{border:0;margin:0;border-radius:16px;min-height:44px;color:#55705F;font-weight:700;font-family:inherit}
+body .tabs-underline button.is-active{color:#fff;background:linear-gradient(160deg,#14603C,#2E9E66);box-shadow:0 8px 16px -8px rgba(30,122,76,.8)}
+body .my-reports__tabs{background:#fff;border-radius:20px;padding:4px;box-shadow:0 12px 26px -20px rgba(12,59,42,.6);gap:4px;border:0}
+body .my-reports__tab{border:0;border-radius:16px;min-height:44px;font-weight:700;color:#55705F;font-family:inherit}
+body .my-reports__tab--active{color:#fff;background:linear-gradient(160deg,#14603C,#2E9E66)}
+body .category-tabs button{border:0;border-radius:99px;min-height:40px;padding:0 16px;background:#fff;color:#1E7A4C;font-weight:700;font-family:inherit;box-shadow:0 6px 16px -10px rgba(12,59,42,.5)}
+body .category-tabs button.is-active{color:#fff;background:linear-gradient(160deg,#14603C,#2E9E66)}
+body .lookup-empty,body .my-reports__state{color:#55705F;font-size:14px;padding:32px 16px}
+body .my-reports__state--error{color:#A5412A}
+body .my-reports__badge{border-radius:99px;font-weight:700}
+
+/* ---------- Tin tức (trang Tin tức đầy đủ) ---------- */
+body .news-list{padding:16px;display:flex;flex-direction:column;gap:12px}
+body .news-card--featured{border-radius:24px;overflow:hidden;background:#fff;box-shadow:0 20px 36px -26px rgba(12,59,42,.5)}
+body .news-card__tag{color:#17683F;background:#DFF1E5;border-radius:99px;font-weight:700}
+
+/* ---------- Trợ lý số ---------- */
+body .assistant__bubble{border-radius:20px;background:#fff;box-shadow:0 12px 24px -18px rgba(12,59,42,.5)}
+body .assistant__title{font-weight:800}
+
+/* ---------- Văn hóa / Du lịch ---------- */
+body .culture-spot-btn{border-radius:18px;background:#fff;box-shadow:0 12px 24px -18px rgba(12,59,42,.5);border:0}
+body .culture-spots-container{border-radius:24px;background:linear-gradient(150deg,#0C3B2A,#1E7A4C)}
+body .tourism-hl-card{overflow:hidden}
+
+/* ---- Bổ sung: nút/tab riêng của từng trang ---- */
+body .zaui-page .tabs-underline button.is-active,body .zaui-page .tabs-underline button.is-active *{color:#fff}
+body .zaui-page .tabs-underline button.is-active{background:linear-gradient(160deg,#14603C,#2E9E66);border-bottom-color:transparent}
+body .trocap-search__submit,body .lookup-form__submit,body .trocap-empty__btn,body .assistant__send{
+  border:0;border-radius:18px;min-height:50px;font-weight:700;font-family:inherit;color:#fff;
+  background:linear-gradient(160deg,#14603C,#2E9E66);box-shadow:0 12px 22px -10px rgba(30,122,76,.8);
+}
+body .assistant__send{min-height:44px;width:44px;border-radius:50%;padding:0}
+body .lookup-form input,body .trocap-search select,body .lookup-form select{
+  border:1.5px solid #C9DEC9;border-radius:16px;background:#F6FAF4;color:#12281D;min-height:48px;padding:0 14px;
+  font-family:inherit;font-size:14px;font-weight:600;outline:none;box-sizing:border-box;
+}
+body .trocap-search,body .lookup-form{background:#fff;border-radius:22px;padding:14px;box-shadow:0 18px 32px -26px rgba(12,59,42,.55)}
+body .trocap-chips__item.is-active{background:linear-gradient(160deg,#14603C,#2E9E66);color:#fff}
+body .assistant__suggestion{border:0;border-radius:18px;background:#fff;box-shadow:0 12px 24px -18px rgba(12,59,42,.5);font-family:inherit}
+body .assistant__input-bar{background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px)}
+body .report-form__hint{display:block;margin-top:6px;font-size:12px;font-weight:600;color:#18633F}

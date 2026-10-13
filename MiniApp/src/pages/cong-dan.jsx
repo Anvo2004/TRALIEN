@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Page, Header, Sheet } from "zmp-ui";
+import { Page, Sheet } from "zmp-ui";
 import {
   getUserInfo,
   getPhoneNumber,
@@ -9,10 +9,13 @@ import {
   openShareSheet,
   createShortcut,
 } from "zmp-sdk/apis";
-import Icon from "../components/icon.jsx";
 import API_BASE_URL from "../data/api-config.js";
 import SITE from "../data/site.js";
 import logo from "../static/logo-tralien.png";
+import XIcon, { xTone } from "../components/ns/ns-extra-icons.jsx";
+import { HeroSceneSmall } from "../components/ns/ns-scenes.jsx";
+import Icon3 from "../components/ns/ns-icons3d.jsx";
+import { css } from "../components/ns/ns-util.js";
 import {
   clearPendingReferral,
   fetchProgram,
@@ -29,6 +32,16 @@ import {
   wasPhoneAsked,
 } from "../data/citizen.js";
 
+// Giao diện port từ Mini App Nông Sơn (bản thiết kế "Nông Sơn Số"); logic/API
+// giữ nguyên của Trà Liên. Trà Liên chưa có SiteProvider/API site-info động như
+// Nông Sơn (xem data/site-context.jsx bên đó), nên tên hiển thị lấy thẳng từ
+// data/site.js tĩnh thay vì useSite().
+const n = {
+  appName: SITE.appName,
+  title: SITE.heroCaption,
+  office: `UBND xã ${SITE.wardName}`,
+};
+
 const FOLLOWED_KEY = "tralien_oa_followed";
 const setLocal = (k, v) => {
   try {
@@ -39,20 +52,10 @@ const setLocal = (k, v) => {
   }
 };
 
-// Hàng menu dùng lại .prow/.tile của trang Dịch vụ để đồng bộ với phần còn lại
-// của app, thay vì dựng kiểu riêng cho tab này.
-const MenuRow = ({ icon, color, title, sub, value, onClick, disabled }) => (
-  <button type="button" className="prow" onClick={onClick} disabled={disabled}>
-    <span className={`tile sm tile-${color}`}>
-      <Icon name={icon} className="i20" />
-    </span>
-    <span className="prow__body">
-      <span className="prow__title">{title}</span>
-      {sub && <span className="prow__desc">{sub}</span>}
-    </span>
-    {value && <span className="citizen-row__value">{value}</span>}
-    <Icon name="chevron_right" className="i18 grey" />
-  </button>
+const Chevron = () => (
+  <svg className="ns-sv" viewBox="0 0 24 24" width="18" height="18" style={css("color:#7F9686")}>
+    <path d="M9 6l6 6-6 6" />
+  </svg>
 );
 
 const CitizenPage = () => {
@@ -77,7 +80,7 @@ const CitizenPage = () => {
     setTimeout(() => setToast(""), 2600);
   };
 
-  // Lấy tên/ảnh Zalo → tự đăng ký (lần đầu được cộng điểm) → trả hồ sơ công dân.
+  // Lấy tên/ảnh Zalo → tự đăng ký (lần đầu +điểm) → trả hồ sơ công dân.
   const load = useCallback(async () => {
     setError("");
     try {
@@ -99,8 +102,8 @@ const CitizenPage = () => {
     }
   }, []);
 
-  // SĐT: xin tự động một lần sau khi đăng ký; người dùng từ chối thì không hỏi
-  // lại cho tới khi bấm "Liên kết lại".
+  // SĐT: xin tự động một lần sau khi đăng ký; người dùng từ chối thì không hỏi lại
+  // cho tới khi bấm "Liên kết lại".
   const askPhone = useCallback(async (force = false) => {
     if (!force && wasPhoneAsked()) return;
     markPhoneAsked();
@@ -131,19 +134,8 @@ const CitizenPage = () => {
     })();
   }, [load, askPhone]);
 
-  const openVillages = async () => {
-    setVillageSheet(true);
-    if (villages === null) {
-      try {
-        setVillages(await fetchVillages());
-      } catch {
-        setVillages([]);
-      }
-    }
-  };
-
-  // Lần đầu vào tab: xin phép một lần (tên, ảnh, SĐT), đăng ký tài khoản, rồi
-  // mời chọn thôn để hồ sơ đầy đủ.
+  // Lần đầu vào tab Công dân: xin phép MỘT lần (tên, ảnh, số điện thoại), đăng ký
+  // tài khoản (+điểm), rồi mời chọn thôn/tổ để hồ sơ đầy đủ.
   const link = async () => {
     setBusy(true);
     setLoading(true);
@@ -166,6 +158,17 @@ const CitizenPage = () => {
     if (c) await askPhone(true);
     setBusy(false);
     if (c) notify("Đã liên kết lại thông tin Zalo");
+  };
+
+  const openVillages = async () => {
+    setVillageSheet(true);
+    if (villages === null) {
+      try {
+        setVillages(await fetchVillages());
+      } catch {
+        setVillages([]);
+      }
+    }
   };
 
   const chooseVillage = async (v) => {
@@ -207,8 +210,8 @@ const CitizenPage = () => {
       await openShareSheet({
         type: "zmp_deep_link",
         data: {
-          title: SITE.appName,
-          description: `Ứng dụng của UBND xã ${SITE.wardName}. Nhập mã giới thiệu ${citizen.referralCode} để nhận điểm thưởng.`,
+          title: n.appName,
+          description: `Ứng dụng của ${n.office}. Nhập mã giới thiệu ${citizen.referralCode} để nhận điểm thưởng.`,
           thumbnail: `${API_BASE_URL}/brand/logo-tralien.png`,
           path: `/?ref=${citizen.referralCode}`,
         },
@@ -253,11 +256,33 @@ const CitizenPage = () => {
 
   const referrerPoints = program?.rules?.referrer?.points ?? 2;
 
+  const hero = (title, sub) => (
+    <div
+      className="ns-hero"
+      style={css("height:206px;padding:24px 20px 0;background:linear-gradient(180deg,#0F5A3A 0%,#1E8A57 58%,#7BC99A 100%)")}
+    >
+      <div className="ns-dots" />
+      <HeroSceneSmall />
+      <div style={css("position:relative;display:flex;align-items:center;gap:8px;color:#DDF1E3;font-size:12.5px;font-weight:600;letter-spacing:.04em;text-transform:uppercase")}>
+        <span className="ns-live" />
+        {n.title}
+      </div>
+      <h1 style={css("position:relative;margin:10px 0 0;font-size:30px;font-weight:800;letter-spacing:-.025em;line-height:1.1;color:#fff")}>
+        {title}
+      </h1>
+      {sub && <p style={css("position:relative;margin:8px 0 0;font-size:13px;font-weight:500;color:#DDF1E3")}>{sub}</p>}
+    </div>
+  );
+
   if (loading) {
     return (
-      <Page className="page-citizen">
-        <Header title="Công dân số" />
-        <div className="citizen-empty">Đang tải thông tin…</div>
+      <Page className="ns-page">
+        <div className="ns-root">
+          <div className="ns-scr">
+            {hero("Công dân số")}
+            <div className="ns-empty">Đang tải thông tin…</div>
+          </div>
+        </div>
       </Page>
     );
   }
@@ -265,236 +290,296 @@ const CitizenPage = () => {
   // ---- Chưa liên kết: màn xin phép
   if (!citizen) {
     return (
-      <Page className="page-citizen">
-        <Header title="Công dân số" />
-
-        <div className="citizen-intro">
-          <img className="citizen-intro__logo" src={logo} alt="" />
-          <div className="citizen-intro__title">Liên kết tài khoản Zalo</div>
-          <div className="citizen-intro__desc">
-            {SITE.appName} cần bạn cho phép dùng các thông tin sau:
-          </div>
-
-          <div className="citizen-perm">
-            <span className="tile sm tile-b">
-              <Icon name="badge" className="i20" />
-            </span>
-            <div>
-              <div className="citizen-perm__name">Tên và ảnh đại diện Zalo</div>
-              <div className="citizen-perm__desc">Hiển thị trong hồ sơ công dân của bạn.</div>
-            </div>
-          </div>
-          <div className="citizen-perm">
-            <span className="tile sm tile-p">
-              <Icon name="call" className="i20" />
-            </span>
-            <div>
-              <div className="citizen-perm__name">Số điện thoại</div>
-              <div className="citizen-perm__desc">
-                Để cán bộ liên hệ khi xử lý phản ánh và xác minh tài khoản tích điểm.
+      <Page className="ns-page">
+        <div className="ns-root">
+          <div className="ns-scr">
+            {hero("Công dân số", "Liên kết tài khoản Zalo để tích điểm")}
+            <div className="ns-card ns-rs" style={css("position:relative;z-index:2;margin:-20px 16px 0;padding:20px 18px")}>
+              <div style={css("display:flex;align-items:center;gap:14px;padding-bottom:14px;border-bottom:1px solid #E2EBF4")}>
+                <img
+                  src={logo}
+                  alt={`Logo ${n.appName}`}
+                  width="56"
+                  height="56"
+                  style={css("flex:0 0 56px;border-radius:50%;box-shadow:0 8px 18px -6px rgba(10,47,94,.45)")}
+                />
+                <div>
+                  <h2 style={css("margin:0;font-size:17px;font-weight:800;letter-spacing:-.01em")}>Liên kết tài khoản Zalo</h2>
+                  <span className="ns-cap">{n.appName} cần bạn cho phép:</span>
+                </div>
               </div>
+              <div className="ns-cr ns-tn-teal">
+                <span className="ns-ic ns-sm"><XIcon name="user" /></span>
+                <span style={css("flex:1")}>
+                  <span className="ns-val">Tên và ảnh đại diện Zalo</span><br />
+                  <span className="ns-sb">Hiển thị trong hồ sơ công dân của bạn.</span>
+                </span>
+              </div>
+              <div className="ns-cr ns-tn-coral">
+                <span className="ns-ic ns-sm"><XIcon name="phone" /></span>
+                <span style={css("flex:1")}>
+                  <span className="ns-val">Số điện thoại</span><br />
+                  <span className="ns-sb">Để cán bộ liên hệ khi xử lý phản ánh và xác minh tài khoản tích điểm.</span>
+                </span>
+              </div>
+              <div className="ns-cr ns-tn-green">
+                <span className="ns-ic ns-sm"><XIcon name="pin" /></span>
+                <span style={css("flex:1")}>
+                  <span className="ns-val">Thôn/Tổ bạn sinh sống</span><br />
+                  <span className="ns-sb">Bạn sẽ chọn ngay sau khi liên kết.</span>
+                </span>
+              </div>
+              {error && <p className="ns-error">{error}</p>}
+              <div style={css("padding-top:10px")}>
+                <button type="button" className="ns-call" onClick={link} disabled={busy}>
+                  <span className="ns-ring" />
+                  Cho phép &amp; liên kết
+                </button>
+              </div>
+              <p className="ns-note">
+                Thông tin chỉ dùng cho dịch vụ của {n.office}. Bạn có thể từ chối cấp số điện thoại và vẫn sử
+                dụng ứng dụng. Liên kết lần đầu nhận +{program?.rules?.register?.points ?? 5} điểm.
+              </p>
             </div>
           </div>
-
-          {error && <div className="citizen-error">{error}</div>}
-
-          <button type="button" className="citizen-cta" onClick={link} disabled={busy}>
-            {busy ? "Đang liên kết…" : "Cho phép & liên kết"}
-          </button>
-          <button type="button" className="citizen-link" onClick={() => navigate("/tich-diem")}>
-            Xem thể lệ tích điểm trước
-          </button>
         </div>
-
-        {toast && <div className="citizen-toast">{toast}</div>}
       </Page>
     );
   }
 
-  // ---- Đã liên kết: hồ sơ + menu
+  // ---- Đã liên kết: hồ sơ công dân
+  const tierIdx = Math.max(0, (program?.tiers || []).findIndex((t) => t.key === citizen.tier?.key));
+  const rankIcon = `rank${Math.min(3, tierIdx + 1)}`;
+
   return (
-    <Page className="page-citizen">
-      <Header title="Công dân số" />
-
-      <div className="citizen-card">
-        <div className="citizen-card__head">
-          {citizen.avatar ? (
-            <img className="citizen-card__avatar" src={citizen.avatar} alt="" />
-          ) : (
-            <span className="citizen-card__avatar citizen-card__avatar--empty">
-              <Icon name="groups" className="i24" />
-            </span>
-          )}
-          <div className="citizen-card__id">
-            <div className="citizen-card__name">{citizen.displayName || "Công dân"}</div>
-            <div className="citizen-card__tier">
-              <Icon name="star" className="i13" />
-              {citizen.tier ? citizen.tier.name : "Chưa xếp hạng"}
-            </div>
-          </div>
-          <button type="button" className="citizen-points" onClick={() => navigate("/tich-diem")}>
-            <span className="citizen-points__num">{citizen.points}</span>
-            <span className="citizen-points__unit">điểm</span>
-          </button>
-        </div>
-
-        {citizen.nextTier && (
-          <div className="citizen-progress">
-            <div className="citizen-progress__bar">
-              <span style={{ width: `${citizen.progress}%` }} />
-            </div>
-            <div className="citizen-progress__note">
-              Còn {citizen.pointsNeeded} điểm nữa lên hạng {citizen.nextTier.name}
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className="citizen-sec">Cá nhân</div>
-      <div className="listcard">
-        <MenuRow
-          icon="holiday_village"
-          color="g"
-          title="Thôn/Tổ bạn sinh sống"
-          sub={citizen.village ? null : "Chọn để hoàn thiện hồ sơ"}
-          value={citizen.village ? citizen.village.name : null}
-          onClick={openVillages}
-        />
-        <MenuRow
-          icon="call"
-          color="p"
-          title="Số điện thoại"
-          sub={citizen.phone ? null : "Chưa liên kết"}
-          value={citizen.phone || null}
-          onClick={relink}
-        />
-        <MenuRow
-          icon="rate_review"
-          color="o"
-          title="Phản ánh của bạn"
-          sub="Xem các phản ánh đã gửi"
-          onClick={() => navigate("/phan-anh-cua-toi")}
-        />
-      </div>
-
-      <div className="citizen-sec">Giới thiệu & điểm thưởng</div>
-      <div className="listcard">
-        <button type="button" className="prow" onClick={copyCode}>
-          <span className="tile sm tile-v">
-            <Icon name="qr_code_2" className="i20" />
-          </span>
-          <span className="prow__body">
-            <span className="prow__title">Mã giới thiệu của tôi</span>
-            <span className="prow__desc">Bạn bè nhập mã này, cả hai cùng được điểm</span>
-          </span>
-          <span className="citizen-code">{citizen.referralCode}</span>
-          <Icon name="content_copy" className="i18 grey" />
-        </button>
-        <MenuRow
-          icon="north_east"
-          color="b"
-          title="Chia sẻ Mini App"
-          sub="Mời người thân cùng sử dụng"
-          onClick={share}
-        />
-        <MenuRow
-          icon="groups"
-          color="c"
-          title={citizen.referredBy ? "Bạn đã nhập mã giới thiệu" : "Nhập mã giới thiệu"}
-          sub={citizen.referredBy ? null : `Nhập mã của người giới thiệu, +${referrerPoints} điểm`}
-          onClick={() => !citizen.referredBy && setReferralSheet(true)}
-          disabled={citizen.referredBy}
-        />
-        <MenuRow
-          icon="star"
-          color="a"
-          title="Tích điểm & thể lệ"
-          sub="Nhật ký điểm, phân hạng, quyền lợi"
-          onClick={() => navigate("/tich-diem")}
-        />
-      </div>
-
-      <div className="citizen-sec">Tiện ích</div>
-      <div className="listcard">
-        {oaId && (
-          <MenuRow
-            icon="campaign"
-            color="b"
-            title={citizen.followedOA ? "Đã quan tâm Zalo OA" : "Quan tâm Zalo OA"}
-            sub={citizen.followedOA ? "Bấm để bỏ quan tâm" : "Nhận thông báo mới từ xã"}
-            onClick={toggleFollow}
-          />
-        )}
-        <MenuRow
-          icon="home"
-          color="n"
-          title="Ghim ứng dụng ra màn hình"
-          sub="Thêm lối tắt vào màn hình chính"
-          onClick={pin}
-        />
-        <MenuRow
-          icon="description"
-          color="g"
-          title="Thông tin ứng dụng"
-          sub="Phiên bản, nguồn tư liệu"
-          onClick={() => navigate("/thong-tin-ung-dung")}
-        />
-      </div>
-
-      <Sheet visible={villageSheet} onClose={() => setVillageSheet(false)} autoHeight>
-        <div className="citizen-sheet">
-          <div className="citizen-sheet__title">Chọn Thôn/Tổ</div>
-          {villages === null ? (
-            <div className="citizen-empty">Đang tải…</div>
-          ) : villages.length === 0 ? (
-            <div className="citizen-empty">Danh sách thôn đang được cập nhật.</div>
-          ) : (
-            <div className="citizen-villages">
-              {villages.map((v) => (
-                <button
-                  key={v._id}
-                  type="button"
-                  className={`citizen-village${
-                    citizen.village && citizen.village.id === v._id ? " is-active" : ""
-                  }`}
-                  onClick={() => chooseVillage(v)}
-                  disabled={busy}
-                >
-                  {v.ten}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-      </Sheet>
-
-      <Sheet visible={referralSheet} onClose={() => setReferralSheet(false)} autoHeight>
-        <div className="citizen-sheet">
-          <div className="citizen-sheet__title">Nhập mã giới thiệu</div>
-          <div className="citizen-sheet__desc">
-            Mã gồm 6 ký tự của người đã giới thiệu bạn. Mỗi người chỉ nhập một lần.
-          </div>
-          <input
-            className="citizen-input"
-            value={referralInput}
-            onChange={(e) => setReferralInput(e.target.value.toUpperCase())}
-            placeholder="VD: K7M2QP"
-            maxLength={6}
-            autoCapitalize="characters"
-          />
-          {referralError && <div className="citizen-error">{referralError}</div>}
-          <button
-            type="button"
-            className="citizen-cta"
-            onClick={redeem}
-            disabled={busy || referralInput.length !== 6}
+    <Page className="ns-page">
+      <div className="ns-root">
+        <div className="ns-scr">
+          <div
+            className="ns-hero"
+            style={css("height:190px;padding:26px 20px 0;background:linear-gradient(180deg,#0F5A3A 0%,#1E8A57 58%,#7BC99A 100%)")}
           >
-            {busy ? "Đang kiểm tra…" : "Xác nhận"}
-          </button>
+            <div className="ns-dots" />
+            <img
+              src={logo}
+              alt=""
+              width="150"
+              height="150"
+              aria-hidden="true"
+              style={css("position:absolute;right:-26px;top:-18px;opacity:.16")}
+            />
+            <div style={css("position:relative;display:flex;flex-direction:column;gap:6px")}>
+              <h1 style={css("margin:0;font-size:26px;font-weight:800;letter-spacing:-.02em;color:#fff")}>Cá nhân</h1>
+              <span style={css("font-size:13.5px;font-weight:500;color:#DDF1E3")}>Quản lý thông tin và điểm thưởng</span>
+            </div>
+          </div>
+
+          <div className="ns-card ns-rs" style={css("position:relative;z-index:2;margin:-62px 16px 0;padding:18px")}>
+            <div style={css("display:flex;align-items:center;gap:14px")}>
+              <span className="ns-ph">
+                {citizen.avatar ? <img src={citizen.avatar} alt="" /> : <XIcon name="user" size={32} />}
+              </span>
+              <span style={css("flex:1;min-width:0;display:flex;flex-direction:column;gap:3px")}>
+                <b style={css("font-size:17px;font-weight:800;color:#12281D")}>{citizen.displayName || "Công dân"}</b>
+                <span className="ns-cap">ID Zalo: {citizen.zaloUserId}</span>
+                <span className="ns-cap">SĐT: {citizen.phone || "Chưa liên kết"}</span>
+              </span>
+            </div>
+            <div style={css("margin-top:14px;display:flex;align-items:center;justify-content:space-between;gap:10px")}>
+              <button type="button" className="ns-rankpill" onClick={() => navigate("/tich-diem")}>
+                <Icon3 name={rankIcon} />
+                {citizen.tier ? citizen.tier.name : "Chưa xếp hạng"}
+                <svg className="ns-sv" viewBox="0 0 24 24" width="16" height="16" style={css("width:16px;height:16px")}>
+                  <path d="M9 6l6 6-6 6" />
+                </svg>
+              </button>
+              <button type="button" className="ns-fld" onClick={openVillages} style={css("flex:1;min-height:44px")}>
+                <XIcon name="pin" size={18} />
+                <span style={css("flex:1;font-size:13px;text-align:left")}>
+                  {citizen.village ? citizen.village.name : "Chọn thôn/tổ"}
+                </span>
+                <svg className="ns-sv" viewBox="0 0 24 24" width="16" height="16" style={css("color:#7F9686")}>
+                  <path d="M6 9l6 6 6-6" />
+                </svg>
+              </button>
+            </div>
+          </div>
+
+          {oaId && (
+            <div style={css("padding:14px 16px 0")}>
+              <div
+                className="ns-rs"
+                style={css(
+                  `animation-delay:.08s;display:flex;align-items:center;gap:12px;padding:14px 14px 14px 16px;border-radius:24px;color:#fff;${
+                    citizen.followedOA
+                      ? "background:linear-gradient(120deg,#0E6B4B,#1FA36B);box-shadow:0 16px 30px -18px #0E6B4B"
+                      : "background:linear-gradient(120deg,#0C3B2A,#1E7A4C);box-shadow:0 16px 30px -18px #0C3B2A"
+                  }`
+                )}
+              >
+                <span style={css("flex:0 0 44px;height:44px;border-radius:15px;background:rgba(255,255,255,.18);display:grid;place-items:center")}>
+                  <XIcon name="chat" size={24} />
+                </span>
+                <span style={css("flex:1;font-size:13.5px;font-weight:700;line-height:1.35")}>
+                  {citizen.followedOA ? "Đã quan tâm" : "Chưa quan tâm"} Zalo OA {n.office}
+                </span>
+                <button
+                  type="button"
+                  className="ns-oab"
+                  onClick={toggleFollow}
+                  style={css("background:rgba(255,255,255,.2);color:#fff;border:1px solid rgba(255,255,255,.4)")}
+                >
+                  {citizen.followedOA ? "Bỏ quan tâm" : "Quan tâm"}
+                </button>
+              </div>
+            </div>
+          )}
+
+          <div style={css("padding:14px 16px 0")}>
+            <div className="ns-card ns-rs" style={css("animation-delay:.14s;padding:16px 18px")}>
+              <div className="ns-lab">Mã giới thiệu của tôi</div>
+              <div style={css("display:flex;align-items:center;justify-content:space-between;margin-top:6px")}>
+                <b style={css("font-family:'Space Grotesk',sans-serif;font-size:30px;letter-spacing:.08em;color:#14603C")}>
+                  {citizen.referralCode}
+                </b>
+                <button type="button" className="ns-chip" onClick={copyCode} style={css("background:#EAF2FC")}>
+                  <XIcon name="copy" size={16} />
+                  <span>Sao chép</span>
+                </button>
+              </div>
+              <div className="ns-cap" style={css("margin-top:4px")}>
+                Mời người thân dùng {n.appName} để cùng nhận điểm thưởng
+              </div>
+            </div>
+          </div>
+
+          <div style={css("padding:14px 16px 0")}>
+            <div className="ns-card ns-rs" style={css("animation-delay:.2s;overflow:hidden")}>
+              <button type="button" className="ns-row" onClick={share}>
+                <span className="ns-gi y"><XIcon name="send" size={24} /></span>
+                <span style={css("flex:1;display:flex;flex-direction:column")}>
+                  <span className="ns-nm">Chia sẻ Mini App</span>
+                  <span className="ns-sb">Mời người thân cùng sử dụng</span>
+                </span>
+                <span className="ns-beta" style={css("background:#DCF3E6;color:#18633F")}>+{referrerPoints} điểm</span>
+              </button>
+              <button
+                type="button"
+                className="ns-row"
+                onClick={() => {
+                  setReferralError("");
+                  setReferralSheet(true);
+                }}
+              >
+                <span className="ns-gi b"><XIcon name="adduser" size={24} /></span>
+                <span style={css("flex:1;display:flex;flex-direction:column")}>
+                  <span className="ns-nm">Nhập mã giới thiệu ứng dụng</span>
+                  {citizen.referredBy && <span className="ns-sb">Bạn đã nhập mã giới thiệu</span>}
+                </span>
+                <Chevron />
+              </button>
+              <button type="button" className="ns-row" onClick={() => navigate("/phan-anh-cua-toi")}>
+                <span className="ns-gi o"><XIcon name="megaphone" size={24} /></span>
+                <span className="ns-nm" style={css("flex:1")}>Phản ánh của bạn</span>
+                <Chevron />
+              </button>
+              <button type="button" className="ns-row" onClick={pin}>
+                <span className="ns-gi v"><XIcon name="pin" size={24} /></span>
+                <span style={css("flex:1;display:flex;flex-direction:column")}>
+                  <span className="ns-nm">Ghim ứng dụng ra màn hình</span>
+                  <span className="ns-sb">Thêm lối tắt vào màn hình chính</span>
+                </span>
+                <Chevron />
+              </button>
+              <button type="button" className="ns-row" onClick={() => navigate("/thong-tin-ung-dung")}>
+                <span className="ns-gi s"><XIcon name="info" size={24} /></span>
+                <span className="ns-nm" style={css("flex:1")}>Thông tin ứng dụng</span>
+                <Chevron />
+              </button>
+              <button type="button" className="ns-row" onClick={() => navigate("/tich-diem", { state: { tab: "the-le" } })}>
+                <span className="ns-gi s"><XIcon name="book" size={24} /></span>
+                <span className="ns-nm" style={css("flex:1")}>Giới thiệu chung</span>
+                <Chevron />
+              </button>
+            </div>
+          </div>
+
+          <div style={css("padding:14px 16px 110px")}>
+            <button type="button" className="ns-bt o" style={css("width:100%")} onClick={relink} disabled={busy}>
+              <XIcon name="refresh" size={20} />
+              Liên kết lại
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {toast && <div className="ns-toast">{toast}</div>}
+
+      <Sheet visible={villageSheet} onClose={() => setVillageSheet(false)} autoHeight swipeToClose>
+        <div className="ns-sheet">
+          <div className="ns-sheet__title">Chọn Thôn/Tổ</div>
+          <p className="ns-sheet__desc">Chọn nơi bạn sinh sống để nhận thông báo đúng khu vực.</p>
+          {villages === null && <div className="ns-sheet__empty">Đang tải…</div>}
+          {villages && villages.length === 0 && <div className="ns-sheet__empty">Danh sách thôn đang được cập nhật.</div>}
+          <div className="ns-sheet__list">
+            {(villages || []).map((v) => (
+              <button
+                key={v._id}
+                type="button"
+                className={`ns-opt ${citizen.village?.id === v._id ? "ns-on" : ""}`}
+                onClick={() => chooseVillage(v)}
+                disabled={busy}
+              >
+                <span>{v.ten}</span>
+                {citizen.village?.id === v._id && (
+                  <svg className="ns-sv" viewBox="0 0 24 24" width="20" height="20" style={css("color:#2E9E66")}>
+                    <path d="M5 12.5l4.5 4.5L19 7.5" />
+                  </svg>
+                )}
+              </button>
+            ))}
+          </div>
         </div>
       </Sheet>
 
-      {toast && <div className="citizen-toast">{toast}</div>}
+      <Sheet visible={referralSheet} onClose={() => setReferralSheet(false)} autoHeight swipeToClose>
+        <div className="ns-sheet">
+          <div style={css("display:flex;align-items:center;gap:12px")}>
+            <span className="ns-gi b"><XIcon name="adduser" size={24} /></span>
+            <h2 style={css("margin:0;font-size:18px;font-weight:800")}>Nhập mã giới thiệu</h2>
+          </div>
+          <p className="ns-sheet__desc">Nhập mã của người đã mời bạn để cả hai cùng nhận điểm thưởng.</p>
+          {citizen.referredBy ? (
+            <div className="ns-sheet__empty">Bạn đã nhập mã giới thiệu trước đó.</div>
+          ) : (
+            <>
+              <input
+                className="ns-inp"
+                value={referralInput}
+                maxLength={6}
+                placeholder="Ví dụ: ABC123"
+                aria-label="Mã giới thiệu"
+                onChange={(e) => setReferralInput(e.target.value.toUpperCase())}
+              />
+              {referralError && <div className="ns-error">{referralError}</div>}
+              <div className="ns-sheet__actions">
+                <button type="button" className="ns-bt o" style={css("flex:1")} onClick={() => setReferralSheet(false)}>
+                  Hủy
+                </button>
+                <button
+                  type="button"
+                  className="ns-bt p"
+                  style={css("flex:1")}
+                  onClick={redeem}
+                  disabled={busy || referralInput.trim().length !== 6}
+                >
+                  Xác nhận
+                </button>
+              </div>
+            </>
+          )}
+        </div>
+      </Sheet>
     </Page>
   );
 };

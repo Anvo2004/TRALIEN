@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Page, Header, Box } from "zmp-ui";
 import API_BASE_URL from "../data/api-config.js";
+import HeroIcon from "../components/ns/hero-icon.jsx";
 import {
   TRO_CAP_CATEGORIES,
   statusOf,
@@ -99,7 +100,7 @@ const ThongBaoPage = () => {
       <Header title="Thông báo" />
 
       <div className="lookup-hero">
-        <span className="lookup-hero__icon">🔔</span>
+        <span className="lookup-hero__icon"><HeroIcon e="🔔" /></span>
         <div className="lookup-hero__title">Thông báo</div>
         <div className="lookup-hero__desc">
           Thông báo nhận tiền trợ cấp xã hội hàng tháng và các thông báo khác của xã
