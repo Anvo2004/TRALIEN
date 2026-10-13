@@ -142,7 +142,7 @@ export default function AttachmentComposer({ value, onChange, disabled }) {
             <label className="flex flex-col items-center justify-center gap-1.5 rounded-xl border-2 border-dashed border-slate-200 p-4 cursor-pointer hover:border-emerald-400 hover:bg-emerald-50/30 transition-all">
               <Video className="h-5 w-5 text-slate-300" />
               <span className="text-xs text-slate-400">
-                {uploadingVideo ? 'Đang tải video...' : 'Chọn video · tối đa 100MB'}
+                {uploadingVideo ? 'Đang tải video...' : 'Chọn video · tối đa 90MB'}
               </span>
               <input
                 type="file"

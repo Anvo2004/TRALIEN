@@ -1,4 +1,8 @@
 const express = require("express");
+const fs = require("fs");
+const path = require("path");
+const multer = require("multer");
+const config = require("../config");
 const Feedback = require("../models/Feedback");
 const AdminUser = require("../models/AdminUser");
 const Category = require("../models/Category");
@@ -12,6 +16,121 @@ const router = express.Router();
 
 const LEADER_ROLES = ["superadmin", "dept_leader"];
 const OFFICER_ROLES = ["officer", "staff"];
+
+// ============================================================
+// Đính kèm nội bộ của phản ánh (phân công: lãnh đạo → cán bộ; dự thảo: cán bộ
+// → lãnh đạo). Khác đính kèm của broadcast ở chỗ KHÔNG đẩy lên Zalo: đây là
+// tài liệu trao đổi giữa cán bộ, người dân không thấy (xem whitelist trong
+// services/feedbackPublicView.js). File lưu ra đĩa và phục vụ lại qua /images
+// (đã mount trong app.js), trả về URL tuyệt đối để AdminWeb mở trực tiếp.
+// ============================================================
+const ATTACH_GROUP = "phan-anh-dinh-kem";
+const ATTACH_DIR = path.join(__dirname, "..", "..", "public", "images", ATTACH_GROUP);
+const ATTACH_ROLES = [...LEADER_ROLES, ...OFFICER_ROLES];
+const MAX_IMAGES = 5;
+const DOC_EXT = [".pdf", ".doc", ".csv"];
+
+function attachStorage(prefix) {
+  return multer.diskStorage({
+    destination: (req, file, cb) => {
+      fs.mkdir(ATTACH_DIR, { recursive: true }, (err) => cb(err, ATTACH_DIR));
+    },
+    filename: (req, file, cb) => {
+      const ext = path.extname(file.originalname).toLowerCase();
+      cb(null, `${prefix}_${Date.now()}_${Math.random().toString(36).slice(2, 6)}${ext}`);
+    },
+  });
+}
+
+function attachUrl(filename) {
+  return `${config.publicUrl}/images/${ATTACH_GROUP}/${filename}`;
+}
+
+function uploadError(err, limitLabel) {
+  if (err.code === "LIMIT_FILE_SIZE") return `File vượt quá giới hạn ${limitLabel}`;
+  if (err.code === "LIMIT_FILE_COUNT") return `Tối đa ${MAX_IMAGES} ảnh mỗi lần`;
+  return err.message;
+}
+
+router.post("/attachments/upload/image", requireRole(...ATTACH_ROLES), (req, res) => {
+  const upload = multer({
+    storage: attachStorage("img"),
+    limits: { fileSize: 10 * 1024 * 1024, files: MAX_IMAGES },
+    fileFilter: (req, file, cb) => {
+      if (file.mimetype.startsWith("image/")) cb(null, true);
+      else cb(new Error("Chỉ nhận file ảnh"));
+    },
+  }).array("images", MAX_IMAGES);
+
+  upload(req, res, (err) => {
+    if (err) return res.status(400).json({ error: uploadError(err, "10MB/ảnh") });
+    if (!req.files?.length) return res.status(400).json({ error: "Không có file ảnh" });
+    res.json({
+      images: req.files.map((f) => ({ url: attachUrl(f.filename), name: f.originalname })),
+    });
+  });
+});
+
+router.post("/attachments/upload/video", requireRole(...ATTACH_ROLES), (req, res) => {
+  const upload = multer({
+    storage: attachStorage("vid"),
+    // 90MB chứ không phải 100MB: Nginx trên VPS đặt client_max_body_size 100M,
+    // file sát ngưỡng sẽ bị Nginx trả 413 (trang HTML) trước khi tới Node, báo
+    // lỗi khó hiểu cho cán bộ. Để thấp hơn một nhịp thì lỗi là của mình.
+    limits: { fileSize: 90 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+      if (file.mimetype.startsWith("video/")) cb(null, true);
+      else cb(new Error("Chỉ nhận file video"));
+    },
+  }).single("video");
+
+  upload(req, res, (err) => {
+    if (err) return res.status(400).json({ error: uploadError(err, "90MB") });
+    if (!req.file) return res.status(400).json({ error: "Không có file video" });
+    res.json({ url: attachUrl(req.file.filename), name: req.file.originalname });
+  });
+});
+
+router.post("/attachments/upload/file", requireRole(...ATTACH_ROLES), (req, res) => {
+  const upload = multer({
+    storage: attachStorage("file"),
+    limits: { fileSize: 20 * 1024 * 1024 },
+    fileFilter: (req, file, cb) => {
+      const ext = path.extname(file.originalname).toLowerCase();
+      if (DOC_EXT.includes(ext)) cb(null, true);
+      else cb(new Error(`Chỉ nhận file ${DOC_EXT.join(", ")}`));
+    },
+  }).single("file");
+
+  upload(req, res, (err) => {
+    if (err) return res.status(400).json({ error: uploadError(err, "20MB") });
+    if (!req.file) return res.status(400).json({ error: "Không có file" });
+    res.json({ url: attachUrl(req.file.filename), name: req.file.originalname });
+  });
+});
+
+// Chỉ giữ đúng {url, name} client gửi lên, cắt độ dài và chặn quá 5 ảnh —
+// không tin thẳng payload dù route đã sau requireAuth.
+function cleanAttachment(item) {
+  if (!item || typeof item.url !== "string" || !item.url.trim()) return undefined;
+  return {
+    url: item.url.trim().slice(0, 500),
+    name: String(item.name || "").slice(0, 200),
+  };
+}
+
+function buildBundle({ note, images, video, file }, userId) {
+  return {
+    note: typeof note === "string" ? note : "",
+    images: Array.isArray(images)
+      ? images.map(cleanAttachment).filter(Boolean).slice(0, MAX_IMAGES)
+      : [],
+    video: cleanAttachment(video),
+    file: cleanAttachment(file),
+    sentBy: userId,
+    sentAt: new Date(),
+  };
+}
 
 router.get("/", async (req, res) => {
   const { status, assignedTo, categoryId, q, page = 1 } = req.query;
@@ -89,7 +208,7 @@ router.delete("/:id", requireRole("superadmin"), async (req, res) => {
 });
 
 router.post("/:id/assign", requireRole(...LEADER_ROLES), async (req, res) => {
-  const { assignedTo, note } = req.body;
+  const { assignedTo, note, images, video, file } = req.body;
   if (!assignedTo) return res.status(400).json({ error: "Thiếu cán bộ phụ trách" });
 
   const feedback = await Feedback.findByIdAndUpdate(
@@ -97,7 +216,7 @@ router.post("/:id/assign", requireRole(...LEADER_ROLES), async (req, res) => {
     {
       assignedTo,
       assignedBy: req.user.id,
-      assignAttachments: { note: note || "", sentBy: req.user.id, sentAt: new Date() },
+      assignAttachments: buildBundle({ note, images, video, file }, req.user.id),
     },
     { new: true }
   );
@@ -117,7 +236,7 @@ router.post("/:id/assign", requireRole(...LEADER_ROLES), async (req, res) => {
 });
 
 router.post("/:id/draft", requireRole(...OFFICER_ROLES, ...LEADER_ROLES), async (req, res) => {
-  const { draftResponse, note } = req.body;
+  const { draftResponse, note, images, video, file } = req.body;
   if (!draftResponse) return res.status(400).json({ error: "Thiếu nội dung trả lời" });
 
   const feedback = await Feedback.findById(req.params.id);
@@ -127,7 +246,7 @@ router.post("/:id/draft", requireRole(...OFFICER_ROLES, ...LEADER_ROLES), async 
   }
 
   feedback.draftResponse = draftResponse;
-  feedback.draftAttachments = { note: note || "", sentBy: req.user.id, sentAt: new Date() };
+  feedback.draftAttachments = buildBundle({ note, images, video, file }, req.user.id);
   feedback.draftBy = req.user.id;
   feedback.draftAt = new Date();
   feedback.status = "draft";
