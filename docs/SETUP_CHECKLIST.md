@@ -23,7 +23,7 @@ Backend chạy đầy đủ tính năng và lên production. Đánh dấu `[x]` 
       (đoạn banner bên phải logo, cùng nguồn) hiển thị trong hero Trang chủ.
 - [ ] `banner-cong-so.jpg`, `banner-danang.jpg` (component `Banner`, hiện
       không hiển thị ở Trang chủ sau redesign) và
-      `Frontend/AdminWeb/src/images/logotralien.jpg` vẫn là ảnh placeholder.
+      `Frontend/AdminWeb/src/images/logotralien.png` đã là logo thật (2026-10-14); hai banner trên vẫn là placeholder.
 
 ## 2. Hạ tầng dữ liệu
 

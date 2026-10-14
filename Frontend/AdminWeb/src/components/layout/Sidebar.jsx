@@ -2,7 +2,7 @@ import { NavLink } from 'react-router-dom'
 import { LayoutDashboard, MessageSquare, Users, LogOut, Settings, Send, Wallet, Stethoscope, FileText, LayoutGrid, Award } from 'lucide-react'
 import { useAuth } from '@/contexts/AuthContext'
 import { cn } from '@/lib/utils'
-import logoImg from '@/images/logotralien.jpg'
+import logoImg from '@/images/logotralien.png'
 
 const ROLE_LABELS = {
   superadmin:  'Lãnh đạo Ủy ban',
@@ -54,7 +54,7 @@ export default function Sidebar() {
       {/* Brand */}
       <div className="relative flex items-center gap-3 px-5 py-5 border-b border-white/8">
         <div className="h-10 w-10 shrink-0 overflow-hidden rounded-2xl bg-white shadow-lg shadow-blue-800/40">
-          <img src={logoImg} alt="Logo Xã Trà Liên" className="h-full w-full object-cover" />
+          <img src={logoImg} alt="Logo Xã Trà Liên" className="h-full w-full object-contain p-0.5" />
         </div>
         <div className="min-w-0">
           <p className="text-white text-sm font-bold leading-tight truncate">UBND Xã Trà Liên</p>

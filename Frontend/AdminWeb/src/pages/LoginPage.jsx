@@ -8,7 +8,7 @@ import 'leaflet/dist/leaflet.css'
 import { api } from '@/lib/api'
 import { useAuth } from '@/contexts/AuthContext'
 import { toast } from 'sonner'
-import logoImg from '@/images/logotralien.jpg'
+import logoImg from '@/images/logotralien.png'
 import '@/styles/login.css'
 
 // Tọa độ trung tâm Xã Trà Liên, Thành phố Đà Nẵng
