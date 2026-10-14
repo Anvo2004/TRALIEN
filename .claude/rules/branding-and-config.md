@@ -26,7 +26,7 @@ chạm cần sửa (đã áp dụng khi tạo dự án này từ Thăng Điền)
 
 - Chuỗi nhận diện xã (tên, slug container/package) — tìm-thay an toàn, mechanical.
 - URL/mã của bên thứ ba đặc thù theo xã (cổng thông tin điện tử, mã điện lực
-  EVN CPC, tài khoản CGY1022/IOCTC) — **KHÔNG suy ra bằng tìm-thay** (vd.
+  EVN CPC, tài khoản CGY1022) — **KHÔNG suy ra bằng tìm-thay** (vd.
   `thangdien.danang.gov.vn` → `tralien.danang.gov.vn` gần như chắc chắn sai,
   domain đó có thể không tồn tại). Để rỗng + comment TODO, dựa vào
   `docs/SETUP_CHECKLIST.md` để xác nhận với xã trước khi điền.

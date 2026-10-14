@@ -1,73 +1,23 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { Page, Header, Box } from "zmp-ui";
-import API_BASE_URL from "../data/api-config.js";
 import HeroIcon from "../components/ns/hero-icon.jsx";
+import { openExternal } from "../utils/open-external.js";
 
-function formatDate(iso) {
-  if (!iso) return "—";
-  return new Date(iso).toLocaleDateString("vi-VN", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-  });
-}
-
-// Màu badge theo trạng thái (đồng bộ với card của Đại Lộc)
-function statusColor(trangThai) {
-  const t = (trangThai || "").toLowerCase();
-  if (t.includes("đã trả") || t.includes("trả kết quả")) return "#2196F3";
-  if (t.includes("từ chối") || t.includes("không được")) return "#f44336";
-  if (t.includes("đang xử lý") || t.includes("đang thụ lý")) return "#FF9800";
-  if (t.includes("đã tiếp nhận") || t.includes("chờ xử lý")) return "#4CAF50";
-  return "#9E9E9E";
-}
+// Tra cứu hồ sơ TTHC không còn gọi IOCTC qua Backend của xã nữa — chuyển sang
+// Cổng Dịch vụ công Quốc gia (.gov.vn, hợp lệ với chính sách kiểm duyệt Zalo).
+// Trang này giữ lại để QR trên biên nhận (home-search.jsx) và đường dẫn cũ vẫn
+// dẫn tới đúng nơi.
+const DVC_URL = "https://dichvucong.gov.vn";
 
 const TraCuuHoSoPage = () => {
   const location = useLocation();
-  const [maHoSo, setMaHoSo] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [dossiers, setDossiers] = useState(null); // null = chưa tra, [] = không tìm thấy
+  const maHoSo = location.state?.prefillMaHoSo || "";
 
-  const search = async (code) => {
-    if (!code) return;
-
-    setLoading(true);
-    setError("");
-    setDossiers(null);
-    try {
-      const res = await fetch(
-        `${API_BASE_URL}/api/public/tra-cuu-ho-so?ma_ho_so=${encodeURIComponent(code)}`
-      );
-      const data = await res.json();
-      if (!res.ok) {
-        setError(data.error || "Không tra cứu được hồ sơ. Vui lòng thử lại sau.");
-        return;
-      }
-      setDossiers(data.dossiers || []);
-    } catch {
-      setError("Không kết nối được máy chủ. Vui lòng thử lại sau.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  // Đến từ quét mã QR ở Trang chủ (xem home-search.jsx) — QR ghi mã hồ sơ
-  // trên biên nhận giấy thì tự điền + tra luôn, không bắt gõ lại tay.
   useEffect(() => {
-    const prefill = location.state?.prefillMaHoSo;
-    if (prefill) {
-      setMaHoSo(prefill);
-      search(prefill);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [location.state]);
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    search(maHoSo.trim());
-  };
+    // Vào từ QR biên nhận: mở thẳng cổng, không bắt bấm thêm.
+    if (maHoSo) openExternal(DVC_URL);
+  }, [maHoSo]);
 
   return (
     <Page className="page-lookup">
@@ -77,82 +27,26 @@ const TraCuuHoSoPage = () => {
         <span className="lookup-hero__icon"><HeroIcon e="📊" /></span>
         <div className="lookup-hero__title">Tra cứu hồ sơ TTHC</div>
         <div className="lookup-hero__desc">
-          Kiểm tra tiến độ xử lý hồ sơ thủ tục hành chính đã nộp tại xã Trà Liên
+          Tra cứu tiến độ giải quyết hồ sơ trên Cổng Dịch vụ công Quốc gia
         </div>
       </div>
 
       <Box className="section">
-        <form className="lookup-form" onSubmit={handleSubmit}>
-          <label>
-            🔢 Mã hồ sơ *
-            <input
-              value={maHoSo}
-              onChange={(e) => setMaHoSo(e.target.value)}
-              placeholder="Nhập mã hồ sơ trên biên nhận (VD: H01.99-250101-0001)"
-              required
-            />
-          </label>
-          <button type="submit" className="lookup-form__submit" disabled={loading}>
-            {loading ? "Đang tra cứu..." : "Tra cứu"}
+        <div className="lookup-form">
+          {maHoSo && (
+            <p>
+              Mã hồ sơ của bạn: <strong>{maHoSo}</strong>. Hãy nhập mã này vào ô tra cứu trên
+              Cổng Dịch vụ công.
+            </p>
+          )}
+          <button
+            type="button"
+            className="lookup-form__submit"
+            onClick={() => openExternal(DVC_URL)}
+          >
+            Mở Cổng Dịch vụ công Quốc gia
           </button>
-        </form>
-
-        {error && <div className="warning-box">⚠️ {error}</div>}
-
-        {dossiers && dossiers.length === 0 && !error && (
-          <div className="lookup-empty">
-            📭 Không tìm thấy hồ sơ với mã <strong>{maHoSo.trim()}</strong>. Vui lòng kiểm tra
-            lại mã trên biên nhận.
-          </div>
-        )}
-
-        {dossiers && dossiers.length > 0 && (
-          <div className="hoso-results">
-            {dossiers.map((d, i) => (
-              <div className="hoso-card" key={d.maHoSo || i}>
-                <div className="hoso-card__head">
-                  <span className="hoso-card__code">{d.maHoSo || "—"}</span>
-                  <span
-                    className="hoso-card__badge"
-                    style={{ background: statusColor(d.tenTrangThai) }}
-                  >
-                    {d.tenTrangThai || "—"}
-                  </span>
-                </div>
-                <table className="hoso-card__table">
-                  <tbody>
-                    {d.tenChuHoSo && (
-                      <tr>
-                        <td className="hoso-card__label">Chủ hồ sơ</td>
-                        <td>{d.tenChuHoSo}</td>
-                      </tr>
-                    )}
-                    <tr>
-                      <td className="hoso-card__label">Tên dịch vụ</td>
-                      <td>{d.tenTTHC || "—"}</td>
-                    </tr>
-                    <tr>
-                      <td className="hoso-card__label">Đơn vị xử lý</td>
-                      <td>{d.donViXuLy || "—"}</td>
-                    </tr>
-                    <tr>
-                      <td className="hoso-card__label">Ngày tiếp nhận</td>
-                      <td>{formatDate(d.ngayTiepNhan)}</td>
-                    </tr>
-                    <tr>
-                      <td className="hoso-card__label">Hạn giải quyết</td>
-                      <td>{formatDate(d.hanGiaiQuyet)}</td>
-                    </tr>
-                    <tr>
-                      <td className="hoso-card__label">Ngày trả kết quả</td>
-                      <td>{formatDate(d.ngayTraKetQua)}</td>
-                    </tr>
-                  </tbody>
-                </table>
-              </div>
-            ))}
-          </div>
-        )}
+        </div>
       </Box>
     </Page>
   );

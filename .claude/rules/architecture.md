@@ -8,7 +8,7 @@ Cán bộ xã (AdminWeb)     ──┘                              │
                                                             ├──▶ Upstash Redis (rate-limit)
                                                             ├──▶ Zalo OpenAPI (OA: gửi tin, webhook)
                                                             └──▶ Tích hợp ngoài: EVN CPC (lịch cắt điện),
-                                                                 Cổng góp ý 1022 + IOCTC (thành phố),
+                                                                 Cổng góp ý 1022 (thành phố),
                                                                  Anthropic API (Trợ lý số)
 ```
 

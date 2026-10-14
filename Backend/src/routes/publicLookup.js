@@ -3,7 +3,6 @@ const config = require("../config");
 const { isAllowedExternalUrl } = require("../utils/linkPolicy");
 const catDienService = require("../services/catDienService");
 const vanBanService = require("../services/vanBanTraLienService");
-const hoSoService = require("../services/hoSoService");
 const newsScrapeService = require("../services/newsScrapeService");
 const TroCapSchedule = require("../models/TroCapSchedule");
 const LichYTe = require("../models/LichYTe");
@@ -22,24 +21,6 @@ const router = express.Router();
 router.get("/news", async (req, res) => {
   const items = await newsScrapeService.listNews(20);
   res.json({ items });
-});
-
-// ===== Tra cứu hồ sơ TTHC (IOCTC — tctthc.1022.vn) =====
-router.get("/tra-cuu-ho-so", async (req, res) => {
-  const maHoSo = (req.query.ma_ho_so || "").trim();
-  if (!maHoSo) {
-    return res.status(400).json({ error: "Vui lòng nhập mã hồ sơ" });
-  }
-  if (!hoSoService.isConfigured()) {
-    return res.status(503).json({ error: "Chức năng tra cứu hồ sơ chưa được cấu hình" });
-  }
-  try {
-    const dossiers = await hoSoService.searchDossier(maHoSo);
-    res.json({ dossiers });
-  } catch (err) {
-    console.error("[IOCTC] Tra cứu hồ sơ thất bại:", err.message);
-    res.status(502).json({ error: "Không tra cứu được hồ sơ lúc này. Vui lòng thử lại sau." });
-  }
 });
 
 // ===== Lịch cắt điện =====

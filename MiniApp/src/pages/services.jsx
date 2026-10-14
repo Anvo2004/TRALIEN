@@ -124,13 +124,16 @@ const ServicesPage = () => {
 
           <div className="ns-st" style={css("display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:0 16px")}>
             {shown.map((s) => {
-              const Tag = s.path ? "button" : "div";
+              const clickable = Boolean(s.path || s.href);
+              const Tag = clickable ? "button" : "div";
               return (
                 <Tag
                   key={s._id}
-                  type={s.path ? "button" : undefined}
+                  type={clickable ? "button" : undefined}
                   className={`ns-svc ns-rs ns-tn-${nsTone(s.icon, "blue")}`}
-                  onClick={s.path ? () => navigate(s.path) : undefined}
+                  onClick={
+                    s.path ? () => navigate(s.path) : s.href ? () => openExternal(s.href) : undefined
+                  }
                 >
                   <IconBox name={s.icon} />
                   <span className="ns-nm">{s.label}</span>

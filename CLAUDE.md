@@ -45,10 +45,10 @@ chạm này.
 
 ## Quy ước khác
 
-- Tích hợp ngoài (Cloudinary, Upstash, Zalo OA, CGY1022, IOCTC, Anthropic...)
+- Tích hợp ngoài (Cloudinary, Upstash, Zalo OA, CGY1022, Anthropic...)
   luôn tự tắt gracefully khi thiếu config (`isConfigured()` hoặc guard đầu
   hàm) thay vì throw — xem `Backend/src/services/assistantService.js`,
-  `Backend/src/services/hoSoService.js` làm ví dụ. Theo đúng pattern này khi
+  `Backend/src/services/cgy1022Service.js` làm ví dụ. Theo đúng pattern này khi
   thêm tích hợp mới.
 - Không hardcode domain/URL của bên thứ ba (cổng thông tin xã, mã điện lực...)
   — luôn qua `Backend/src/config/index.js` với fallback rỗng `""`, không đoán

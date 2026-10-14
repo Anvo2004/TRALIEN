@@ -110,17 +110,6 @@ module.exports = {
     linhVucDefault: process.env.CGY1022_LINHVUC_DEFAULT || "",
   },
 
-  // ===== IOCTC (Tra cứu thủ tục hành chính / hồ sơ — tctthc.1022.vn) =====
-  // Xác thực: POST /getToken (username/password) → Bearer token (cache 23h),
-  // rồi GET /tra-cuu?ma_ho_so=... Thiếu baseUrl/username/password thì tự tắt.
-  // TODO: chưa xác định Trà Liên dùng tài khoản IOCTC riêng hay dùng chung với
-  // xã khác (xem docs/SETUP_CHECKLIST.md).
-  ioctc: {
-    baseUrl: process.env.IOCTC_BASE_URL || "",
-    username: process.env.IOCTC_USERNAME || "",
-    password: process.env.IOCTC_PASSWORD || "",
-  },
-
   // ===== Tự động đăng tin cào lên Zalo OA (Nội dung dạng Bài viết) =====
   // Dùng CHUNG token OA của zaloToken.js (KHÔNG tạo token store riêng — tránh
   // 2 nơi refresh đá nhau làm hỏng token production). Tắt mặc định; bật bằng
