@@ -12,10 +12,9 @@ const FIXES = [
     oldHref: "https://share.google/VwBQyXgjyWhwe4sEh",
     newHref: "https://khaosathailong.danang.gov.vn/",
   },
-  {
-    oldHref: "https://share.google/B3oZQo7knRKbiIOMA",
-    newHref: "https://danangai.1022.vn/",
-  },
+  // KHÔNG map share.google/B3oZ... -> danangai.1022.vn: tên miền .1022.vn không phải
+  // .gov.vn và đã làm bản phát hành bị Zalo TỪ CHỐI kiểm duyệt (mục 4.1). Xem
+  // Backend/scripts/remove-non-gov-links.js.
 ];
 
 async function main() {

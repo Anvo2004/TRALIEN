@@ -115,8 +115,7 @@ app.get("/dieu-khoan-su-dung", (req, res) => res.send(`
 
   <h2>5. Liên kết đến trang bên ngoài</h2>
   <p>Một số tiện ích mở trang của cơ quan nhà nước khác ngay trong ứng dụng, như Cổng Dịch vụ
-  công quốc gia, Bản đồ số thành phố Đà Nẵng, Cổng dịch vụ dữ liệu thành phố, VNeID, trợ lý số
-  DaNang AI của Tổng đài 1022. Ứng dụng không gửi dữ liệu cá nhân của bạn sang các trang này;
+  công quốc gia, Bản đồ số thành phố Đà Nẵng, Cổng dịch vụ dữ liệu thành phố, VNeID. Ứng dụng không gửi dữ liệu cá nhân của bạn sang các trang này;
   thông tin bạn nhập trực tiếp trên các trang đó thuộc phạm vi điều khoản và chính sách riêng
   của đơn vị quản lý trang.</p>
 
