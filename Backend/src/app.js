@@ -92,7 +92,9 @@ app.get("/dieu-khoan-su-dung", (req, res) => res.send(`
       chương trình "Công dân số".</li>
     <li>Hình ảnh đính kèm phản ánh (nếu có) — do bạn chủ động chụp hoặc chọn từ thư viện ảnh của
       thiết bị.</li>
-    <li>Nội dung phản ánh, kiến nghị, mã hồ sơ bạn tự nhập để tra cứu.</li>
+    <li>Nội dung phản ánh, kiến nghị bạn tự nhập.</li>
+    <li>Camera — chỉ khi bạn bấm quét mã QR (VD: mã trên biên nhận hồ sơ) hoặc chụp ảnh đính
+      kèm phản ánh.</li>
   </ul>
 
   <h2>3. Mục đích sử dụng</h2>
@@ -101,8 +103,9 @@ app.get("/dieu-khoan-su-dung", (req, res) => res.send(`
     <li>Gửi thông báo, tin tức từ chính quyền xã qua Zalo OA cho người dùng đã quan tâm.</li>
     <li>Quản lý hồ sơ "Công dân số": ghi nhận điểm tích lũy, xếp hạng và ghi nhận đóng góp của
       người dân theo thể lệ công bố trong ứng dụng.</li>
-    <li>Tra cứu tình trạng hồ sơ thủ tục hành chính dựa trên mã hồ sơ do người dùng cung
-      cấp.</li>
+    <li>Hướng dẫn tra cứu tình trạng hồ sơ thủ tục hành chính: ứng dụng mở Cổng Dịch vụ công
+      quốc gia (dichvucong.gov.vn); mã hồ sơ bạn nhập tại cổng đó do cổng quản lý, ứng dụng
+      không lưu.</li>
   </ul>
 
   <p>Ứng dụng không thu thập danh bạ, tin nhắn, dữ liệu tài chính hay thông tin nào khác ngoài
