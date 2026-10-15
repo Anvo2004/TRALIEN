@@ -151,7 +151,7 @@ const HomePage = () => {
 
           {(digitalTransform.title || digitalTransform.tags) && (
             <div style={css("padding:20px 16px 0")}>
-              <button type="button" className="ns-banner ns-rs" style={css("animation-delay:.3s")} onClick={() => navigate("/tro-ly-so")}>
+              <button type="button" className="ns-banner ns-rs" style={css("animation-delay:.3s")} onClick={() => (digitalTransform.href ? openExternal(digitalTransform.href) : navigate("/tro-ly-so"))}>
                 <span className="ns-sh" />
                 <span className="ns-glass" style={css("flex:0 0 52px;height:52px;border-radius:18px;display:grid;place-items:center;color:#8AD6F7")}>
                   <svg className="ns-sv" viewBox="0 0 24 24" width="26" height="26">

@@ -8,7 +8,7 @@ import { openExternal } from "../utils/open-external.js";
 // Cổng Dịch vụ công Quốc gia (.gov.vn, hợp lệ với chính sách kiểm duyệt Zalo).
 // Trang này giữ lại để QR trên biên nhận (home-search.jsx) và đường dẫn cũ vẫn
 // dẫn tới đúng nơi.
-const DVC_URL = "https://dichvucong.gov.vn";
+const DVC_URL = "https://dichvucong.gov.vn/tra-cuu-ho-so";
 
 const TraCuuHoSoPage = () => {
   const location = useLocation();

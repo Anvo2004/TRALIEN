@@ -25,13 +25,13 @@ const QUICK_LINKS = [
   { icon: "computer", color: "c", label: "Bình dân số học", href: "https://binhdanhocvuso.danang.gov.vn/" },
   { icon: "star", color: "a", label: "Khảo sát hài lòng", href: "https://khaosathailong.danang.gov.vn/" },
   { icon: "public", color: "v", label: "Cổng dữ liệu", href: "https://opendata.danang.gov.vn/" },
-  { icon: "search", color: "b", label: "Tra cứu hồ sơ", href: "https://dichvucong.gov.vn" },
+  { icon: "search", color: "b", label: "Tra cứu hồ sơ", href: "https://dichvucong.gov.vn/tra-cuu-ho-so" },
 ];
 
 // Sao y nguyên MiniApp/src/data/services.js — SERVICES (section=service)
 const SERVICES = [
   { icon: "campaign", color: "o", label: "Phản ánh - Kiến nghị", type: "online", path: "/phan-anh" },
-  { icon: "folder_open", color: "b", label: "Tra cứu hồ sơ TTHC", type: "online", href: "https://dichvucong.gov.vn" },
+  { icon: "folder_open", color: "b", label: "Tra cứu hồ sơ TTHC", type: "online", href: "https://dichvucong.gov.vn/tra-cuu-ho-so" },
   { icon: "description", color: "a", label: "Văn bản - Chính sách", type: "online", path: "/van-ban" },
   { icon: "bolt", color: "v", label: "Lịch cắt điện", type: "online", path: "/lich-cup-dien" },
   { icon: "vaccines", color: "g", label: "Lịch y tế - Tiêm chủng", type: "online", path: "/lich-y-te" },

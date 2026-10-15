@@ -189,6 +189,7 @@ const SITE_INFO = {
     description: "Nhận thông báo, tin tức mới nhất từ chính quyền.",
   },
   digitalTransform: {
+    href: "https://tralien.danang.gov.vn/chuyen-doi-so",
     title: "Chuyển đổi số xã Trà Liên",
     tags: ["Chính quyền số", "Kinh tế số", "Xã hội số"],
   },
