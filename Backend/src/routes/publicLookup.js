@@ -1,6 +1,7 @@
 const express = require("express");
 const config = require("../config");
 const { isAllowedExternalUrl } = require("../utils/linkPolicy");
+const { prepareMiniAppLinks } = require("../utils/miniAppLinks");
 const catDienService = require("../services/catDienService");
 const vanBanService = require("../services/vanBanTraLienService");
 const newsScrapeService = require("../services/newsScrapeService");
@@ -138,13 +139,15 @@ router.get("/app-links", async (req, res) => {
   if (section) filter.section = section;
   const items = await AppLink.find(filter).sort({ order: 1, label: 1 }).lean();
   // Chốt chặn thứ 2: dù dữ liệu cũ còn liên kết không hợp lệ, MiniApp cũng không nhận được.
-  res.json({ items: items.filter((it) => !it.href || isAllowedExternalUrl(it.href)) });
+  res.json({ items: prepareMiniAppLinks(items).filter((it) => !it.href || isAllowedExternalUrl(it.href)) });
 });
 
 // ===== Dân số / Du lịch / Văn hóa (singleton content, sửa qua admin route) =====
 router.get("/dan-so", async (req, res) => {
   const doc = (await DanSo.findOne().lean()) || {};
-  res.json(doc);
+  // Cùng danh mục mà tab Công dân dùng để chọn thôn, không dùng số nhập tay cũ.
+  const soThon = await Village.countDocuments();
+  res.json({ ...doc, soThon });
 });
 
 router.get("/du-lich", async (req, res) => {

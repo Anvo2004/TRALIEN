@@ -9,6 +9,7 @@ import API_BASE_URL from "../data/api-config.js";
 import { openExternal } from "../utils/open-external.js";
 import logo from "../static/logo-tralien.png";
 import SITE from "../data/site.js";
+import { openDaNangAI } from "../data/assistant.js";
 
 // Giao diện port từ Mini App Nông Sơn; dữ liệu giữ nguyên của Trà Liên
 // (SiteInfo.contact/zaloOA từ MongoDB, bản đồ nhúng bando.danang.gov.vn —
@@ -259,7 +260,7 @@ const ContactPage = () => {
               <Glyph name="campaign" sm />
               <span><span className="ns-nm">Gửi phản ánh</span><br /><span className="ns-sb">Kèm ảnh, vị trí hiện tại</span></span>
             </button>
-            <button type="button" className="ns-svc ns-rs ns-tn-violet" onClick={() => navigate("/tro-ly-so")}>
+            <button type="button" className="ns-svc ns-rs ns-tn-violet" onClick={openDaNangAI}>
               <Glyph name="smart_toy" sm />
               <span><span className="ns-nm">Hỏi đáp AI</span><br /><span className="ns-sb">Giải đáp thủ tục 24/7</span></span>
             </button>

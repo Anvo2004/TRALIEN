@@ -1,7 +1,7 @@
 const mongoose = require("mongoose");
 
-// Danh sách 12 thôn xã Trà Liên sau sắp xếp — nhập tay qua route admin
-// (Postman/AdminWeb), không có nguồn cào tự động.
+// Danh mục thôn Trà Liên được bổ sung từ tài liệu của xã khi khởi động.
+// Thông tin cán bộ và số liệu từng thôn quản lý qua route admin.
 const villageSchema = new mongoose.Schema({
   ten: { type: String, required: true },
   biThu: { type: String, default: "" },

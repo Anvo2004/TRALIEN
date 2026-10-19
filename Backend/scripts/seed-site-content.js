@@ -1,29 +1,25 @@
 // Seeds the Village/DanSo/DuLich/VanHoa/SiteInfo collections with the content
 // that used to live in MiniApp/src/data/*.js before those pages moved to
-// fetching from the DB. Safe to re-run — skips any collection that already
-// has data, so this is the source of truth for reconstructing this content on
+// fetching from the DB. Safe to re-run — adds missing villages and skips other
+// collections that already have data; this reconstructs the content on
 // a fresh DB (e.g. disaster recovery, a new environment) instead of it only
 // existing wherever it was manually seeded. Usage: node scripts/seed-site-content.js
 const mongoose = require("mongoose");
 const config = require("../src/config");
-const Village = require("../src/models/Village");
+const { ensureVillages } = require("../src/services/villageService");
 const DanSo = require("../src/models/DanSo");
 const DuLich = require("../src/models/DuLich");
 const VanHoa = require("../src/models/VanHoa");
 const SiteInfo = require("../src/models/SiteInfo");
 
-// TODO: danh sách thôn thật của Trà Liên (sau sáp nhập Trà Đông + Trà Nú +
-// Trà Kót) chưa có đủ tên bí thư/thôn trưởng/mặt trận để seed — 12 thôn cũ
-// bên dưới là của Thăng Điền, đã xoá vì sai xã (xem git blame nếu cần đối
-// chiếu). Để trống tới khi có danh sách thật, không suy đoán.
-const VILLAGES = [];
+const VILLAGES = require("../src/data/villages");
 
 // Nguồn: thông tin hành chính xã Trà Liên (Google, 2026-09) — xã sáp nhập từ
 // Trà Đông + Trà Nú + Trà Kót (thuộc huyện Bắc Trà My cũ).
 const DAN_SO = {
   tongDanSo: 7052,
   dienTichKm2: 178.15,
-  soThon: null, // TODO: chưa xác nhận số thôn thực tế sau sáp nhập
+  soThon: VILLAGES.length,
   hoDan: null,
   gioiTinh: null,
   doTuoi: null,
@@ -201,13 +197,8 @@ async function main() {
   await mongoose.connect(config.mongoUri);
   console.log("Connected to MongoDB");
 
-  const villageCount = await Village.countDocuments();
-  if (villageCount === 0) {
-    await Village.insertMany(VILLAGES.map((v, i) => ({ ...v, thuTu: i + 1 })));
-    console.log(`Seeded ${VILLAGES.length} villages.`);
-  } else {
-    console.log(`Village collection already has ${villageCount} documents, skipping.`);
-  }
+  await ensureVillages();
+  console.log(`Ensured ${VILLAGES.length} villages.`);
 
   for (const [name, Model, data] of [
     ["DanSo", DanSo, DAN_SO],

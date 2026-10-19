@@ -22,6 +22,8 @@ function isAllowedExternalUrl(url) {
     return false;
   }
   if (host === "gov.vn" || host.endsWith(".gov.vn")) return true;
+  // Tích hợp DaNang AI theo yêu cầu của xã, cùng đích đến với Mini App Nông Sơn.
+  if (host === "danangai.1022.vn") return true;
   return extraDomains().some((d) => host === d || host.endsWith(`.${d}`));
 }
 

@@ -12,6 +12,7 @@ import { openExternal } from "../utils/open-external.js";
 import useNews from "../data/use-news.js";
 import SITE from "../data/site.js";
 import logo from "../static/logo-tralien.png";
+import { openDaNangAI } from "../data/assistant.js";
 
 // Giao diện port từ Mini App Nông Sơn (bản thiết kế "Nông Sơn Số"); dữ liệu/API
 // giữ nguyên của Trà Liên — tiện ích nhanh vẫn lấy từ app-links (DB, AdminWeb
@@ -131,7 +132,7 @@ const HomePage = () => {
             style={css("position:relative;z-index:2;margin:14px 16px 0;padding:18px 4px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr))")}
           >
             <div className="ns-stat"><b className="ns-num">{fmtInt(pop)}</b><span className="ns-cap">Dân số</span></div>
-            <div className="ns-stat"><b className="ns-num">{danSo.soThon != null ? fmtInt(danSo.soThon) : "—"}</b><span className="ns-cap">Thôn</span></div>
+            <div className="ns-stat"><b className="ns-num">{danSo.soThon != null ? fmtInt(danSo.soThon) : "—"}</b><span className="ns-cap">Tổng số thôn</span></div>
             <div className="ns-stat"><b className="ns-num">{fmtDec(area)}</b><span className="ns-cap">Diện tích (km²)</span></div>
             <div className="ns-stat"><b className="ns-num">{danSo.hoDan != null ? fmtInt(danSo.hoDan) : "—"}</b><span className="ns-cap">Hộ dân</span></div>
           </div>
@@ -151,7 +152,7 @@ const HomePage = () => {
 
           {(digitalTransform.title || digitalTransform.tags) && (
             <div style={css("padding:20px 16px 0")}>
-              <button type="button" className="ns-banner ns-rs" style={css("animation-delay:.3s")} onClick={() => (digitalTransform.href ? openExternal(digitalTransform.href) : navigate("/tro-ly-so"))}>
+              <button type="button" className="ns-banner ns-rs" style={css("animation-delay:.3s")} onClick={() => (digitalTransform.href ? openExternal(digitalTransform.href) : openDaNangAI())}>
                 <span className="ns-sh" />
                 <span className="ns-glass" style={css("flex:0 0 52px;height:52px;border-radius:18px;display:grid;place-items:center;color:#8AD6F7")}>
                   <svg className="ns-sv" viewBox="0 0 24 24" width="26" height="26">

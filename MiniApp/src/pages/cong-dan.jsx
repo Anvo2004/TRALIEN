@@ -396,7 +396,7 @@ const CitizenPage = () => {
               <button type="button" className="ns-fld" onClick={openVillages} style={css("flex:1;min-height:44px")}>
                 <XIcon name="pin" size={18} />
                 <span style={css("flex:1;font-size:13px;text-align:left")}>
-                  {citizen.village ? citizen.village.name : "Chọn thôn/tổ"}
+                  {citizen.village ? citizen.village.name : "Chọn thôn"}
                 </span>
                 <svg className="ns-sv" viewBox="0 0 24 24" width="16" height="16" style={css("color:#7F9686")}>
                   <path d="M6 9l6 6 6-6" />
@@ -517,7 +517,7 @@ const CitizenPage = () => {
 
       <Sheet visible={villageSheet} onClose={() => setVillageSheet(false)} autoHeight swipeToClose>
         <div className="ns-sheet">
-          <div className="ns-sheet__title">Chọn Thôn/Tổ</div>
+          <div className="ns-sheet__title">Chọn thôn</div>
           <p className="ns-sheet__desc">Chọn nơi bạn sinh sống để nhận thông báo đúng khu vực.</p>
           {villages === null && <div className="ns-sheet__empty">Đang tải…</div>}
           {villages && villages.length === 0 && <div className="ns-sheet__empty">Danh sách thôn đang được cập nhật.</div>}

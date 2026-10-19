@@ -5,12 +5,10 @@
 const mongoose = require("mongoose");
 const config = require("../src/config");
 const AppLink = require("../src/models/AppLink");
+const { DANANG_AI_URL } = require("../src/utils/miniAppLinks");
 
-// Sao y nguyên nội dung hiện có trong MiniApp/src/data/quick-links.js —
-// KHÔNG đổi icon/label/link, chỉ đổi nơi lưu trữ.
+// Tiện ích Trang chủ, không còn các mục Dân số và Thôn xóm.
 const QUICK_LINKS = [
-  { icon: "groups", color: "b", label: "Dân số", path: "/dan-so" },
-  { icon: "holiday_village", color: "g", label: "Thôn xóm", path: "/thon-xom" },
   { icon: "map", color: "c", label: "Bản đồ", href: "https://bando.danang.gov.vn/?ward=Tr%C3%A0%20Li%C3%AAn" },
   { icon: "account_balance", color: "v", label: "Dịch vụ công", path: "/dich-vu" },
   { icon: "description", color: "g", label: "Danh mục TTHC", path: "/thu-tuc-hanh-chinh" },
@@ -39,15 +37,14 @@ const SERVICES = [
   { icon: "storm", color: "c", label: "Phòng chống thiên tai", type: "offline", path: "/phong-chong-thien-tai" },
 ];
 
-// Sao y nguyên SERVICE_PORTAL_LINKS (section=portal)
+// Cổng dịch vụ công (section=portal), trợ lý mở trực tiếp DaNang AI.
 const PORTAL_LINKS = [
   {
     icon: "smart_toy",
     color: "v",
     label: "Trợ lý Công dân số",
-    description: "Hỏi đáp thủ tục hành chính bằng AI",
-    badge: "Đang hoàn thiện",
-    path: "/tro-ly-so",
+    description: "Trợ lý số DaNang AI",
+    href: DANANG_AI_URL,
   },
   {
     icon: "account_balance",

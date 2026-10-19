@@ -8,10 +8,12 @@ const zaloNewsService = require("./src/services/zaloNewsService");
 const newsCardService = require("./src/services/newsCardService");
 const { startCgy1022Retry } = require("./src/services/cgy1022RetryService");
 const { startCgy1022StatusPolling } = require("./src/services/cgy1022StatusService");
+const { ensureVillages } = require("./src/services/villageService");
 
 async function main() {
   await mongoose.connect(config.mongoUri);
   console.log("[server] MongoDB connected");
+  await ensureVillages();
 
   app.listen(config.port, () => {
     console.log(`[server] Listening on port ${config.port}`);
