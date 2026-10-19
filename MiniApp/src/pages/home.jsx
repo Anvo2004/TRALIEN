@@ -129,12 +129,11 @@ const HomePage = () => {
 
           <div
             className="ns-card ns-rs"
-            style={css("position:relative;z-index:2;margin:14px 16px 0;padding:18px 4px;display:grid;grid-template-columns:repeat(4,minmax(0,1fr))")}
+            style={css("position:relative;z-index:2;margin:14px 16px 0;padding:20px 6px;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));text-align:center")}
           >
             <div className="ns-stat"><b className="ns-num">{fmtInt(pop)}</b><span className="ns-cap">Dân số</span></div>
             <div className="ns-stat"><b className="ns-num">{danSo.soThon != null ? fmtInt(danSo.soThon) : "—"}</b><span className="ns-cap">Tổng số thôn</span></div>
             <div className="ns-stat"><b className="ns-num">{fmtDec(area)}</b><span className="ns-cap">Diện tích (km²)</span></div>
-            <div className="ns-stat"><b className="ns-num">{danSo.hoDan != null ? fmtInt(danSo.hoDan) : "—"}</b><span className="ns-cap">Hộ dân</span></div>
           </div>
 
           <SectionTitle
