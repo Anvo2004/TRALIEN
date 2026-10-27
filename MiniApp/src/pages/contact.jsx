@@ -7,6 +7,7 @@ import { HeroSceneSmall } from "../components/ns/ns-scenes.jsx";
 import { css, fmtInt, fmtDec } from "../components/ns/ns-util.js";
 import API_BASE_URL from "../data/api-config.js";
 import { openExternal } from "../utils/open-external.js";
+import { callPhone } from "../utils/call-phone.js";
 import logo from "../static/logo-tralien.png";
 import SITE from "../data/site.js";
 import { openDaNangAI } from "../data/assistant.js";
@@ -170,21 +171,23 @@ const ContactPage = () => {
               <Svg size={20} style={GREY}><path d="M8 16L16 8M9.5 8H16v6.5" /></Svg>
             </button>
 
-            <button type="button" className="ns-cr ns-tn-green" style={css("width:100%")} onClick={copyEmail}>
-              <Glyph name="mail" sm />
-              <span style={css("flex:1")}>
-                <span className="ns-lab">Email</span><br />
-                <span className="ns-val" style={c.email ? undefined : css("color:#55705F")}>
-                  {copied ? "Đã sao chép email" : c.email || "Đang cập nhật"}
+            {c.email && (
+              <button type="button" className="ns-cr ns-tn-green" style={css("width:100%")} onClick={copyEmail}>
+                <Glyph name="mail" sm />
+                <span style={css("flex:1")}>
+                  <span className="ns-lab">Email</span><br />
+                  <span className="ns-val" style={c.email ? undefined : css("color:#55705F")}>
+                    {copied ? "Đã sao chép email" : c.email || "Đang cập nhật"}
+                  </span>
                 </span>
-              </span>
-              {c.email && (
-                <Svg size={20} style={GREY}>
-                  <rect x="8.5" y="8.5" width="11" height="11" rx="2.2" />
-                  <path d="M15.5 8.5V6.7a2.2 2.2 0 0 0-2.2-2.2H6.7a2.2 2.2 0 0 0-2.2 2.2v6.6a2.2 2.2 0 0 0 2.2 2.2h1.8" />
-                </Svg>
-              )}
-            </button>
+                {c.email && (
+                  <Svg size={20} style={GREY}>
+                    <rect x="8.5" y="8.5" width="11" height="11" rx="2.2" />
+                    <path d="M15.5 8.5V6.7a2.2 2.2 0 0 0-2.2-2.2H6.7a2.2 2.2 0 0 0-2.2 2.2v6.6a2.2 2.2 0 0 0 2.2 2.2h1.8" />
+                  </Svg>
+                )}
+              </button>
+            )}
 
             <div className="ns-cr ns-tn-gold">
               <Glyph name="schedule" sm />
@@ -198,7 +201,14 @@ const ContactPage = () => {
 
             {phone && (
               <div style={css("padding-top:8px;display:flex;flex-direction:column;gap:8px")}>
-                <a className="ns-call" href={`tel:${tel}`}>
+                <a
+                  className="ns-call"
+                  href={`tel:${tel}`}
+                  onClick={(e) => {
+                    e.preventDefault();
+                    callPhone(phone);
+                  }}
+                >
                   <span className="ns-ring" />
                   <Svg size={22}><path className="ns-t" d={PHONE} /></Svg>
                   Gọi ngay {phone}
@@ -206,6 +216,10 @@ const ContactPage = () => {
                 {c.hotline2 && (
                   <a
                     href={`tel:${c.hotline2.replace(/[^\d+]/g, "")}`}
+                    onClick={(e) => {
+                      e.preventDefault();
+                      callPhone(c.hotline2);
+                    }}
                     style={css("text-align:center;font-size:12.5px;font-weight:600;color:#1E7A4C")}
                   >
                     Hoặc gọi số {c.hotline2}
@@ -224,24 +238,6 @@ const ContactPage = () => {
                   <span className="ns-val">{c.policeStation.address}</span>
                 </span>
               </div>
-              {c.policeStation.phone && (
-                <div className="ns-cr ns-tn-coral">
-                  <Glyph name="call" sm />
-                  <span style={css("flex:1")}>
-                    <span className="ns-lab">Điện thoại trực ban</span><br />
-                    <span className="ns-val" style={css("font-family:'Space Grotesk',sans-serif;font-size:16px;font-weight:700")}>
-                      {c.policeStation.phone}
-                    </span>
-                  </span>
-                  <a
-                    aria-label="Gọi trực ban"
-                    href={`tel:${c.policeStation.phone.replace(/[^\d+]/g, "")}`}
-                    style={css("width:44px;height:44px;border-radius:16px;background:#DCF3E6;color:#18633F;display:grid;place-items:center")}
-                  >
-                    <Svg size={20}><path d={PHONE} /></Svg>
-                  </a>
-                </div>
-              )}
             </div>
           )}
 

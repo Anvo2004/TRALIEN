@@ -166,7 +166,7 @@ const SITE_INFO = {
     phone: "0987368258",
     hotline: "0987368258",
     hotline2: "0368259119", // số thứ 2 của Trụ sở UBND và TT PV HCC
-    email: "ubndxatralien@danang.gov.vn",
+    email: "", // tạm để trống; cán bộ cập nhật trong DB thì MiniApp tự hiện, không cần build lại
     website: "tralien.danang.gov.vn",
     workHours: "Thứ 2 - Thứ 6: 7h30 - 17h00\nSáng: 7h30-11h30 | Chiều: 13h30-17h00",
     chairman: {

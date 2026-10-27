@@ -147,7 +147,6 @@ app.get("/dieu-khoan-su-dung", (req, res) => res.send(`
     <p><strong>UBND xã Trà Liên</strong></p>
     <p>Địa chỉ: Thôn Phương Đông, xã Trà Liên, TP Đà Nẵng</p>
     <p>Hotline: 0987368258</p>
-    <p>Email: ubndxatralien@danang.gov.vn</p>
     <p>Website: tralien.danang.gov.vn</p>
   </div>
 </body>
